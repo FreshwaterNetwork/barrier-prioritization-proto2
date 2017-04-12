@@ -1,0 +1,36 @@
+﻿<!--This HTML is used in the render function to build the elements within the plugin. The render function first creates a
+Dijit ContentPane to hold all the elements. The ContentPane is assigned a dynamic id upon creation. The render function
+takes the ContentPane id and prepends it to every element with a declared id in this HTML before the elements are created.
+The unique ContentPane id makes all the element ids unique and prevents duplicate id errors across other apps.-->
+
+<div id="getHelpBtnWrap" class="getHelpBtnWrap">
+	<button id="getHelpBtn" class="button button-default">Start Using Sample App</button>
+</div>
+<div id="mainAccord" class="flex1 hide">
+	<h3>First Accordion Window</h3>
+	<section>
+		<h3>First header</h3>
+		<p>Text area</p>
+	</section>	
+
+	<h3>Second Accordion Window</h3>
+	<div>
+		<section>
+			<h3>Header with link to More Info<img src="plugins/sample_app/images/info.png" alt="show more info in documentation" class="infoIcon" id="-moreInfo"></h3>
+		</section>
+	</div>
+</div>
+<div id="infoAccord" class="flex1">
+	<h3 class="infoDoc">Documentation</h3>
+	<div class="explainWrap" style="display:block;">
+		<p>
+			This is a new app. It's going to be awesome. It just is.
+		</p> 
+	</div> 
+	<h3 class="moreInfo">More info</h3>
+	<div class="explainWrap">
+		<p>
+			More info to come.
+		</p>
+	</div>
+</div>
