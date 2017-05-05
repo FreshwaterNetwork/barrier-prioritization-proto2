@@ -1,0 +1,447 @@
+{
+    "url": "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized7/MapServer",
+	"removeSelectionURL" : "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized7/MapServer/1",
+	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP20/GPServer/Prioritize",
+	"visibleLayers": [0],
+	"includePassabilityOption" : true,
+	"resultTier" : "AvgTier",
+	"severityField" : "Passability_Desc",
+	"uniqueID" : "UNIQUE_ID",
+	"barrierNameField" : "Barrier_Name",
+	"tableResults" : false,
+	"resultsParamName" : "Result",
+	"summStatsParamName" : "Summary_Stats",
+	"zippedResultParamName" : "ZipResult",
+	"includeZippedConsensusDownload" : true,
+	"zippedConsensusResultURL" : "plugins/barrier-prioritization-proto/images/NEAquaticConnectivity.zip",
+	"gpServIncludesLogTransform" : false,
+	"includeExploreConsensus":true,
+	"includeSeverityFilter":true,
+	"analyticsEventTrackingCategory":"NE Aquatic Barrier Prioritization",
+	"metricNames":{
+		"batFuncUS" : "Upstream functional network length",
+		"batCountDS" : "Count of downstream barriers",
+		"DSFalls" : "Count of natural barriers downstream",
+		"DSHydro" : "Count of dams with hydropower facilities downstream",
+		"dsPassabilityProduct" : "Product of all downstream barrier passability scores",
+		"batAbs" : "​Absolute Gain (min of US and DS Func Networks)",
+		"batTotUSDS" : "Total Functional Network (sum of US and DS Func Networks)",
+		"batLenUS" : "Total upstream river length (ignoring all barriers)",
+		"DA_PercFor" : "​% Forest cover in the total contributing watershed",
+		"DA_PercNat" : "% Natural cover in the total contributing watershed",
+		"DA_PercAg" : "% Agricultural cover in the total contributing watershed",
+		"DA_PercImp" : "​% Impervious Surface in the total contributing watershed",
+		"usForARA" : "% Forest cover in ARA of upstream functional network",
+		"dsForARA" : "% Forest cover in ARA of downstream functional network",
+		"usNatARA" : "% Natural cover in ARA of upstream functional network",
+		"dsNatARA" : "% Natural cover in ARA of downstream functional network",
+		"usAgARA" : "​% Agricultural cover in ARA of upstream functional network",
+		"dsAgARA" : "% Agricultural cover in ARA of downstream functional network",
+		"usImpARA" : "% Impervious Surface in ARA of upstream functional network",
+		"dsImpARA" : "% Impervious Surface in ARA of downstream functional network",
+		"onConsLand" : "Barrier is located on conservation land",
+		"CumDistInd" : "NFHAP Cumulative Disturbance Index (by NHD Catchment)",
+		"QDSANAD" : "Presence of 1 or More Anadromous Species downstream of barrier",
+		"QDSNUMANAD" : "# of anadromous species downstream of the barrier",
+		"fishRich" : "# of Resident fish species in HUC8",
+		"g123Fish" : "# of  rare (G1, G2, G3) fish species in HUC8",
+		"g123Mussel" : "# of  rare (G1, G2, G3) fish species in HUC8",
+		"g123Cray" : "# of  rare (G1, G2, G3) crayfish species in HUC8",
+		"in_EBTJV_2012" : "​Barrier is within EBTJV Catchment with Trout",
+		"in_deWeberTrout" : "Barrier is within a modeled catchment for Trout (DeWeber & Wagner)",
+		"block_EBTJV_2012 " : "Barrier blocks EBTJV 2012 trout catchments",
+		"block_BT_DeWeber " : "Barrier blocks modeled trout catchments (DeWeber & Wagner)",
+		"NESZCL_Int" : "Stream size class (raise headwaters in importance)",
+		"TotNumSzCl" : "# of Size Classes in Total (US + DS) functional network",
+		"usNumSzCl" : "# of Upstream Network size classes",
+		"usSzClGn" : "Upstream Size Class Gain",
+		"totMiCold" : "Miles of Cold water habitat in Total (US + DS) functional network",
+		"totMiCC" : "Miles of Cold or Cool water habitat in Total (US + DS) functional network"
+	},
+
+	"idBlacklist" : ["OBJECTID_1", "Shape", "OBJECTID", "Use_Dams", "Use_Dams_ExclPassage", "Use_Severe", "Use_Severe_ExclPassage", "Use_Significant", "Use_Moderate", "Use_Minor", "Use_Insignificant"],
+
+
+	"metricOrder":{
+		"batFuncUS" : "D",
+		"batCountDS" : "A",
+		"DSFalls" : "A",
+		"DSHydro" : "A",
+		"dsPassabilityProduct" : "D",
+		"batAbs" : "D",
+		"batTotUSDS" : "D",
+		"batLenUS" : "D",
+		"DA_PercFor" : "D",
+		"DA_PercNat" : "D",
+		"DA_PercAg" : "A",
+		"DA_PercImp" : "A",
+		"usForARA" : "D",
+		"dsForARA" : "D",
+		"usNatARA" : "D",
+		"dsNatARA" : "D",
+		"usAgARA" : "A",
+		"dsAgARA" : "A",
+		"usImpARA" : "A",
+		"dsImpARA" : "A",
+		"onConsLand" : "D",
+		"CumDistInd" : "D",
+		"QDSANAD" : "A",
+		"QDSNUMANAD" : "D",
+		"fishRich" : "D",
+		"g123Fish" : "D",
+		"g123Mussel" : "D",
+		"g123Cray" : "D",
+		"in_EBTJV_2012" : "D",
+		"in_deWeberTrout" : "D",
+		"block_EBTJV_2012 " : "D",
+		"block_BT_DeWeber " : "D",
+		"NESZCL_Int" : "A",
+		"TotNumSzCl" : "D",
+		"usNumSzCl" : "D",
+		"usSzClGn" : "D",
+		"totMiCold" : "D",
+		"totMiCC" : "D"
+	},
+
+	"diadromous":{
+		"batFuncUS" : 20,
+		"batCountDS" : 10,
+		"DSFalls" : 0,
+		"DSHydro" : 0,
+		"dsPassabilityProduct" : 5,
+		"batAbs" : 0,
+		"batTotUSDS" : 0,
+		"batLenUS" : 0,
+		"DA_PercFor" : 0,
+		"DA_PercNat" : 10,
+		"DA_PercAg" : 0,
+		"DA_PercImp" : 10,
+		"usForARA" : 0,
+		"dsForARA" : 0,
+		"usNatARA" : 5,
+		"dsNatARA" : 0,
+		"usAgARA" : 0,
+		"dsAgARA" : 0,
+		"usImpARA" : 0,
+		"dsImpARA" : 0,
+		"onConsLand" : 5,
+		"CumDistInd" : 0,
+		"QDSANAD" : 20,
+		"QDSNUMANAD" : 10,
+		"fishRich" : 0,
+		"g123Fish" : 0,
+		"g123Mussel" : 0,
+		"g123Cray" : 0,
+		"in_EBTJV_2012" : 0,
+		"in_deWeberTrout" : 0,
+		"block_EBTJV_2012 " : 0,
+		"block_BT_DeWeber " : 0,
+		"NESZCL_Int" : 0,
+		"TotNumSzCl" : 0,
+		"usNumSzCl" : 0,
+		"usSzClGn" : 5,
+		"totMiCold" : 0,
+		"totMiCC" : 0
+	},
+	
+	"resident":{
+		"batFuncUS" : 0,
+		"batCountDS" : 0,
+		"DSFalls" : 0,
+		"DSHydro" : 0,
+		"dsPassabilityProduct" : 0,
+		"batAbs" : 0,
+		"batTotUSDS" : 0,
+		"batLenUS" : 0,
+		"DA_PercFor" : 0,
+		"DA_PercNat" : 0,
+		"DA_PercAg" : 0,
+		"DA_PercImp" : 0,
+		"usForARA" : 0,
+		"dsForARA" : 0,
+		"usNatARA" : 0,
+		"dsNatARA" : 0,
+		"usAgARA" : 0,
+		"dsAgARA" : 0,
+		"usImpARA" : 0,
+		"dsImpARA" : 0,
+		"onConsLand" : 0,
+		"CumDistInd" : 0,
+		"QDSANAD" : 0,
+		"QDSNUMANAD" : 0,
+		"fishRich" : 0,
+		"g123Fish" : 0,
+		"g123Mussel" : 0,
+		"g123Cray" : 0,
+		"in_EBTJV_2012" : 0,
+		"in_deWeberTrout" : 0,
+		"block_EBTJV_2012 " : 0,
+		"block_BT_DeWeber " : 0,
+		"NESZCL_Int" : 0,
+		"TotNumSzCl" : 0,
+		"usNumSzCl" : 0,
+		"usSzClGn" : 0,
+		"totMiCold" : 0,
+		"totMiCC" : 0
+	},
+	
+	"Tier1Sym" : {
+		"color": [255,0,0, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		  }
+	},
+	"Tier2Sym" : {
+		"color": [255,68,0, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier3Sym" : {
+		"color": [255,106,0, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier4Sym" : {
+		"color": [255,140,0, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier5Sym" : {
+		"color": [255,174,0, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier6Sym" : {
+		"color": [255,208,0, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier7Sym" : {
+		"color": [255,242,0, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier8Sym" : {
+		"color": [241,255,51, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier9Sym" : {
+		"color": [222,255,89, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier10Sym" : {
+		"color": [196,255,125, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier11Sym" : {
+		"color": [167,255,161, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier12Sym" : {
+		"color": [130,255,197, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier13Sym" : {
+		"color": [82,255,229, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier14Sym" : {
+		"color": [23,243,255, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier15Sym" : {
+		"color": [48,203,255, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier16Sym" : {
+		"color": [59,163,255, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier17Sym" : {
+		"color": [59,127,255, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier18Sym" : {
+		"color": [54,94,255, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier19Sym" : {
+		"color": [38,56,255, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	},
+	"Tier20Sym" : {
+		"color": [8,8,255, 0],
+		"size": 8,
+		"type": "esriSMS",
+		"style": "esriSMSCircle",
+		"outline": {
+			"color": [0,0,0,0],
+			"width": 1,
+			"type": "esriSLS",
+			"style": "esriSLSSolid"
+		 }
+
+	}
+}

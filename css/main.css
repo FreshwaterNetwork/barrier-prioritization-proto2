@@ -3,6 +3,7 @@
 }
 .flex1{
 	flex:1;
+	
 }
 .flexColumn{
 	display:flex; flex-direction:column;
@@ -16,6 +17,11 @@
 .getHelpBtnWrap{
     background-color:#eef3f8; padding:10px 12px; z-index:500; text-align:center;
 }	
+
+.getHelpBtnWrap .abp{
+    align-self: center;
+    margin-top:5px !important;
+}	
 .getHelpBtnWrap .button{
 	font-size:15px; width:100%; color:#2F6384; font-weight:bold;
 }	
@@ -26,3 +32,138 @@
 .sidebar-content{
 	height:auto !important;
 }
+
+.bp_submitButtonRunning{
+	color: #999999;
+	margin-top: 5px;
+	margin: 0 auto;
+}
+
+.bp_flexHCenter{
+    /*height: 100%;*/
+    padding: 0;
+    margin: 0;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-direction:column; 
+    /*vertical center--*/
+    align-items: center;
+}
+
+.bp_flexRowHCenter{
+    /*height: 100%;*/
+    padding: 0;
+    margin: 0;
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-direction:row;
+    
+    justify-content: center;
+}
+
+
+.bp_flexNoWrap{
+	flex-wrap: nowrap;
+	flex-direction: row;
+	margin: 5px;
+}
+
+.bp_button{
+	margin: 5px;
+}
+
+/*----- Tabs -----*/
+.tabs {
+    width:100%;
+    display:inline-block;
+}
+.tabs dd a, .tabs li a {
+
+    height: 20px !important;
+    line-height: 20px !important;
+    padding: 0px 4px !important;
+	/*border:1px solid #4c4c4c;*/
+	
+}
+    /*----- Tab Links -----*/
+    /* Clearfix */
+    .tab-links{
+		margin-bottom: 0px ;
+	}
+	.tab-links:after {
+        display:block;
+        clear:both;
+        content:'';
+    }
+ 
+    .tab-links li {
+        /* margin:0px 5px; */
+        float:left;
+        list-style:none;
+    }
+	
+
+        .tab-links a {
+            padding:9px 15px;
+            display:inline-block;
+            border-radius:3px 3px 0px 0px;
+            background:#666666;
+            font-weight:500;
+            color:#e6e6e6 !important;
+            transition:all linear 0.15s;
+			
+        }
+ 
+        .tab-links a:hover {
+            background:#cccccc;
+            text-decoration:none;
+        }
+ 
+    li.active a, li.active a:hover {
+        background:#e6e6e6 !important;
+        color:#1a1a1a !important;	
+		border:1px solid #000000 !important;	
+    }
+	
+	li.active{
+		border-top:0px !important;
+		margin-top:0px !important;
+
+	}
+    /*----- Content of Tabs -----*/
+    .tab-content {
+    	
+    	overflow: auto;
+        padding:5px;
+        border-radius:3px;
+        box-shadow:-1px 1px 1px rgba(0,0,0,0.15);
+        background:#fff;
+		height: 340px;
+		border:1px solid #000000;
+		/*display: table;*/
+    }
+     .tab-contentAll {
+     	/*position:absolute;*/
+     	overflow: visible;
+        padding:5px;
+        border-radius:3px;
+        box-shadow:-1px 1px 1px rgba(0,0,0,0.15);
+        background:#fff;
+		height: 83%;
+		width: 97%;
+		border:1px solid #000000;
+		display: table;
+    }
+        .tab {
+            display:none;
+        }
+ 
+        .tab.active {
+            display:inline-block;
+        }

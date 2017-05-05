@@ -1,6 +1,7 @@
 {
     "css": [
-		"plugins/sample_app/css/main.css"
+		"plugins/barrier-prioritization-proto2/css/main.css"
+
     ],
     "use": {
         "underscore": { "attach": "_" },
