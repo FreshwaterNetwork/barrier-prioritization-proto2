@@ -250,6 +250,22 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 }));
 			};
 			
+			//On consensus accordion click add consensus map serv, on custom add GP results
+			$('#' + this.id +'runCustomAccord').on('click', lang.hitch(this,function(e){
+				console.log("accord click");
+				if (this.gpResLayer != undefined){
+					this.map.removeLayer(this.dynamicLayer);
+                	this.map.addLayer(this.gpResLayer);
+				}
+			}));
+			$('#' + this.id +'exploreConsensusAccord').on('click', lang.hitch(this,function(e){
+				try{this.map.removeLayer(this.gpResLayer);}catch(err){console.log("no gp layer " + err.message );}
+				try{this.map.removeLayer(this.dynamicLayer);} catch(err){console.log("no dyn layer " + err.message );}
+				this.map.addLayer(this.dynamicLayer);
+
+				
+			}));
+			
 		    //set up metric weight tabs
             jQuery('.tabs .tab-links a').on('click', function(e)  {
                 tabIDprefix = this.id.split("tab")[0];
@@ -727,7 +743,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             }
         },
 		
-//GP Service
+//************GP Service
 
 //prepare and pass the GP request object to gpURL
         submit: function(){
@@ -738,7 +754,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.gpValsList.push(v.value);               
             }));
             this.sumWeights = this.metricWeightCalculator(this.gpVals);
-            console.log(this.sumWeights)
             if (this.sumWeights != 100){
                 alert("Metric weights must sum to 100");
             }
@@ -748,11 +763,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 if (this.selectedBarriers != undefined){this.map.removeLayer(this.selectedBarriers);}
                 if (this.removeFeatureLayer != undefined){this.map.removeLayer(this.removeFeatureLayer);}
                 this.tableHTML = "";
-                if (this.gpResLayer != undefined){
-                    this.map.removeLayer(this.gpResLayer);
-                }
+                if (this.gpResLayer != undefined){this.map.removeLayer(this.gpResLayer);}
                
-                
                 this.requestObject = {};                
                 if($("#" + this.id + "filterBarriers").is(':checked')){this.filterBarr = true;}
                 else{this.filterBarr = false;}
@@ -803,8 +815,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				    eventCategory:this.config.analyticsEventTrackingCategory,		
 				    eventAction: 'submit click', 
 				    eventLabel: "Custom analysis on " + this.passability
-			 	});
-                    
+			 	});      
             }
         },
 
@@ -847,6 +858,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.resMapServ =  (this.resMapServURLRoot + jobInfo.jobId);
                 this.gpResLayer = new esri.layers.ArcGISDynamicMapServiceLayer(this.resMapServ);
                 this.gpResLayer.opacity = 0.8;
+                this.map.removeLayer(this.dynamicLayer);
                 this.map.addLayer(this.gpResLayer);
                 console.log("callback complete");
              	this.jobInfo = jobInfo;
@@ -860,7 +872,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 	this.gp.getResultData(jobInfo.jobId, this.config.resultsParamName, lang.hitch(this, this.displayResultMapServ));          	
                 }
                 this.gp.getResultData(jobInfo.jobId, this.config.zippedResultParamName, lang.hitch(this, this.getZippedResultURL));  
-                
                 this.statusCallbackIterator = 0;
         },
 
@@ -871,7 +882,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 
 		//Display GP Result Map Service  
 		displayResultMapServ: function (result, messages){
-			console.log("map service results");
 			this.gpIterator ++;
 		    
 		    //re-enable Submit button for subsequent analyses
@@ -886,7 +896,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		},
 
 //End GP Service		
-		
+
 		
 		refreshIdentify: function(layerURL, layerDef) {           		
        		if (this.activateIdentify == true){   

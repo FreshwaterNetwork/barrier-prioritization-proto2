@@ -7,22 +7,22 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<button id="getHelpBtn" class="button button-default">Start Using Aquatic Barrier Prioritization</button>
 </div>
 <div id="mainAccord" class="flex1 hide">
-	<h3>Explore the Consensus Anadromous Results</h3>
+	<h3 id="exploreConsensusAccord">Explore the Consensus Anadromous Results</h3>
 	<section>
-		<div class="bp_flexHCenter">
+		<div class="bp_flexColHCenter">
 			<h4>Filter the Results by Tier</h4>
 			<p>Use the slider to show only the results that are within a range of result Tier values</p>
-			<div class="slider-container range-slider" style="width:275px;">
+			<div class="slider-container range-slider bp_flexColHCenter" style="width:275px;">
 				<div id="consensusResultFilterSliderTier" class="slider"></div>
 				<div style="text-align:center; margin-top:10px;">
 					Selected values: <span class="blueFont">20</span> - <span class="blueFont">1</span>
 				</div>
 			</div>
 		</div>
-		<div class="bp_flexHCenter">
+		<div class="bp_flexColHCenter">
 			<h4>Filter the Results by Barrier Severity</h4>
 			<p>Use the slider to show only barriers within a range of severities</p>
-			<div class="slider-container range-slider" style="width:275px;">
+			<div class="slider-container range-slider bp_flexColHCenter" style="width:275px;">
 				<div id="consensusResultFilterSliderSeverity" class="slider"></div>
 				<div style="text-align:center; margin-top:10px;">
 					Selected values: <span class="blueFont">Insignificant</span> - <span class="blueFont">Severe</span>
@@ -30,7 +30,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			</div>
 		</div>
 		
-		<div class="bp_flexHCenter">
+		<div class="bp_flexColHCenter">
 		    <h4>Apply a Custom Filter</h4>
 			<div class="chosen-wrap" style="margin-bottom:10px;">
 				<select data-placeholder="Filter By..." id="filterConsensusResultsField" class="chosen"  title="Filter the results...">
@@ -50,19 +50,22 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		        <select id="filterConsensusResultsValue" class="chosen"  multiple="true" style="width:100px" data-placeholder="Filter value..." title="Select a value to filter by. Must use the "IN" operator if selecting multiple values">
 		            <option value=""></option>
 		        </select>
-			    <input  id="resultsConsensusFilter" type="text" placeholder="e.g. "AvgTier" = 1" value=""  title="Enter an ArcGIS-compliant definition query to filter the results of the analysis."/>​
+		        <div class="bp_flexRowHCenter>
+			    	<input  id="resultsConsensusFilter" type="text" placeholder="e.g. "AvgTier" = 1" value=""  title="Enter an ArcGIS-compliant definition query to filter the results of the analysis."/>​
+				</div>
 				<div class="bp_flexRowHCenter bp_flexNoWrap">
 					<button class="button button-primary bp_button" type="button" id="applyResultConsensusFilterButton"  title="Click to filter the results of the analysis">Apply Filter</button>
 					<button class="button button-primary bp_button" type="button" id="clearResultConsensusFilterButton" title="Click to clear the filter">Clear Filter</button>
 				</div>
+				
 			</div>
 		</div>
 	</section>
-	<h3>Run a Custom Analysis</h3>
+	<h3 id="runCustomAccord">Run a Custom Analysis</h3>
 	<div>
-		<section>
+		<section >
 			<h3>Learn How to Run a Custom Analysis<img src="plugins/barrier-prioritization-proto2/images/info.png" alt="show more info in documentation" class="infoIcon" id="-moreInfo"></h3>
-			<div class="bp_flexHCenter">
+			<div class="bp_flexColHCenter">
 				<h4 style="text-align: center;">1. Select the severity of barriers to analyze</h4>
 				<div class="chosen-wrap" style="margin-bottom:10px;">
 					 <select id="passability" class="chosen" style="width:250px" data-placeholder="Select a degree of passability..." title="Select a passability value for barriers to include in the analysis. Barriers of that value and more severe will be prioritized.  For example, if "Moderate" is selected, barriers that are Moderate, Significant, and Severe barriers will be included in the analysis.">
@@ -83,7 +86,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 					<input type="radio" id="filterBarriers1" name="filterBarriers" value="yes" />
 					<label for="filterBarriers1">Yes</label>
 				</div>
-				<div id="filterBuilderContainer" class="bp_flexHCenter">
+				<div id="filterBuilderContainer" class="bp_flexColHCenter">
 					<p>Use the dropdowns to build an expression</p>
 					<div class="chosen-wrap" style="margin-bottom:10px;">
 						<select data-placeholder="Filter By..." id="filterBuildField" class="chosen" style="width:100px" title="Filter the results...">
@@ -103,7 +106,9 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				        <select id="filterBuildValue" class="chosen"  multiple="true" style="width:100px" data-placeholder="Filter value..." title="Select a value to filter by. Must use the "IN" operator if selecting multiple values" >
 				            <option value=""></option>
 				        </select>
-					    <input  id="userFilter" type="text" style="width:296px" placeholder="e.g. "AvgTier" = 1" value=""  title="Enter an ArcGIS-compliant definition query to filter the results of the analysis."/>
+				        <div class="bp_flexColHCenter">
+					    	<input  id="userFilter" type="text" style="width:296px" placeholder="e.g. "AvgTier" = 1" value=""  title="Enter an ArcGIS-compliant definition query to filter the results of the analysis."/>
+						</div>
 					</div>
 				</div>
 				<h4 style="text-align: center;">3. Do you want to use the consensus anadromous fish metric weights or customize them?</h4>
@@ -113,7 +118,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 					<input type="radio" id="useConsensusWeights1" name="useConsensusWeights" value="yes"/>
 					<label for="useConsensusWeights1">Customize</label>
 				</div>
-				<div class="bp_flexHCenter" id="customWeightsDiv" >
+				<div class="bp_flexColHCenter" id="customWeightsDiv" >
 					<div  id="currWeight" class="currWeight" style="color:red">0</div>
 					<div class ="tabs">
 						<ul class="tab-links">
@@ -183,7 +188,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 					<input type="radio" id="removeBarriers1" name="removeBarriers" value="yes"/>
 					<label for="removeBarriers1">Yes</label>
 				</div>
-				<div id="barriers2RemoveContainer" class="bp_flexHCenter">
+				<div id="barriers2RemoveContainer" class="bp_flexColHCenter">
 					<p>Click the "Select Barriers" button to select up to 10 barriers to model as removed.  Alternately, you can enter the IDs of up to 10 barriers directly into the box below.</p>
 					<button class="button button-primary bp_button" type="button" id="graphicSelectBarriers2Remove" title="Click to graphically select barriers for modeled removal">Select Barriers</button>
 					<input id="barriers2Remove" type="text" value="" class="formInputs" style="width:275px" placeholder="e.g. &#39;SiteID&#39;, &#39;SiteID2&#39;" title="Enter a list of up to 10 barrier SiteIDs (in single quotes separated by commas) to "remove" from the landscape and run the analysis as if they did not exist."/>​
@@ -196,7 +201,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 						<input type="radio" id="runSumStats1" name="runSumStats" value="yes"/>
 						<label for="runSumStats1">Yes</label>
 				</div>
-				<div id="sumStatsContainer" class="bp_flexHCenter">
+				<div id="sumStatsContainer" class="bp_flexColHCenter">
 			        <div  style="padding-bottom: 2px; padding-top: 2px">
 			            <select id="summarizeBy" class="chosen" style="width:200px" data-placeholder="Summarize by..." title="Enter the unit to summarize by.">
 	                		<option value=""></option>
@@ -235,7 +240,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<div>
 		<section>
 			<h3>Learn how to manipulate the results<img src="plugins/barrier-prioritization-proto2/images/info.png" alt="show more info in documentation" class="infoIcon" id="-resultsInfo"></h3>
-			<div class="bp_flexHCenter">
+			<div class="bp_flexColHCenter">
 		</section>
 	</div>
 </div>
