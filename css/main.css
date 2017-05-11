@@ -78,6 +78,36 @@
 	margin: 5px;
 }
 
+.bp_textInput{
+	margin-top: 5px;
+}
+
+.bp_expand{
+	border-radius: 50%;
+	font-size: 16pt;
+	color: #000000;
+}
+
+.bp_weightInput{
+	width:40px !important;
+	height: 25px !important;
+	text-align: center;
+	margin-left:10px !important;
+	margin-right:10px !important;
+	margin-top: 5px !important;
+	
+} 
+
+.bp_weighted{
+	background-color: #6CC2C7 !important;	
+	font-weight:800 !important;
+}
+
+.d3_legend{
+	font-family: 'Raleway', sans-serif;
+	fill: #333333;
+}
+
 /*----- Tabs -----*/
 .tabs {
     width:100%;
