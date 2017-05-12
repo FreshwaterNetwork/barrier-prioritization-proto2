@@ -315,10 +315,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
         	//FILTER BUILDER listener to fill in filter as drop downs are used
         	//Only show the filter build if its being used
-        	$('#'+ this.id +"filterBuilderContainer").hide();
-        	$("input[name='filterBarriers']").on('change',lang.hitch(this,function(){
-        		$('#'+ this.id +"filterBuilderContainer").animate({height:"toggle"}, 500);
-        	}));
+        	// $('#'+ this.id +"filterBuilderContainer").hide();
+        	// $("input[name='filterBarriers']").on('change',lang.hitch(this,function(){
+        		// $('#'+ this.id +"filterBuilderContainer").animate({height:"toggle"}, 500);
+        	// }));
             this.filterField = "";
             this.filterOperator ="";
             this.filterValue = "";       
@@ -372,17 +372,17 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#"+ this.id + "summarizeBy").chosen({allow_single_deselect:true, width:"150px"});
 			$("#"+ this.id + "summaryStatField").chosen({allow_single_deselect:true, width:"150px"});
 			
-			//show barriers to remove if yes is selected
-        	$('#'+ this.id +"barriers2RemoveContainer").hide();
-        	$("input[name='removeBarriers']").on('change',lang.hitch(this,function(){
-				$('#'+ this.id +"barriers2RemoveContainer").animate({height:"toggle"}, 500);
-        	}));
-			
-			//show sum stats tabs if yes is selected
-        	$('#'+ this.id +"sumStatsInputContainer").hide();
-        	$("input[name='runSumStats']").on('change',lang.hitch(this,function(){
-				$('#'+ this.id +"sumStatsInputContainer").animate({height:"toggle"}, 500);
-        	}));
+			// //show barriers to remove if yes is selected
+        	// $('#'+ this.id +"barriers2RemoveContainer").hide();
+        	// $("input[name='removeBarriers']").on('change',lang.hitch(this,function(){
+				// $('#'+ this.id +"barriers2RemoveContainer").animate({height:"toggle"}, 500);
+        	// }));
+// 			
+			// //show sum stats tabs if yes is selected
+        	// $('#'+ this.id +"sumStatsInputContainer").hide();
+        	// $("input[name='runSumStats']").on('change',lang.hitch(this,function(){
+				// $('#'+ this.id +"sumStatsInputContainer").animate({height:"toggle"}, 500);
+        	// }));
         	
 			//Set up select barriers to remove button
 			$('#'+ this.id +'graphicSelectBarriers2Remove').on('click', lang.hitch(this, function(){
@@ -442,11 +442,14 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
 			//Set up the +/- expanders 
 			this.expandContainers = ["consensusRadarBlock", "consensusResultFilterSliderTier", "consensusResultFilterSliderSeverity", "consensusResultCustomFilter",
-				"barrierSeverity", "customFilter", "customMetric", "barrierRemoval", "sumStats","radarModifierOpen"];
+				"barrierSeverity", "customFilter", "customMetric", "barrierRemoval", "sumStats"];
 			//Hide all expansion containers & set cursor to pointer		
 			for (var i=0; i<this.expandContainers.length; i++){
 				$("#" + this.id + this.expandContainers[i] + "Container").hide();
 				$("#" + this.id + this.expandContainers[i] + "Expander").css( 'cursor', 'pointer' );
+				if (this.expandContainers[i] == "consensusRadarBlock"){
+					$("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
+				}
 			}
 			//on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
 			$('.bp_expander').on("click", lang.hitch(this, function(e){
@@ -464,9 +467,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				}
 			}));
 
-
 			//handle exapnder separately for those div to keep open if another div is clicked
-			this.expandContainersOpen = ["radarModifierOpen"];
+			this.expandContainersOpen = ["radarMetricChangerOpen"];
 			for (var i=0; i<this.expandContainersOpen.length; i++){
 				$("#" + this.id + this.expandContainersOpen[i] + "Container").hide();
 				$("#" + this.id + this.expandContainersOpen[i] + "Expander").css( 'cursor', 'pointer' );
@@ -490,10 +492,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}));
 			lang.hitch(this, this.radarChartSetup());
 			
-
 			this.rendered = true;	
 		},	
-		
 		
 
         //calculate current metric weights
@@ -955,28 +955,34 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		},
 		
 		radarChartSetup: function(){
-			$("#"+ this.id + "selectRadarAttrs").chosen({allow_single_deselect:true, width:"270px"});
+			$("#"+ this.id + "selectRadarAttrs").chosen({allow_single_deselect:true, width:"300px"});
             this.radarAttrs = "";
 			for (var key in this.config.metricShortNames) {
 				if (this.config.metricShortNames.hasOwnProperty(key)) {
-					console.log(key + " -> " + this.config.metricShortNames[key]);
+					//console.log(key + " -> " + this.config.metricShortNames[key]);
 					this.radarAttrs += "<option value='" + key + "'>" + this.config.metricShortNames[key] + "</option>";
 				}
 			}
             $("#" + this.id + "selectRadarAttrs").html(this.radarAttrs);
-            //set the weighted anadromous metrics to show in the radar by default 
-            $("#" + this.id + "selectRadarAttrs").val(["PRbatFuncUS"]).trigger('chosen:updated');
-            this.startingRadarMetrics =[];
-            $.each(this.config.diadromous, lang.hitch(this, function(k, v){
-                if (v >0){
-                	this.startingRadarMetrics.push("PR" + k);
-                }
-	         }));            
+            
+            this.startingRadarMetrics = []; //array from obj 
+            for (var i=0; i<this.obj.startingRadarMetrics.length; i++){ 
+            	this.startingRadarMetrics.push("PR" + this.obj.startingRadarMetrics[i]);
+            };
+            
+            //This set the weighted anadromous metrics to show in the radar by default 
+            // $.each(this.config.diadromous, lang.hitch(this, function(k, v){
+                // if (v >0){
+                	// this.startingRadarMetrics.push("PR" + k);
+                // }
+	         // }));
+	                     
             $("#" + this.id + "selectRadarAttrs").val(this.startingRadarMetrics).trigger('chosen:updated');
             //listen for changes to selected radar metrics
             $("#"+ this.id + "selectRadarAttrs").on("change", lang.hitch(this, function(){
-            	lang.hitch(this, this.radarChart());
-            	
+            	if (this.identifyIterator >0){
+            		lang.hitch(this, this.radarChart());
+            	}
             }));
 		},
 		
@@ -985,40 +991,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				width = Math.min(300, window.innerWidth - 10) - margin.left - margin.right,
 				height = Math.min(width, window.innerHeight - margin.top - margin.bottom - 20);
 					
-			////////////////////////////////////////////////////////////// 
-			////////////////////////// Data ////////////////////////////// 
-			////////////////////////////////////////////////////////////// 
-
-			var data = [
-					  [//iPhone
-						// {axis:"Battery Life",value:0.22},
-						// {axis:"Brand",value:0.28},
-						// {axis:"Contract Cost",value:0.29},
-						// {axis:"Design And Quality",value:0.17},
-						// {axis:"Have Internet Connectivity",value:0.22},
-						// {axis:"Large Screen",value:0.02},
-						// {axis:"Price Of Device",value:0.21},
-						// {axis:"To Be A Smartphone",value:0.50}			
-					  // ],[//Samsung
-						// {axis:"Battery Life",value:0.27},
-						// {axis:"Brand",value:0.16},
-						// {axis:"Contract Cost",value:0.35},
-						// {axis:"Design And Quality",value:0.13},
-						// {axis:"Have Internet Connectivity",value:0.20},
-						// {axis:"Large Screen",value:0.13},
-						// {axis:"Price Of Device",value:0.35},
-						// {axis:"To Be A Smartphone",value:0.38}
-					  // ],[//Nokia Smartphone
-						{axis:"Battery Life",value:0.26},
-						{axis:"Brand",value:0.10},
-						{axis:"Contract Cost",value:0.30},
-						{axis:"Design And Quality",value:0.14},
-						{axis:"Have Internet Connectivity",value:0.22},
-						{axis:"Large Screen",value:0.04},
-						{axis:"Price Of Device",value:0.41},
-						{axis:"To Be A Smartphone",value:0.30}
-					  ]
-					];
 			////////////////////////////////////////////////////////////// 
 			//////////////////// Draw the Chart ////////////////////////// 
 			////////////////////////////////////////////////////////////// 
@@ -1037,8 +1009,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			  color: color
 			};
 
-
-			
 			//only show those attributes selected by user - take the text labels, not the values since the radar
 			//axis use the labels
 			var userFilterArray = $("#" + this.id + "selectRadarAttrs").val();
@@ -1050,7 +1020,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			this.temp = [];
 			this.temp.push(this.radarDataFiltered);
 			this.radarDataFiltered = this.temp;
-			console.log(this.radarDataFiltered);
+			//console.log(this.radarDataFiltered);
 			this.RadarChart.draw("#" + this.id + "consensusRadarContainer", this.radarDataFiltered, radarChartOptions, this);
 		},		
 		
@@ -1099,6 +1069,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			        							this.radarItem = {};
 			                                	this.radarItem["axis"] = this.config.metricShortNames[k];
 			                                	this.radarItem["coreName"] = k;
+			                                	this.radarItem["unit"]= this.config.metricUnits[k.replace("PR", "")];
 			                                	// var vals = Object.values(this.config.metricNames);
 			                                	// var ind = vals.indexOf(k);
 			                                	this.radarItem["value"] =parseFloat(v)/100;
@@ -1113,7 +1084,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                        };
 	                        this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
 	                        this.IdentifyFeature.setInfoTemplate(this.popupInfoTemplate);							
-							console.log(this.radarData);
+							//console.log(this.radarData);
+							$("#" + this.id +"radarHeader").html(this.radarClickAllData[this.config.barrierNameField]);
 	               			lang.hitch(this, this.radarChart());
 	               			
 	               			this.identifyIterator ++; 
@@ -1123,10 +1095,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					}));
 	                this.map.infoWindow.setFeatures([this.deferred]);
 	                this.map.infoWindow.show(this.identifyParams.geometry);
-
 				})); 
           }
-          
           else{
           	dojo.disconnect(this.identifyClick);
           	console.log("identify disconnected");

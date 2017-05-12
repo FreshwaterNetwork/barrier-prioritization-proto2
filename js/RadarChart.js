@@ -61,7 +61,7 @@ function ( declare, d3 ) {
 				
 				//Scale for the radius
 				var rScale = d3.scaleLinear()
-					.range([0, radius])
+					.range([5, radius]) //TODO
 					.domain([0, maxValue]);
 					
 				/////////////////////////////////////////////////////////
@@ -243,19 +243,25 @@ function ( declare, d3 ) {
 					.style("fill", "none")
 					.style("pointer-events", "all")
 					.on("mouseover", function(d,i) {
+						var tooltipValue;
+						if (isNaN(Math.round(that.radarClickAllData[d.coreName.replace("PR", "")]))){
+							tooltipValue = that.radarClickAllData[d.coreName.replace("PR", "")] +  d.unit;
+						}
+						else{tooltipValue = Math.round(that.radarClickAllData[d.coreName.replace("PR", "")],2)+ d.unit;}
 						var newX =  parseFloat(d3.select(this).attr('cx')) - 10;
 						var newY =  parseFloat(d3.select(this).attr('cy')) - 10;
-						console.log(d.axis);
-						console.log(d.axis.replace("PR", ""));
-						console.log(that.radarClickAllData[d.coreName.replace("PR", "")]);
 						tooltip
 							.attr('x', newX)
 							.attr('y', newY)
 							//.html(d.axis +  " <br/> " + Format(d.value))
 							//take the real world values for the hover, instead of %s
-							.html(d.axis +  " <br> " + Math.round((that.radarClickAllData[d.coreName.replace("PR", "")])), 2)
+							//.html(d.axis +  ": " + tooltipValue)
+							
+							//just show the value, not the metric name
+							.html(tooltipValue)
 							.transition().duration(200)
 							.style('opacity', 1);
+							//.call(wrap, 50);
 					})
 					.on("mouseout", function(){
 						tooltip.transition().duration(200)
@@ -266,6 +272,7 @@ function ( declare, d3 ) {
 				var tooltip = g.append("text")
 					.attr("class", "tooltip")
 					.style("opacity", 0);
+					
 				
 				/////////////////////////////////////////////////////////
 				/////////////////// Helper Function /////////////////////

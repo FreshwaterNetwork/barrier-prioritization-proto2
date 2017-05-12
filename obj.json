@@ -21,6 +21,17 @@
 	"startingConsensusSeverityFilterMax":5,
 	"startingUseConsensusCustomFilter":false,
 	"startingConsensusCustomFilter":"",
+	"startingRadarMetrics" : [
+		"batFuncUS",
+		"batCountDS",
+		"DA_PercNat",
+		"DA_PercImp",
+		"usNatARA",
+		"QDSANAD",
+		"QDSNUMANAD",
+		"onConsLand",
+		"usNumSzCl"
+	],
 	"startingWeights" : {
 		"batFuncUS" : 20,
 		"batCountDS" : 10,
