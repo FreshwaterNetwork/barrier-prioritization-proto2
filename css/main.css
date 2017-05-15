@@ -67,16 +67,28 @@
     justify-content: center;
 }
 
-
+.bp_sumStatsTable{
+	width: 300px;
+}
 .bp_flexNoWrap{
 	flex-wrap: nowrap;
 	flex-direction: row;
 	margin: 5px;
 }
 
+.bp_strong{
+	color:#000066;
+	font-weight:600;
+}
 .bp_button{
 	margin: 5px;
 }
+
+.bp_flexBottom{
+	 margin-top: auto;
+	 flex-grow:1;
+}
+
 
 .bp_textInput{
 	margin-top: 5px;
@@ -103,10 +115,104 @@
 	font-weight:800 !important;
 }
 
+.bp_grayText{
+	color: #777777;
+}
+
 .d3_legend{
 	font-family: 'Raleway', sans-serif;
 	fill: #333333;
 }
+
+.bp_currWeight{
+	font-size: 15pt;
+	font-weight: bold;
+}
+
+/*#########################################*/
+/* Tablesorter table elements */
+
+table.tablesorter {
+	background-color:none; text-align: left; border-collapse: collapse; 
+	/*overflow: -moz-scrollbars-vertical;  overflow-y: scroll !important; overflow-x: scroll !important;*/
+	/*overflow-y: auto;    
+    overflow-x: auto;    */
+   max-width:300px !important;
+	max-height: 440px !important; border-bottom: 1px solid #215973; 
+	margin-top:0px; margin-bottom:0px; 
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+	background-color: none; padding: 4px; padding-right: 18px;
+}
+table.tablesorter tbody tr td, table.tablesorter tr td, table.tablesorter thead tr th{
+	font-family: 'Archivo Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif !important; 
+	font-size:10pt !important;
+}  
+
+table.tablesorter thead tr .header {
+	background-image: url(bg.gif); background-repeat: no-repeat; background-position: center right; 
+	cursor: pointer; background-color: none;
+	overflow-y: auto;    Trigger vertical scroll
+    overflow-x: auto;
+}
+
+
+table.tablesorter tbody td {
+	color: #3D3D3D; padding: 4px; vertical-align: top; background-color: none; border-top: 1px solid #215973; 
+	border-left: 1px solid #215973; border-right: 1px solid #215973;
+	
+
+}
+
+table.tablesorter tbody tr.odd td {
+	background-color:none;
+
+}
+
+
+
+table.tablesorter tbody > tr:nth-of-type(1) {
+    margin-top: 27px;
+}
+
+
+table.tablesorter thead tr .headerSortUp {
+	background-image: url(asc.gif); background-color: none;
+}
+table.tablesorter thead tr .headerSortDown {
+	background-image: url(desc.gif); background-color: none;
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+	background-color: none;
+}
+
+
+.trclick{
+	cursor:pointer;
+}
+.trclick:hover{
+	color:blue;
+}
+
+table.tablesorter tr:hover{
+	background-color:#e3eff5;
+}
+
+table.tablesorter th{
+	border-top: 1px solid #215973; 
+	border-left: 1px solid #215973; border-right: 1px solid #215973;
+}
+
+table.tablesorter th {
+	height:20px; border: 1px solid #215973 !important; background-color:white;
+} 
+
+
+table.tablesorter .filtered {
+  display: none;
+}
+
+/*#########################################*/
 
 /*----- Tabs -----*/
 .tabs {

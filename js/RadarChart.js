@@ -244,10 +244,20 @@ function ( declare, d3 ) {
 					.style("pointer-events", "all")
 					.on("mouseover", function(d,i) {
 						var tooltipValue;
+						//if not a number just use the value
 						if (isNaN(Math.round(that.radarClickAllData[d.coreName.replace("PR", "")]))){
 							tooltipValue = that.radarClickAllData[d.coreName.replace("PR", "")] +  d.unit;
 						}
+						//if a number, round it
 						else{tooltipValue = Math.round(that.radarClickAllData[d.coreName.replace("PR", "")],2)+ d.unit;}
+						//if yes/no just use "yes" or "no"
+						if (d.unit=="yes/no"){
+							if (that.radarClickAllData[d.coreName.replace("PR", "")]==0){tooltipValue="no";}
+							if (that.radarClickAllData[d.coreName.replace("PR", "")]==1){tooltipValue="yes";}
+						}
+						//if a cound don't use unit label
+						if (d.unit=="#"){tooltipValue = that.radarClickAllData[d.coreName.replace("PR", "")];}
+						
 						var newX =  parseFloat(d3.select(this).attr('cx')) - 10;
 						var newY =  parseFloat(d3.select(this).attr('cy')) - 10;
 						tooltip

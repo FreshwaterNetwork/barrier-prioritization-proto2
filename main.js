@@ -7,11 +7,11 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Color",  "dojo/_base/array", "framework/PluginBase", "dijit/layout/ContentPane", "dojo/dom", 
 	"dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
 	'./js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
-	 "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
+	 "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
 	 "esri/renderers/SimpleRenderer",
 ],
 function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, esriapi, clicks, RadarChart, d3, config, 
-	filters, ImageParameters, FeatureLayer, GraphicsLayer, Graphic, SimpleMarkerSymbol, IdentifyTask, IdentifyParameters, InfoTemplate, SimpleRenderer) {
+	filters, ImageParameters, FeatureLayer, GraphicsLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, IdentifyParameters, InfoTemplate, SimpleRenderer) {
 	return declare(PluginBase, {
 		// The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
 		toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
@@ -133,9 +133,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			this.barriers2RemoveCount = 0;       
             this.workingRemoveBarriers = [];
             this.workingRemoveBarriersString = "";
+ 			this.useRadar = true;
    
-
-
+			//hide elements until they're needed 
+			$('#' + this.id + 'gpSumStatsTableDivContainer').hide(); 
+			
 
 			if (this.config.includeExploreConsensus == true){
 				//Consensus Tier Slider
@@ -228,8 +230,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     $("#" + this.id + "resultsConsensusFilter").val(this.consensusResultFilterField + ' ' + this.consensusResultFilterOperator + " (" + this.consensusResultFilterValue + ")");
                 })); 
 				
-				$("#"+ this.id + "filterConsensusResultsField").chosen({allow_single_deselect:true, width:"130px"});
-				$("#"+ this.id + "filterConsensusResultsValue").chosen({allow_single_deselect:true, width:"130px"});
+				$("#"+ this.id + "filterConsensusResultsField").chosen({allow_single_deselect:true, width:"120px"});
+				$("#"+ this.id + "filterConsensusResultsValue").chosen({allow_single_deselect:true, width:"120px"});
 				$("#"+ this.id + "filterConsensusResultsOperator").chosen({allow_single_deselect:true, width:"50px"});
 				
                 //applyFilter to Consensus results
@@ -256,18 +258,21 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 
 			
 			//On consensus accordion click add consensus map serv, on custom add GP results
-			$('#' + this.id +'runCustomAccord').on('click', lang.hitch(this,function(e){
+			$('#' + this.id +'customAnalysisResultsAccord').on('click', lang.hitch(this,function(e){
 				console.log("accord click");
 				if (this.gpResLayer != undefined){
 					this.map.removeLayer(this.dynamicLayer);
                 	this.map.addLayer(this.gpResLayer);
+                	this.useRadar = false;
+					lang.hitch(this, this.refreshIdentify(this.resMapServ));
 				}
 			}));
 			$('#' + this.id +'exploreConsensusAccord').on('click', lang.hitch(this,function(e){
 				try{this.map.removeLayer(this.gpResLayer);}catch(err){console.log("no gp layer " + err.message );}
 				try{this.map.removeLayer(this.dynamicLayer);} catch(err){console.log("no dyn layer " + err.message );}
 				this.map.addLayer(this.dynamicLayer);
-
+				this.useRadar = true;
+				lang.hitch(this, this.refreshIdentify(this.config.url));
 				
 			}));
 			
@@ -284,7 +289,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 e.preventDefault();
             });
         	
-        	//show metric weights tabs if yes is selected
+        	//show inputs if yes is selected
         	$('#'+ this.id +"customWeightsDiv").hide();
         	$("input[name='useConsensusWeights']").on('change',lang.hitch(this,function(){
         		$('#'+ this.id +"customWeightsDiv").animate({height:"toggle"}, 500);
@@ -300,25 +305,25 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     if (v.value ==""){v.id = 0;}
                     else{this.gpVals[v.id] = v.value;}      
                     this.gpVals[v.id] = v.value;
-                    if (parseFloat(v.value) > 0){$('#' + v.id).addClass('weighted');}
-                    else{$('#' + v.id).removeClass('weighted');}                                
+                    if (parseFloat(v.value) > 0){$('#' + v.id).addClass('bp_weighted');}
+                    else{$('#' + v.id).removeClass('bp_weighted');}                                
                 }));
                 this.sumWeights = this.metricWeightCalculator(this.gpVals);
-                $('#'+ this.id + "currWeight").text(this.sumWeights);
+                $('#'+ this.id + "bp_currWeight").text(this.sumWeights);
                 if (this.sumWeights !=100){
-                    $('#'+ this.id +"currWeight").css('color', 'red');
+                    $('#'+ this.id +"bp_currWeight").css('color', 'red');
                 }
                 if (this.sumWeights ==100){
-                    $('#'+ this.id +"currWeight").css('color', 'green');
+                    $('#'+ this.id +"bp_currWeight").css('color', 'green');
                 } 
             }));
 			
         	//FILTER BUILDER listener to fill in filter as drop downs are used
-        	//Only show the filter build if its being used
-        	// $('#'+ this.id +"filterBuilderContainer").hide();
-        	// $("input[name='filterBarriers']").on('change',lang.hitch(this,function(){
-        		// $('#'+ this.id +"filterBuilderContainer").animate({height:"toggle"}, 500);
-        	// }));
+        	//Only show the filter build inputs if yes is selected
+        	$('#'+ this.id +"filterBuilderContainer").hide();
+        	$("input[name='filterBarriers']").on('change',lang.hitch(this,function(){
+        		$('#'+ this.id +"filterBuilderContainer").animate({height:"toggle"}, 500);
+        	}));
             this.filterField = "";
             this.filterOperator ="";
             this.filterValue = "";       
@@ -373,16 +378,16 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#"+ this.id + "summaryStatField").chosen({allow_single_deselect:true, width:"150px"});
 			
 			// //show barriers to remove if yes is selected
-        	// $('#'+ this.id +"barriers2RemoveContainer").hide();
-        	// $("input[name='removeBarriers']").on('change',lang.hitch(this,function(){
-				// $('#'+ this.id +"barriers2RemoveContainer").animate({height:"toggle"}, 500);
-        	// }));
-// 			
+        	$('#'+ this.id +"barriers2RemoveContainer").hide();
+        	$("input[name='removeBarriers']").on('change',lang.hitch(this,function(){
+				$('#'+ this.id +"barriers2RemoveContainer").animate({height:"toggle"}, 500);
+        	}));
+ 			
 			// //show sum stats tabs if yes is selected
-        	// $('#'+ this.id +"sumStatsInputContainer").hide();
-        	// $("input[name='runSumStats']").on('change',lang.hitch(this,function(){
-				// $('#'+ this.id +"sumStatsInputContainer").animate({height:"toggle"}, 500);
-        	// }));
+        	$('#'+ this.id +"sumStatsInputContainer").hide();
+        	$("input[name='runSumStats']").on('change',lang.hitch(this,function(){
+				$('#'+ this.id +"sumStatsInputContainer").animate({height:"toggle"}, 500);
+        	}));
         	
 			//Set up select barriers to remove button
 			$('#'+ this.id +'graphicSelectBarriers2Remove').on('click', lang.hitch(this, function(){
@@ -439,10 +444,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				this.submit();
 			}));
 			
+			//hide the "assess a barrier" & select metrics expanders since they are open to begin with.  SHow it when another expander is clicked
+			$("#" + this.id +"consensusRadarBlockExpander").hide();
+			$("#" + this.id +"radarMetricChangerOpenExpander").hide();
 			
 			//Set up the +/- expanders 
-			this.expandContainers = ["consensusRadarBlock", "consensusResultFilterSliderTier", "consensusResultFilterSliderSeverity", "consensusResultCustomFilter",
-				"barrierSeverity", "customFilter", "customMetric", "barrierRemoval", "sumStats"];
+			this.expandContainers = ["consensusRadarBlock", 
+				"barrierSeverity", "customFilter","consensusResultFilters", "customMetric", "barrierRemoval", "sumStats"];
 			//Hide all expansion containers & set cursor to pointer		
 			for (var i=0; i<this.expandContainers.length; i++){
 				$("#" + this.id + this.expandContainers[i] + "Container").hide();
@@ -453,6 +461,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 			//on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
 			$('.bp_expander').on("click", lang.hitch(this, function(e){
+				//show the assess a barrier expander if it's hidden, which it is by default
+				if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){$("#" + this.id +"consensusRadarBlockExpander").show();}
 				var expander = e.currentTarget.id;
 				var container = e.currentTarget.id.replace("Expander", "Container");
 				for (var i=0; i<this.expandContainers.length; i++){
@@ -468,7 +478,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}));
 
 			//handle exapnder separately for those div to keep open if another div is clicked
-			this.expandContainersOpen = ["radarMetricChangerOpen"];
+			this.expandContainersOpen = ["radarMetricChangerOpen", "consensusResultFilterSliderTierOpen", 
+			"consensusResultFilterSliderSeverityOpen", "consensusResultCustomFilterOpen",];
 			for (var i=0; i<this.expandContainersOpen.length; i++){
 				$("#" + this.id + this.expandContainersOpen[i] + "Container").hide();
 				$("#" + this.id + this.expandContainersOpen[i] + "Expander").css( 'cursor', 'pointer' );
@@ -491,6 +502,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				}
 			}));
 			lang.hitch(this, this.radarChartSetup());
+            $('#' + this.id + 'dlConsensus').on('click',lang.hitch(this,function(e) { 
+            	//download zipped result
+            	e.preventDefault();
+            	window.location.href = this.config.zippedConsensusResultURL;                    
+            }));
+			
 			
 			this.rendered = true;	
 		},	
@@ -731,10 +748,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             // $("#" + this.appDiv.id +"gpStatusReportHead").css('display', 'none');
 			// $("input[id^=" + this.appDiv.id + "weightIn]").each(lang.hitch(this, function(i, v){
                  // v.value = 0;
-                 // $('#' + v.id).removeClass('weighted');            
+                 // $('#' + v.id).removeClass('bp_weighted');            
             // }));
-            // $('#'+ this.appDiv.id +"currWeight").html('0');
-            // $('#'+ this.appDiv.id +"currWeight").css('color', 'red');
+            // $('#'+ this.appDiv.id +"bp_currWeight").html('0');
+            // $('#'+ this.appDiv.id +"bp_currWeight").css('color', 'red');
             // $('#'+ this.appDiv.id +"barriers2Remove").val('');
             // $('#'+ this.appDiv.id +"userFilter").val('');      
             // $('#'+ this.appDiv.id +"resultsFilter").val(''); 
@@ -776,13 +793,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	            this.gpVals = {};
 	            this.weights = $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
 	                this.gpVals[v.id] = v.value;    
-	                if (parseFloat(v.value) > 0){$('#' + v.id).addClass('weighted');}
-	                else{$('#' + v.id).removeClass('weighted');}            
+	                if (parseFloat(v.value) > 0){$('#' + v.id).addClass('bp_weighted');}
+	                else{$('#' + v.id).removeClass('bp_weighted');}            
 	            }));
 	            this.sumWeights = this.metricWeightCalculator(this.gpVals);      
-	            $('#'+ this.id + "currWeight").text(this.sumWeights);
-	            if (this.sumWeights !=100){$('#'+ this.id +"currWeight").css('color', 'red');}
-	            if (this.sumWeights ==100){$('#'+ this.id +"currWeight").css('color', 'green');} 
+	            $('#'+ this.id + "bp_currWeight").text(this.sumWeights);
+	            if (this.sumWeights !=100){$('#'+ this.id +"bp_currWeight").css('color', 'red');}
+	            if (this.sumWeights ==100){$('#'+ this.id +"bp_currWeight").css('color', 'green');} 
             }
         },
 		
@@ -808,6 +825,22 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.tableHTML = "";
                 if (this.gpResLayer != undefined){this.map.removeLayer(this.gpResLayer);}
                
+                this.tableHTML = "<thead> <tr></tr></thead><tbody ></tbody>";
+                this.sumStatsTableHTML = "<thead> <tr></tr></thead><tbody ></tbody>";
+                // if (this.gpIterator >1){                                            
+                    // require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tablesorter.combined.js"],lang.hitch(this,function($) {
+                     // $("#" + this.id + "gpResultTable").trigger("destroy");
+                    // }));
+                // }
+                // if ("#" + this.id + "gpSumStatsTable"){
+                    // require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tablesorter.combined.js"],lang.hitch(this,function($) {
+                        // $("#" + this.id + "gpSumStatsTable").trigger("destroy");
+                    // }));
+                // }
+                $("#" + this.id + "gpSumStatsTable").html(this.sumStatsTableHTML);
+                $("#" + this.id + "gpResultTable").html(this.tableHTML);                
+               
+               
                 this.requestObject = {};                
                 if($("#" + this.id + "filterBarriers").is(':checked')){this.filterBarr = true;}
                 else{this.filterBarr = false;}
@@ -822,13 +855,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 }
                 else{this.filter = "";}
                 if ($("input[name='removeBarriers']:checked").val()=="yes"){this.removeBarr = true;}
-                //if($("#" + this.id + "removeBarriers").is(':checked')){this.removeBarr = true;}
                 else{this.removeBarr = false;}
                 this.removeIDs = $("#" + this.id + "barriers2Remove").val();
+				
 				if ($("input[name='runSumStats']:checked").val()=="yes"){this.runSumStats = true;}
-                //if($("#" + this.id + "runSumStats").is(':checked')){this.runSumStats = true;}
-                else{this.runSumStats = false;}
-                this.summarizeBy = $("#" + this.id + "summarizeBy").val();
+                else{this.runSumStats = false;} 
+				this.summarizeBy = $("#" + this.id + "summarizeBy").val();
                 this.sumStatField = $("#" + this.id + "summaryStatField").val();
                 
                 this.requestObject["Passability"] = this.passability;
@@ -841,6 +873,26 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.requestObject["Summarize_By"] = this.summarizeBy;
                 this.requestObject["Summary_Stat_Field"] = this.sumStatField;
                 this.weightIterator = 1;
+                $.each(this.gpVals, lang.hitch(this, function(metric, weight){
+                    if (weight >0){
+                        var mNum = "Metric_" + this.weightIterator;
+                        var mWeight = mNum + "_Weight";
+                        var mOrder = mNum + "_Order";
+                        if (this.config.gpServIncludesLogTransform == true){
+                        	var mLogTrans = mNum + "_Log_Transform";
+                        }
+                        var m = metric.replace(this.appDiv.id + "weightIn-", "");
+                        var prettyM = this.config.metricNames[m];
+                        this.requestObject[mNum] = m;
+                        this.requestObject[mWeight] = weight;
+                        this.requestObject[mOrder] = this.config.metricOrder[m];
+                        if (this.config.gpServIncludesLogTransform == true){
+                        	this.requestObject[mLogTrans] = "No";
+                        }
+                        this.weightIterator ++; 
+                        if (this.config.tableResults == true){$("#" + this.appDiv.id + "gpResultTable tr:first").append("<th>" + prettyM +"</th>");}
+                    }
+                }));
 
                 console.log(this.requestObject);
                 this.statusCallbackIterator = 0;
@@ -908,7 +960,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
              	this.jobInfo = jobInfo;
                 // Get result JSON for graphics and linked table
                 if (this.runSumStats == true){
-                	this.gp.getResultData(jobInfo.jobId, this.config.summStatsParamName, lang.hitch(this,displayStats));
+                	console.log("stats");
+                	this.gp.getResultData(jobInfo.jobId, this.config.summStatsParamName, lang.hitch(this,this.displayStats));
                 	console.log("finished stats");
                 }
 
@@ -916,6 +969,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 	this.gp.getResultData(jobInfo.jobId, this.config.resultsParamName, lang.hitch(this, this.displayResultMapServ));          	
                 }
                 this.gp.getResultData(jobInfo.jobId, this.config.zippedResultParamName, lang.hitch(this, this.getZippedResultURL));  
+                $( "#" + this.id + "customAnalysisResultsAccord" ).trigger( "click" );
+       
                 this.statusCallbackIterator = 0;
         },
 
@@ -937,9 +992,67 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	        //set identify to GP service
             this.identifyRes = new IdentifyTask(this.resMapServ);
             this.activateIdentify = true;
+            this.useRadar = false;
             lang.hitch(this, this.refreshIdentify(this.resMapServ));
                                 
 		},
+
+
+
+		//Display Summary Stats table
+		displayStats:  function(result, messages){
+			console.log("in display stats");
+            $("#" + this.id + "gpSumStatsTable tr:first").append("<th>" + this.summarizeBy + "</th>");
+                $("#" + this.id + "gpSumStatsTable tr:first").append("<th># Barriers</th>");
+                $("#" + this.id + "gpSumStatsTable tr:first").append("<th>Max " + this.sumStatField + "</th>");
+                $("#" + this.id + "gpSumStatsTable tr:first").append("<th>Mean " + this.sumStatField + "</th>");
+                $("#" + this.id + "gpSumStatsTable tr:first").append("<th>Min " + this.sumStatField + "</th>");
+                $("#" + this.id + "gpSumStatsTable tr:first").append("<th>" + this.sumStatField + " Standard Deviation </th>");
+                var d = [];
+                var dStr = "";
+                var dStr2 = "";
+                this.sumStatsFeatures = result.value.features; 
+                console.log(this.sumStatsFeatures) ;    
+                for (var f=0, fl=this.sumStatsFeatures.length; f<fl; f++) {
+                    this.feature = this.sumStatsFeatures[f];
+                    var row = this.feature.attributes;
+                    d.push("<tr>");
+                    d.push("<td>" + row.CASEFIELD + "</td>");
+                    d.push("<td>" + row.COUNT + "</td>");
+                    d.push("<td>" + row.MAX + "</td>");
+                    d.push("<td>" + row.MEAN + "</td>");
+                    d.push("<td>" + row.MIN + "</td>");
+                    d.push("<td>" + row.STD + "</td>");
+                    d.push("</tr>");
+                }
+                dStr = d.toString();
+                dStr2 = dStr.replace(/,/g, "");
+                $("#" + this.id + "gpSumStatsTable > tbody:last-child").append(dStr2); 
+                console.log(dStr2);
+                //Set up tablesorter           
+                // require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tablesorter.combined.js"],lang.hitch(this,function($) {
+                            // $("#" + this.id + "gpSumStatsTable").tablesorter({
+                            // widthFixed : true,
+                            // headerTemplate : '{content} {icon}', // Add icon for various themes
+                            // widgets: [ 'zebra', 'stickyHeaders' ], 
+                            // theme: 'blue',
+                            // widgetOptions: {
+                                // //jQuery selector or object to attach sticky header to
+                                // stickyHeaders_attachTo: '.gpSumStatsTableDivContainer',
+                                // stickyHeaders_includeCaption: false, // or $('.wrapper')   
+                        // }
+                    // });   
+                    // console.log("tablesort initialized");
+                    // $('#' + this.id + 'gpSumStatsTable').trigger("update");
+                    // var sorting = [[0]];                         
+                    // setTimeout(lang.hitch(this,function () {
+                        // $("#" + this.id + "gpSumStatsTable").trigger("sorton", [sorting]);
+                    // }, 100));
+                // }));
+                $('#' + this.id + 'gpSumStatsTableDivContainer').show();    
+                
+            },
+
 
 //End GP Service		
 
@@ -1025,7 +1138,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		},		
 		
 		refreshIdentify: function(layerURL, layerDef) {           		
-       		if (this.activateIdentify == true){   
+       		if (this.activateIdentify == true){  
+       			$('#' + this.id + 'clickInstructions').hide();  
                 //Identify functionality...     
                 this.identifyRes = new IdentifyTask(layerURL);
                 this.identifyParams = new IdentifyParameters();
@@ -1043,7 +1157,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.identifyParams.height = this.map.height;
 				
 				this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt) {  
-
+					$("#" + this.id +"clickInsturctions").hide();
 	                this.identifyParams.geometry = evt.mapPoint;
 	                this.identifyParams.mapExtent = this.map.extent;
 	                this.identifyIterator = 0;      
@@ -1064,17 +1178,18 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		                            	this.radarClickAllData[k] = v;
 		                            	if (this.config.metricNames[k] != undefined){this.idContent = this.idContent + "<b>" + this.config.metricNames[k] + "</b> : " + v + "<hr>";}
 		                                else if (k.startsWith("PR" === false)){this.idContent = this.idContent + "<b>" + k + "</b> : " + v + "<hr>";}
-		                                
-			                                if (k.startsWith("PR") === true){
-			        							this.radarItem = {};
-			                                	this.radarItem["axis"] = this.config.metricShortNames[k];
-			                                	this.radarItem["coreName"] = k;
-			                                	this.radarItem["unit"]= this.config.metricUnits[k.replace("PR", "")];
-			                                	// var vals = Object.values(this.config.metricNames);
-			                                	// var ind = vals.indexOf(k);
-			                                	this.radarItem["value"] =parseFloat(v)/100;
-			                                	this.radarData.push(this.radarItem);
-			                                } 
+				                            if (this.useRadar === true){
+				                                if (k.startsWith("PR") === true){
+				        							this.radarItem = {};
+				                                	this.radarItem["axis"] = this.config.metricShortNames[k];
+				                                	this.radarItem["coreName"] = k;
+				                                	this.radarItem["unit"]= this.config.metricUnits[k.replace("PR", "")];
+				                                	// var vals = Object.values(this.config.metricNames);
+				                                	// var ind = vals.indexOf(k);
+				                                	this.radarItem["value"] =parseFloat(v)/100;
+				                                	this.radarData.push(this.radarItem);
+				                                }
+				                            }
 		                                }		                            
 		                        }));
 	                        }
@@ -1084,10 +1199,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                        };
 	                        this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
 	                        this.IdentifyFeature.setInfoTemplate(this.popupInfoTemplate);							
-							//console.log(this.radarData);
-							$("#" + this.id +"radarHeader").html(this.radarClickAllData[this.config.barrierNameField]);
-	               			lang.hitch(this, this.radarChart());
-	               			
+							if (this.useRadar === true){
+								$("#" + this.id +"radarHeader").html(this.radarClickAllData[this.config.barrierNameField]);
+		               			lang.hitch(this, this.radarChart());
+		               			$("#" + this.id +"radarMetricChangerOpenExpander").show();
+	               			}
 	               			this.identifyIterator ++; 
 	                   		return this.IdentifyFeature;
                   		
@@ -1096,6 +1212,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                this.map.infoWindow.setFeatures([this.deferred]);
 	                this.map.infoWindow.show(this.identifyParams.geometry);
 				})); 
+				
           }
           else{
           	dojo.disconnect(this.identifyClick);

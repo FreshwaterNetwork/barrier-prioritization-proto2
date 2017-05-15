@@ -13,7 +13,7 @@
 	"summStatsParamName" : "Summary_Stats",
 	"zippedResultParamName" : "ZipResult",
 	"includeZippedConsensusDownload" : true,
-	"zippedConsensusResultURL" : "plugins/barrier-prioritization-proto/images/NEAquaticConnectivity.zip",
+	"zippedConsensusResultURL" : "plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity.zip",
 	"gpServIncludesLogTransform" : false,
 	"includeExploreConsensus":true,
 	"includeSeverityFilter":true,

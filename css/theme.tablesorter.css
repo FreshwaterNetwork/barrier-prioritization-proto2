@@ -1,7 +1,7 @@
 /*************
   Blue Theme
  *************/
-.gpResultTableDivContainer {
+/*.gpResultTableDivContainer {
 	position: absolute;
 	padding: 0;
 
@@ -11,19 +11,17 @@
 	height: 86%;
 	width: 98%; 
 	top:40px;
-}
-
-.gpSumStatsTableDivContainer {
-	position: absolute;
-	padding: 0;
-
+}*/
+/*.gpSumStatsTableDivContainer {
+	
 	overflow-y: auto;
 	overflow-x: auto;
 	border: 1px solid #215973;
-	width: 98%;
-	height: 86%; 
+	width: 80%; 
+	height: 86%;
 	top:40px;
-}
+}*/
+
 /* overall */
 .tablesorter-blue {
 	font-family: 'Archivo Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif !important;
