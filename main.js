@@ -7,11 +7,11 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Color",  "dojo/_base/array", "framework/PluginBase", "dijit/layout/ContentPane", "dojo/dom", 
 	"dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
 	'./js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
-	 "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
+	 "esri/layers/ArcGISDynamicMapServiceLayer", "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
 	 "esri/renderers/SimpleRenderer",
 ],
 function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, esriapi, clicks, RadarChart, d3, config, 
-	filters, ImageParameters, FeatureLayer, GraphicsLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, IdentifyParameters, InfoTemplate, SimpleRenderer) {
+	filters, ImageParameters, FeatureLayer, GraphicsLayer, ArcGISDynamicMapServiceLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, IdentifyParameters, InfoTemplate, SimpleRenderer) {
 	return declare(PluginBase, {
 		// The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
 		toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
@@ -134,7 +134,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             this.workingRemoveBarriers = [];
             this.workingRemoveBarriersString = "";
  			this.useRadar = true;
-   
+
+   			
 			//hide elements until they're needed 
 			$('#' + this.id + 'gpSumStatsTableDivContainer').hide(); 
 			
@@ -230,8 +231,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     $("#" + this.id + "resultsConsensusFilter").val(this.consensusResultFilterField + ' ' + this.consensusResultFilterOperator + " (" + this.consensusResultFilterValue + ")");
                 })); 
 				
-				$("#"+ this.id + "filterConsensusResultsField").chosen({allow_single_deselect:true, width:"120px"});
-				$("#"+ this.id + "filterConsensusResultsValue").chosen({allow_single_deselect:true, width:"120px"});
+				$("#"+ this.id + "filterConsensusResultsField").chosen({allow_single_deselect:true, width:"110px"});
+				$("#"+ this.id + "filterConsensusResultsValue").chosen({allow_single_deselect:true, width:"110px"});
 				$("#"+ this.id + "filterConsensusResultsOperator").chosen({allow_single_deselect:true, width:"50px"});
 				
                 //applyFilter to Consensus results
@@ -447,10 +448,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			//hide the "assess a barrier" & select metrics expanders since they are open to begin with.  SHow it when another expander is clicked
 			$("#" + this.id +"consensusRadarBlockExpander").hide();
 			$("#" + this.id +"radarMetricChangerOpenExpander").hide();
+			$('#' + this.id + 'clickInstructions').show();  
 			
 			//Set up the +/- expanders 
-			this.expandContainers = ["consensusRadarBlock", 
-				"barrierSeverity", "customFilter","consensusResultFilters", "customMetric", "barrierRemoval", "sumStats"];
+			this.expandContainers = ["consensusRadarBlock", "barrierSeverity", "customFilter","consensusResultFilters", "customMetric", 
+			"barrierRemoval", "sumStats", "additionalLayers"];
 			//Hide all expansion containers & set cursor to pointer		
 			for (var i=0; i<this.expandContainers.length; i++){
 				$("#" + this.id + this.expandContainers[i] + "Container").hide();
@@ -462,7 +464,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			//on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
 			$('.bp_expander').on("click", lang.hitch(this, function(e){
 				//show the assess a barrier expander if it's hidden, which it is by default
-				if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){$("#" + this.id +"consensusRadarBlockExpander").show();}
+				if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){$("#" + this.id +"consensusRadarBlockExpander").animate({height:"toggle"}, 500);}
 				var expander = e.currentTarget.id;
 				var container = e.currentTarget.id.replace("Expander", "Container");
 				for (var i=0; i<this.expandContainers.length; i++){
@@ -508,6 +510,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             	window.location.href = this.config.zippedConsensusResultURL;                    
             }));
 			
+			//build checkboxes for additonal layers
+			lang.hitch(this, this.setUpAdditionalLayers(this.config.additionalLayers));
 			
 			this.rendered = true;	
 		},	
@@ -1137,9 +1141,127 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			this.RadarChart.draw("#" + this.id + "consensusRadarContainer", this.radarDataFiltered, radarChartOptions, this);
 		},		
 		
+		setUpAdditionalLayers: function(addlLayers){
+			$.each(addlLayers, lang.hitch(this, function(k, v){
+				console.log("layer Name: " + k + " layerID: " + v[0] +" URL: " + v[1]);
+				$("#" + this.id + "toggleBarriers").append(
+					'<div class="layer">' +
+						'<label class="form-component">' +
+							'<input type="checkbox" data-layer="' + v[0] + '" id="' + this.id + v[0]+  '">' +
+							'<div class="check"></div>' +
+							'<span class="form-text">' + k + '</span>' +
+						'</label>' +
+						'<span class="fa fa-info-circle info" title="Could plug in a title here"></span>' +
+						'<div class="transparency-control" data-layer="' + v[0] + '" id="' + this.id + v[0]+  'transp" data-opacity="100">' +
+							'<span class="transparency-header">Transparency</span>' +
+							'<div class="transparency-label"><span class="value">100%</span></div>' +
+							'<div class="transparency-slider">' +
+								'<div class="slider"></div>' +
+							'</div>'+
+						'</div>' +
+					'</div>'
+				);
+				
+				//toggle layers on and off
+				var addlLayerVis = ("addlLayerVis" + v[0]);
+				this[addlLayerVis] = [];
+				$("#" + this.id + v[0]).on('click', lang.hitch(this, function(e) {
+					var ischecked = $("#" + e.target.id).is(':checked');
+					if (ischecked) {
+						var addlLayer = ("addlLayer" + v[0]);
+						this[addlLayer] = new ArcGISDynamicMapServiceLayer(v[1]);		
+						this[addlLayerVis].push(v[2]);
+						this[addlLayer].setVisibleLayers(this[addlLayerVis]);
+						this.map.addLayer(this[addlLayer]);
+						$("#" + e.target.id + "transp").show();
+					} 
+					else {
+						var addlLayer = ("addlLayer" + v[0]);
+						this.map.removeLayer(this[addlLayer]);
+						var index = this[addlLayerVis].indexOf(v[2]);
+						if (index >= 0) {
+						  this[addlLayerVis].splice( index, 1 );
+						}
+						this[addlLayer].setVisibleLayers(this[addlLayerVis]);
+						$("#" + e.taregt.id + "transp").hide();
+					}
+				}));
+    		}));
+    		
+			//set up barrier default toggle.  This is done separately, since it is not listed in the additional layers of the config file
+			
+			$("#" + this.id + "barriers").on('click', lang.hitch(this, function(e) {
+				var ischecked = $("#"+ this.id + "barriers").is(':checked');
+				if (ischecked) {
+					this.map.addLayer(this.dynamicLayer);
+					this.activateIdentify = true;
+					$("#" + this.id + "barrierstransp").show();
+				}
+				else{
+					this.map.removeLayer(this.dynamicLayer);
+					this.activateIdentify = false;
+					$("#" + this.id + "barrierstransp").hide();
+				}
+			}));
+    		
+    		//hide all the transparency sliders by default
+    		$(".transparency-control").hide();
+    		//except for the barriers which are turned on by default
+    		$("#" + this.id + "barrierstransp").show();
+    		
+    		//transparency
+    		$(".transparency-slider .slider").slider({
+            		min: 0,
+            		max: 100,
+            		step: 1,
+            		value: [100],
+            		range: false,
+            		slide: lang.hitch(this, function(e, ui) { 
+            			var control = $(e.target).parents('.transparency-control');
+            			console.log(control[0].id);
+            			if (control[0].id.indexOf("barriers") != -1){
+            				this.dynamicLayer.setOpacity(ui.value / 100);
+            			}
+            			else{
+	            			control.attr('data-opacity', ui.value);
+	             			var layer = "addlLayer" + control.first().data('layer');
+							control.find('.value').html(ui.value + '%');
+							this[layer].setOpacity(ui.value / 100);
+						}
+						$('.info').tooltip({
+
+						});
+            		})
+			});
+    		
+    		//
+    		$('.transparency-label').on('mousedown', lang.hitch(this, function(e) {
+				var control = $(e.target).parent('.transparency-control').toggleClass('open');
+				var dataLayer = control.attr('data-layer');
+				if (control.hasClass('open')) {
+					$('body').on('click.tranSlider', lang.hitch(this, function(e) {
+						if ($(e.target).parents('.transparency-control[data-layer=' + dataLayer + ']').length || ($(e.target).hasClass('transparency-control') && $(e.target).attr('data-layer') === dataLayer)) {
+							// Do nothing
+						} else {
+							control.removeClass('open');
+							$('body').off('click.tranSlider');
+						}
+					}));
+				}
+			}));
+
+			
+			
+
+			
+			
+			
+			
+		},
+		
 		refreshIdentify: function(layerURL, layerDef) {           		
        		if (this.activateIdentify == true){  
-       			$('#' + this.id + 'clickInstructions').hide();  
+       			
                 //Identify functionality...     
                 this.identifyRes = new IdentifyTask(layerURL);
                 this.identifyParams = new IdentifyParameters();
@@ -1157,7 +1279,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.identifyParams.height = this.map.height;
 				
 				this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt) {  
-					$("#" + this.id +"clickInsturctions").hide();
+                
 	                this.identifyParams.geometry = evt.mapPoint;
 	                this.identifyParams.mapExtent = this.map.extent;
 	                this.identifyIterator = 0;      
@@ -1200,8 +1322,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                        this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
 	                        this.IdentifyFeature.setInfoTemplate(this.popupInfoTemplate);							
 							if (this.useRadar === true){
+								lang.hitch(this, this.radarChart());
 								$("#" + this.id +"radarHeader").html(this.radarClickAllData[this.config.barrierNameField]);
-		               			lang.hitch(this, this.radarChart());
+								//hide the click instructions and show the "Assess a barrier" div if not visible
+								$('#' + this.id + 'clickInstructions').hide();  
+								if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){$("#" + this.id +"consensusRadarBlockExpander").show();}
 		               			$("#" + this.id +"radarMetricChangerOpenExpander").show();
 	               			}
 	               			this.identifyIterator ++; 

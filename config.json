@@ -3,6 +3,11 @@
 	"removeSelectionURL" : "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized7a/MapServer/1",
 	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP20/GPServer/Prioritize",
 	"visibleLayers": [0],
+	"additionalLayers":{	
+		"Rivers" : ["rivers", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "0"],
+		"Subbasins (HUC 8)" :["huc8s", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "1"],
+		"Northeast States" : ["states", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "2"]
+	},
 	"includePassabilityOption" : true,
 	"resultTier" : "AvgTier",
 	"severityField" : "Passability_Desc",

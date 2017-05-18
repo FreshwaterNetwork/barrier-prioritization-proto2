@@ -9,11 +9,12 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 <div id="mainAccord" class="flex1 hide">
 	<h3 id="exploreConsensusAccord">Explore the Consensus Anadromous Results</h3>
 	<section>
+
 		<div class="bp_flexColHCenter">
 			<h4 id="consensusRadarBlockExpander" class="bp_expander">Assess a barrier <span class="bp_expand">-</span></h4> 
 			<div id="consensusRadarBlockContainer" class="bp_flexColHCenter">
 				<div id="consensusRadarContainer" class="bp_flexColHCenter">
-					<p id="clickInstructions" class="bp_strong">Click on a barrier to visualize its data</p>
+					<div id="clickInstructions" class="bp_strong padding-2">Click on a barrier to visualize its data</div>
 					<p id="radarHeader"></p>
 					<div id="consensusRadar" class="bp_flexColHCenter"></div>
 				</div>
@@ -27,6 +28,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				</div>
 			</div>
 		</div>
+
 		<div class="bp_flexColHCenter">
 			<h4 id="consensusResultFiltersExpander" class="bp_expander">Filter the Results in the Map <span class="bp_expand">+</span></h4> 
 			<div id="consensusResultFiltersContainer" class="bp_flexColHCenter bp_flexBottom">
@@ -56,7 +58,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				</div>
 				
 				<div class="bp_flexColHCenter">
-				    <h4 id="consensusResultCustomFilterOpenExpander" class="bp_expanderOpen bp_grayText">Apply a Custom Filter <span class="bp_expand bp_grayText">+</span></h4>
+				    <h4 id="consensusResultCustomFilterOpenExpander" class="bp_expanderOpen bp_grayText">Build a Custom Filter <span class="bp_expand bp_grayText">+</span></h4>
 				    <div id="consensusResultCustomFilterOpenContainer">
 						<div class="chosen-wrap" style="margin-bottom:10px;">
 							<select data-placeholder="Filter By..." id="filterConsensusResultsField" class="chosen"  title="Filter the results...">
@@ -89,9 +91,36 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				</div>
 			</div>
 		</div>
-		<div class="bp_flexRowHCenter">
-			<button class="button button-primary bp_flexBottom" id="dlConsensus" >Download Anadromous Prioritization</button>
+		
+		<div class="bp_flexColHCenter">
+			<h4 id="additionalLayersExpander" class="bp_expander">Additional Layers <span class="bp_expand">+</span></h4> 
+			<div id="additionalLayersContainer" class="bp_flexColHCenter">
+				<div class="additionalLayers" id="additionalLayers">
+					<div class="description" id="additionalLayersDesc">Learn more about your area of interest by selecting from these additional information layers.<br><br>		
+					</div>
+						<div class="layer" id="toggleBarriers">
+							<label class="form-component">
+								<input type="checkbox" data-layer="barriers" id="barriers" checked>
+								<div class="check"></div>
+								<span class="form-text">Barriers</span> 
+							</label>
+							<span class="fa fa-info-circle info" title="Prioritized dams and road stream crossings"></span>
+							<div class="transparency-control" data-layer="barriers" id="barrierstransp" data-opacity="100">
+								<span class="transparency-header">Transparency</span>
+								<div class="transparency-label"><span class="value">100%</span></div>
+								<div class="transparency-slider">
+									<div class="slider"></div>
+								</div>
+							</div>
+						</div>					
+				</div>
+			</div>
 		</div>
+		
+		<div class="bp_flexColHCenter bp_footerContainer">
+			<button class="button button-default bp_footerButton" id="dlConsensus" >Download Anadromous Prioritization</button>
+		</div>
+	
 	</section>
 	<h3 id="runCustomAccord">Run a Custom Analysis</h3>
 	<div>

@@ -53,6 +53,7 @@
     align-items: center;
 }
 
+
 .bp_flexRowHCenter{
     /*height: 100%;*/
     padding: 0;
@@ -63,9 +64,9 @@
     display: -webkit-flex;
     display: flex;
     flex-direction:row;
-    
     justify-content: center;
 }
+
 
 .bp_sumStatsTable{
 	width: 300px;
@@ -84,14 +85,21 @@
 	margin: 5px;
 }
 
-.bp_flexBottom{
-	 margin-top: auto;
-	 flex-grow:1;
-}
-
 
 .bp_textInput{
 	margin-top: 5px;
+}
+
+.bp_bottom{
+	margin-top:auto;
+}
+
+.bp_footerContainer{
+	height:65%;
+ 	flex:1 1 auto;	
+}
+.bp_footerButton{
+	margin-top: auto;
 }
 
 .bp_expand{
@@ -99,6 +107,7 @@
 	font-size: 16pt;
 	color: #000000;
 }
+
 
 .bp_weightInput{
 	width:40px !important;
@@ -128,6 +137,96 @@
 	font-size: 15pt;
 	font-weight: bold;
 }
+
+
+/*#########################################*/
+/* transparency slider */
+.transparency-control {
+	/*position: absolute;*/
+	display: inline-block;
+	margin: 4px 20px 0px;
+	vertical-align: top;
+	/*right: 60px;*/
+	z-index: 10;
+}
+
+
+.fa-info-circle {
+	color: #266f9c;
+   
+    top: 23px;
+    left: 4px;
+    font-size: 16px;
+}
+.transparency-header {
+	display: none;
+	position: absolute;
+	font-size: 11px;
+	top: -14px;
+	left: -7px;
+}
+
+.transparency-label {
+	position: relative;
+    font-size: 11px;
+    width: 0;
+    padding: 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.transparency-label::after {
+	content: "\f042";
+	position: absolute;
+	top: -3px;
+	right: -11px;
+	font-family: "FontAwesome";
+	font-size: 16px;
+	color: #2678ca;
+}
+
+.transparency-label .value {
+	display: none;
+}
+
+.transparency-slider {
+	/*position: absolute;*/
+	display: none;
+    width: 65px;
+    height: 5px;
+    right: 3px;
+    background-color: #aaa;
+    padding: 0 2px;
+    border-radius: 3px;
+    border-top-right-radius: 0;
+    margin-left:20px;
+}
+
+.transparency-control.open .transparency-slider {
+	display: block;
+}
+
+.transparency-control[data-opacity="100"] .transparency-label::after {
+	color: #596165;
+}
+
+.transparency-slider .slider.ui-slider {
+	margin-top: 5px;
+	height: 4px;
+	background: none;
+	background-color: #767676;
+}
+
+.transparency-slider .slider.ui-slider .ui-slider-handle {
+	width: 13px;
+	height: 13px;
+	margin-left: -7.5px;
+	margin-top: -2px;
+	background: none;
+	background-color: #767676;
+}
+
+/*#########################################*/
 
 /*#########################################*/
 /* Tablesorter table elements */
