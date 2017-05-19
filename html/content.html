@@ -9,12 +9,71 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 <div id="mainAccord" class="flex1 hide">
 	<h3 id="exploreConsensusAccord">Explore the Consensus Anadromous Results</h3>
 	<section>
-
 		<div class="bp_flexColHCenter">
+			<h4 id="stateStatsExpander" class="bp_expander ">Summary Stats by State <span class="bp_expand">-</span></h4> 
+			<div id="stateStatsContainer" class="bp_flexColHCenter">
+				<div class="bp_flexColHCenter">
+					<div class="chosen-wrap" style="margin-bottom:10px;">
+						<select data-placeholder="Northeast Region" id="zoomState" class="chosen">
+							<option></option>
+							<option value="ME">Maine</option>
+							<option value="NH">New Hampshire</option>
+							<option value="VT">Vermont</option>
+							<option value="MA">Massachusetts</option>
+							<option value="RI">Rhode Island</option>
+							<option value="CT">Connecticut</option>
+							<option value="NY">New York</option>
+							<option value="NJ">New Jersey</option>
+							<option value="PA">Pennsylvania</option>
+							<option value="DE">Delaware</option>
+							<option value="MD">Maryland</option>
+							<option value="VA">Virginia</option>
+							<option value="WV">West Virginia</option>
+							<option value="DC">Washington DC</option>
+						</select>
+					</div>
+				</div>
+				<div class="stats bp_flexColHCenter">
+					<div class="stat active">
+						<div class="pill bp_flexRowHCenter" >
+							<div class="number">
+								<span class="value" id="damSpan">13,889</span>
+							</div>
+							<div>
+								<span class="number">&nbsp;Dams</span>
+							</div>
+							
+						</div>
+					</div>
+					<div class="stat">
+						<div class="pill bp_flexRowHCenter">
+							<div class="number">
+								<span class="value" id="roadCrossingSpan">196,329</span>
+							</div>
+							<div>
+								<span class="number">&nbsp;Road Crossings</span>
+							</div>
+						</div>
+						<div class="stat">
+							<div class="pill bp_flexRowHCenter">
+								<div class="number">
+									<span class="value" id="avgNetSpan">0.9</span>
+								</div>
+								<div>
+									<span class="number">&nbsp;Mi Avgerage Network</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="bp_flexColHCenter">
+			<div id="clickInstructions" class="bp_strong">Click on a barrier to visualize its data</div>
 			<h4 id="consensusRadarBlockExpander" class="bp_expander">Assess a barrier <span class="bp_expand">-</span></h4> 
 			<div id="consensusRadarBlockContainer" class="bp_flexColHCenter">
 				<div id="consensusRadarContainer" class="bp_flexColHCenter">
-					<div id="clickInstructions" class="bp_strong padding-2">Click on a barrier to visualize its data</div>
+					
 					<p id="radarHeader"></p>
 					<div id="consensusRadar" class="bp_flexColHCenter"></div>
 				</div>
@@ -118,7 +177,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</div>
 		
 		<div class="bp_flexColHCenter bp_footerContainer">
-			<button class="button button-default bp_footerButton" id="dlConsensus" >Download Anadromous Prioritization</button>
+			<button class="button button-primary bp_footerButton" id="dlConsensus" >Download Anadromous Prioritization</button>
 		</div>
 	
 	</section>
@@ -312,23 +371,22 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<div>
 		<section>
 			<h3>Learn how to manipulate the results<img src="plugins/barrier-prioritization-proto2/images/info.png" alt="show more info in documentation" class="infoIcon" id="-resultsInfo"></h3>
-			
-			<div id='dlCSV' class='dlCSV bottomLinks' href='#' style='display: none;' title='Click to download an ArcGIS Geodatabase with the results of the current custom analysis.'>
-		        Download Custom
-		    </div>
-			<div id='dlInputs' class='dlCSV bottomLinks' href='#' style='display: none;' title='Click to download a text file listing the inputs of the current custom analysis.'>
-		        Download Inputs
-		    </div>
 			<div id="gpSumStatsTableDivContainer" class="gpSumStatsTableDivContainer">
 			    <div id="gpSumStatsTableDiv" class="gpSumStatsTableDiv">
-			        <table  id="gpSumStatsTable" class="tablesorter bp_sumStatsTable" > 
+			        <table  id="gpSumStatsTable" class="tablesorter" > 
 			            <thead> 
 			                <tr></tr>
 			            </thead>
-			            <tbody>
+			            <tbody >
+			            
 			            </tbody>
 			        </table>
 			    </div>
+			</div>
+			<div id="downloadCustomContainer" class="bp_flexColHCenter bp_footerContainer">
+				<button class="button button-primary bp_footerButton" id="dlCustom" title="Click to download an ArcGIS Geodatabase with the results of the current custom analysis.">Download Custom Results</button>
+				<button class="button button-primary bp_footerButton" id="dlStats" title="Click to download a CSV file with the summary statistics results for the current custom analysis.">Download Summary Statistics</button>
+				<button class="button button-primary bp_footerButton" id="dlInputs" title="Click to download a CSV file with the input parameters for the current custom analysis.">Download Input Parameters</button>
 			</div>
 		</section>
 	</div>

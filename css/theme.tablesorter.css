@@ -25,7 +25,7 @@
 /* overall */
 .tablesorter-blue {
 	font-family: 'Archivo Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif !important;
-	font-size: 10pt !important;
+	font-size: 8pt !important;
 	top:0px;
 	left:0px;
 	margin:0;	
@@ -39,7 +39,7 @@
 .tablesorter-blue th,
 .tablesorter-blue td {
 	font-family: 'Archivo Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif !important;
-	font-size: 10pt !important;
+	font-size: 8pt !important;
 	border: #777 1px solid;
 	border-width: 0 1px 1px 0;
 }
@@ -55,7 +55,7 @@
 }
 .tablesorter-header-inner{
 	font-family: 'Archivo Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif !important;
-	font-size: 10pt !important;
+	font-size: 8pt !important;
 }	
 .tablesorter-blue tbody td,
 .tablesorter-blue tfoot th,
@@ -73,7 +73,7 @@
 	/* background-image: url(images/black-unsorted.gif); */
 	background-repeat: no-repeat;
 	background-position: center right;
-	padding: 4px 18px 4px 4px;
+	padding: 4px 4px 4px 4px;
 	white-space: normal;
 	cursor: pointer;
 }
@@ -243,7 +243,7 @@ caption {
 	margin: 0;
 	padding: 4px 2px;
 	font-family: 'Archivo Narrow', 'Arial Narrow', Arial, Helvetica, sans-serif !important;
-	font-size: 10pt !important;
+	font-size: 8pt !important;
 	background-color: #fff;
 	border: 1px solid #bbb;
 	color: #333;

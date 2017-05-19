@@ -8,10 +8,11 @@ define([
 	"dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
 	'./js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
 	 "esri/layers/ArcGISDynamicMapServiceLayer", "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
-	 "esri/renderers/SimpleRenderer",
+	 "esri/renderers/SimpleRenderer", "esri/geometry/Extent","esri/SpatialReference",
 ],
 function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, esriapi, clicks, RadarChart, d3, config, 
-	filters, ImageParameters, FeatureLayer, GraphicsLayer, ArcGISDynamicMapServiceLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, IdentifyParameters, InfoTemplate, SimpleRenderer) {
+	filters, ImageParameters, FeatureLayer, GraphicsLayer, ArcGISDynamicMapServiceLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, 
+	IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, SpatialReference) {
 	return declare(PluginBase, {
 		// The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
 		toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
@@ -138,6 +139,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
    			
 			//hide elements until they're needed 
 			$('#' + this.id + 'gpSumStatsTableDivContainer').hide(); 
+			$('#' + this.id + 'downloadCustomContainer').hide(); 
 			
 
 			if (this.config.includeExploreConsensus == true){
@@ -448,23 +450,25 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			//hide the "assess a barrier" & select metrics expanders since they are open to begin with.  SHow it when another expander is clicked
 			$("#" + this.id +"consensusRadarBlockExpander").hide();
 			$("#" + this.id +"radarMetricChangerOpenExpander").hide();
+			$("#" + this.id +"consensusResultFiltersExpander").hide();
+			$("#" + this.id +"additionalLayersExpander").hide();
 			$('#' + this.id + 'clickInstructions').show();  
 			
 			//Set up the +/- expanders 
 			this.expandContainers = ["consensusRadarBlock", "barrierSeverity", "customFilter","consensusResultFilters", "customMetric", 
-			"barrierRemoval", "sumStats", "additionalLayers"];
+			"barrierRemoval", "sumStats", "additionalLayers", "stateStats"];
 			//Hide all expansion containers & set cursor to pointer		
 			for (var i=0; i<this.expandContainers.length; i++){
 				$("#" + this.id + this.expandContainers[i] + "Container").hide();
 				$("#" + this.id + this.expandContainers[i] + "Expander").css( 'cursor', 'pointer' );
-				if (this.expandContainers[i] == "consensusRadarBlock"){
+				if (this.expandContainers[i] == "stateStats"){
 					$("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
 				}
 			}
 			//on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
 			$('.bp_expander').on("click", lang.hitch(this, function(e){
 				//show the assess a barrier expander if it's hidden, which it is by default
-				if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){$("#" + this.id +"consensusRadarBlockExpander").animate({height:"toggle"}, 500);}
+				if ($("#" + this.id +"stateStatsExpander").is(":visible") == false){$("#" + this.id +"stateStatsExpander").animate({height:"toggle"}, 500);}
 				var expander = e.currentTarget.id;
 				var container = e.currentTarget.id.replace("Expander", "Container");
 				for (var i=0; i<this.expandContainers.length; i++){
@@ -481,7 +485,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 
 			//handle exapnder separately for those div to keep open if another div is clicked
 			this.expandContainersOpen = ["radarMetricChangerOpen", "consensusResultFilterSliderTierOpen", 
-			"consensusResultFilterSliderSeverityOpen", "consensusResultCustomFilterOpen",];
+			"consensusResultFilterSliderSeverityOpen", "consensusResultCustomFilterOpen", ];
 			for (var i=0; i<this.expandContainersOpen.length; i++){
 				$("#" + this.id + this.expandContainersOpen[i] + "Container").hide();
 				$("#" + this.id + this.expandContainersOpen[i] + "Expander").css( 'cursor', 'pointer' );
@@ -503,20 +507,91 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					}
 				}
 			}));
+			//download buttons
 			lang.hitch(this, this.radarChartSetup());
             $('#' + this.id + 'dlConsensus').on('click',lang.hitch(this,function(e) { 
             	//download zipped result
             	e.preventDefault();
             	window.location.href = this.config.zippedConsensusResultURL;                    
+            }));            
+            $('#' + this.id + 'dlCustom').on('click',lang.hitch(this,function(e) {
+            	//download zipped result
+            	e.preventDefault();
+            	window.location.href = this.zippedResultURL;             
+            }));		
+            
+             $('#' + this.id + 'dlStats').on('click',lang.hitch(this,function(e) {
+            	//download summary stats table
+                require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tabletoCSV"],lang.hitch(this,function($) {
+                     $("#" + this.id + "gpSumStatsTable").tableToCSV(this.customResultBaseName + "_SumStats");
+                }));           
+            }));           
+        
+            //download input parameters 
+            $('#' + this.id + 'dlInputs').on('click',lang.hitch(this,function(e) { 
+                 this.requestObjectPretty = {};
+                 for (var key in this.requestObject){    	
+                     value = this.requestObject[key];         
+                     if (this.config.metricNames.hasOwnProperty(value)){
+                        //Use the pretty metric name
+                        this.requestObjectPretty[key] = this.config.metricNames[value];
+                        console.log(this.config.metricNames[value]);
+                     } 
+                     //don't include sort order & log transform in the downloaded inputs
+                     else if (key.indexOf("Order") == -1 && key.indexOf("Log") == -1){
+                         this.requestObjectPretty[key] = this.requestObject[key];
+                     }
+                 }
+                 this.requestObjectArray = [];
+                 this.requestObjectArray.push(this.requestObjectPretty);
+                 //add tabs to beautify the JSON
+                 this.requestObjectJSON = JSON.stringify(this.requestObjectArray, null, "\t");
+                 this.requestObjectJSON = this.requestObjectJSON.replace(/[\u200B-\u200D\uFEFF]/g, "");
+                 this.JSONToCSVConvertor(this.requestObjectJSON, this.customResultBaseName +"_Inputs", true);
             }));
 			
 			//build checkboxes for additonal layers
 			lang.hitch(this, this.setUpAdditionalLayers(this.config.additionalLayers));
 			
+			lang.hitch(this, this.zoomToStats());
+
+	
 			this.rendered = true;	
 		},	
 		
-
+		zoomToStats: function(){
+			//build zoom-to chosen
+			$("#" + this.id + "zoomState").chosen({allow_single_deselect:true, width:"155px"})
+			.change(lang.hitch(this, function(c){
+				var v = c.target.value;
+				// check for a deselect
+				if (v.length == 0){
+					v = "none";
+				}
+				$('#' + c.target.id ).parent().next().find("span").html(v);
+				console.log(v)
+				console.log(this.config.zoomTo[v]);
+				console.log(this.config.zoomTo[v][0]);
+				console.log(this.config.zoomTo[v][1]["dams"]);
+				console.log(this.config.zoomTo[v][1]["crossings"]);
+				console.log(this.config.zoomTo[v][1]["avgNetwork"]);
+			
+				var zoomExt = new Extent(this.config.zoomTo[v][0][0],this.config.zoomTo[v][0][1], this.config.zoomTo[v][0][2], this.config.zoomTo[v][0][3],
+          			new SpatialReference({ wkid:3857 }));
+				this.map.setExtent(zoomExt);
+				
+				$("#" + this.id + "roadCrossingSpan").text(this.config.zoomTo[v][1]["crossings"]);
+				$("#" + this.id + "damSpan").text(this.config.zoomTo[v][1]["dams"]);
+				$("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2));
+				// var zoomHTML = "<p>There are " + this.config.zoomTo[v][1]["dams"] + " dams</p>" +
+							   // "<p>" + this.config.zoomTo[v][1]["crossings"] + " road-stream crossings</p>" +
+							   // "<p>and the average connected river network upstream of these barriers is " + Math.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371) + "miles</p>" ;
+// 				
+				// $("#" + this.id + "zoomStatsContent").html(zoomHTML);
+			}));
+		},
+		
+		
         //calculate current metric weights
         metricWeightCalculator: function (gpVals){
             var sumWeights = 0; 
@@ -528,7 +603,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             }
             return sumWeights;
         },
-
+        
+		round: function (value, decimals) {
+		  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+		},
+		
 		filterMapService: function(filter, mapServLayer, mapServURL){
 			var filterParameters = new ImageParameters();
 			var layerDefs = [];
@@ -714,7 +793,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			this.alreadySelBarr2RemoveQuery = new Query();
 			this.alreadySelBarr2RemoveQueryTask = new QueryTask(this.config.removeSelectionURL);//(this.removeFeatureLayer);
 			
-			this.alreadySelBarr2RemoveQuery.where = this.config.uniqueID + " IN (" + $("#" + this.appDiv.id + 'barriers2Remove').val() +")";
+			this.alreadySelBarr2RemoveQuery.where = this.config.uniqueID + " IN (" + $("#" + this.id + 'barriers2Remove').val() +")";
 			
 			this.alreadySelBarr2RemoveQuery.returnGeometry = true;
 			this.alreadySelBarr2RemoveQuery.outFields = [this.config.uniqueID];
@@ -741,39 +820,39 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     }
                     this.workingRemoveBarriersString = "'" + this.workingRemoveBarriers.join("', '") + "'";
                     if (this.workingRemoveBarriersString == "''"){this.workingRemoveBarriersString = "";}
-                    $("#" + this.appDiv.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
+                    $("#" + this.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
                     this.selectedBarriers.remove(e.graphic);
                 })); 
 			}
 		},
 		
 		clearAllInputs: function(){
-			// $("#" + this.appDiv.id +"gpStatusReport").html("");
-            // $("#" + this.appDiv.id +"gpStatusReportHead").css('display', 'none');
-			// $("input[id^=" + this.appDiv.id + "weightIn]").each(lang.hitch(this, function(i, v){
+			// $("#" + this.id +"gpStatusReport").html("");
+            // $("#" + this.id +"gpStatusReportHead").css('display', 'none');
+			// $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
                  // v.value = 0;
                  // $('#' + v.id).removeClass('bp_weighted');            
             // }));
-            // $('#'+ this.appDiv.id +"bp_currWeight").html('0');
-            // $('#'+ this.appDiv.id +"bp_currWeight").css('color', 'red');
-            // $('#'+ this.appDiv.id +"barriers2Remove").val('');
-            // $('#'+ this.appDiv.id +"userFilter").val('');      
-            // $('#'+ this.appDiv.id +"resultsFilter").val(''); 
-            // if ($('#'+ this.appDiv.id +"removeBarriers").is(":checked")){$('#'+ this.appDiv.id +"removeBarriers").trigger('click');}
-            // if ($('#'+ this.appDiv.id +"runSumStats").is(":checked")){$('#'+ this.appDiv.id +"runSumStats").trigger('click');}
-            // if ($('#'+ this.appDiv.id +"filterBarriers").is(":checked")){
-                // $('#'+ this.appDiv.id +"filterBarriers").trigger('click');
+            // $('#'+ this.id +"bp_currWeight").html('0');
+            // $('#'+ this.id +"bp_currWeight").css('color', 'red');
+            // $('#'+ this.id +"barriers2Remove").val('');
+            // $('#'+ this.id +"userFilter").val('');      
+            // $('#'+ this.id +"resultsFilter").val(''); 
+            // if ($('#'+ this.id +"removeBarriers").is(":checked")){$('#'+ this.id +"removeBarriers").trigger('click');}
+            // if ($('#'+ this.id +"runSumStats").is(":checked")){$('#'+ this.id +"runSumStats").trigger('click');}
+            // if ($('#'+ this.id +"filterBarriers").is(":checked")){
+                // $('#'+ this.id +"filterBarriers").trigger('click');
             // }
             // require(["jquery", "plugins/barrier-prioritization-proto/js/chosen.jquery"],lang.hitch(this,function($) {
-                // $('#'+ this.appDiv.id +"filterBuildField").val('option: first').trigger("chosen:updated");
-                // $('#'+ this.appDiv.id +"filterBuildOperator").val('option: first').trigger("chosen:updated");
-                // $('#'+ this.appDiv.id +"filterBuildValue").val('option: first').trigger("chosen:updated"); 
-                // $('#'+ this.appDiv.id +"filterResultsField").val('option: first').trigger("chosen:updated");
-                // $('#'+ this.appDiv.id +"filterResultsOperator").val('option: first').trigger("chosen:updated");
-                // $('#'+ this.appDiv.id +"filterResultsValue").val('option: first').trigger("chosen:updated");
-                // $('#'+ this.appDiv.id +"passability").val('option: first').trigger("chosen:updated");
-                // $('#'+ this.appDiv.id +"summarizeBy").val('option: first').trigger("chosen:updated");
-                // $('#'+ this.appDiv.id +"summaryStatField").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"filterBuildField").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"filterBuildOperator").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"filterBuildValue").val('option: first').trigger("chosen:updated"); 
+                // $('#'+ this.id +"filterResultsField").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"filterResultsOperator").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"filterResultsValue").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"passability").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"summarizeBy").val('option: first').trigger("chosen:updated");
+                // $('#'+ this.id +"summaryStatField").val('option: first').trigger("chosen:updated");
 //                 
             // }));                 
             // if (this.removeFeatureLayer != undefined){
@@ -831,16 +910,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                
                 this.tableHTML = "<thead> <tr></tr></thead><tbody ></tbody>";
                 this.sumStatsTableHTML = "<thead> <tr></tr></thead><tbody ></tbody>";
-                // if (this.gpIterator >1){                                            
-                    // require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tablesorter.combined.js"],lang.hitch(this,function($) {
-                     // $("#" + this.id + "gpResultTable").trigger("destroy");
-                    // }));
-                // }
-                // if ("#" + this.id + "gpSumStatsTable"){
-                    // require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tablesorter.combined.js"],lang.hitch(this,function($) {
-                        // $("#" + this.id + "gpSumStatsTable").trigger("destroy");
-                    // }));
-                // }
+                if (this.gpIterator >1){                                                               
+                 	$("#" + this.id + "gpResultTable").trigger("updateAll");  
+                }
+                if ("#" + this.id + "gpSumStatsTable"){
+					$("#" + this.id + "gpSumStatsTable").trigger("updateAll");
+                }
+                
                 $("#" + this.id + "gpSumStatsTable").html(this.sumStatsTableHTML);
                 $("#" + this.id + "gpResultTable").html(this.tableHTML);                
                
@@ -885,7 +961,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                         if (this.config.gpServIncludesLogTransform == true){
                         	var mLogTrans = mNum + "_Log_Transform";
                         }
-                        var m = metric.replace(this.appDiv.id + "weightIn-", "");
+                        var m = metric.replace(this.id + "weightIn-", "");
                         var prettyM = this.config.metricNames[m];
                         this.requestObject[mNum] = m;
                         this.requestObject[mWeight] = weight;
@@ -894,7 +970,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                         	this.requestObject[mLogTrans] = "No";
                         }
                         this.weightIterator ++; 
-                        if (this.config.tableResults == true){$("#" + this.appDiv.id + "gpResultTable tr:first").append("<th>" + prettyM +"</th>");}
+                        if (this.config.tableResults == true){$("#" + this.id + "gpResultTable tr:first").append("<th>" + prettyM +"</th>");}
                     }
                 }));
 
@@ -981,6 +1057,16 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		getZippedResultURL: function (result, messages){
 			console.log(result.value.url);
 			this.zippedResultURL = result.value.url; //this is accessed when the download button is pressed
+		
+			this.customResultBaseName = (result.value.url.substr(result.value.url.lastIndexOf('/') + 1)).replace(".zip", "");
+			console.log(this.customResultBaseName);
+			
+			$('#' + this.id + 'downloadCustomContainer').show();
+			if (this.requestObject.Run_Watershed_Summary_Stats===true){
+				$('#' + this.id + 'dlStats').show(); 
+			}
+			else{$('#' + this.id + 'dlStats').hide(); }
+			
 		},
 		
 		
@@ -1011,7 +1097,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 $("#" + this.id + "gpSumStatsTable tr:first").append("<th>Max " + this.sumStatField + "</th>");
                 $("#" + this.id + "gpSumStatsTable tr:first").append("<th>Mean " + this.sumStatField + "</th>");
                 $("#" + this.id + "gpSumStatsTable tr:first").append("<th>Min " + this.sumStatField + "</th>");
-                $("#" + this.id + "gpSumStatsTable tr:first").append("<th>" + this.sumStatField + " Standard Deviation </th>");
+                $("#" + this.id + "gpSumStatsTable tr:first").append("<th>Std Dev " + this.sumStatField +  "</th>");
                 var d = [];
                 var dStr = "";
                 var dStr2 = "";
@@ -1189,17 +1275,18 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
     		}));
     		
 			//set up barrier default toggle.  This is done separately, since it is not listed in the additional layers of the config file
-			
 			$("#" + this.id + "barriers").on('click', lang.hitch(this, function(e) {
 				var ischecked = $("#"+ this.id + "barriers").is(':checked');
 				if (ischecked) {
 					this.map.addLayer(this.dynamicLayer);
 					this.activateIdentify = true;
+					lang.hitch(this, this.refreshIdentify(this.url));
 					$("#" + this.id + "barrierstransp").show();
 				}
 				else{
 					this.map.removeLayer(this.dynamicLayer);
 					this.activateIdentify = false;
+					this.refreshIdentify(undefined, undefined);
 					$("#" + this.id + "barrierstransp").hide();
 				}
 			}));
@@ -1229,7 +1316,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 							this[layer].setOpacity(ui.value / 100);
 						}
 						$('.info').tooltip({
-
 						});
             		})
 			});
@@ -1249,15 +1335,41 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					}));
 				}
 			}));
-
-			
-			
-
-			
-			
-			
-			
 		},
+		
+		JSONToCSVConvertor: function(JSONData, ReportTitle, ShowLabel) {
+            //taken from http://jsfiddle.net/hybrid13i/JXrwM/
+            //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
+            var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+            var CSV = '';    
+            //Set Report title in first row or line         
+            CSV += ReportTitle + '\r\n' + JSONData;    
+            //Generate a file name
+            var fileName = "";
+            //this will remove the blank-spaces from the title and replace it with an underscore
+            fileName += ReportTitle.replace(/ /g,"_");   
+            
+            //Initialize file format you want csv or xls
+            var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
+            
+            // Now the little tricky part.
+            // you can use either>> window.open(uri);
+            // but this will not work in some browsers
+            // or you will not get the correct file extension    
+            
+            //this trick will generate a temp <a /> tag
+            var link = document.createElement("a");    
+            link.href = uri;
+            
+            //set the visibility hidden so it will not effect on your web-layout
+            link.style = "visibility:hidden";
+            link.download = fileName + ".csv";
+            
+            //this part will append the anchor tag and remove it after automatic click
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        },           		
 		
 		refreshIdentify: function(layerURL, layerDef) {           		
        		if (this.activateIdentify == true){  
@@ -1326,8 +1438,15 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 								$("#" + this.id +"radarHeader").html(this.radarClickAllData[this.config.barrierNameField]);
 								//hide the click instructions and show the "Assess a barrier" div if not visible
 								$('#' + this.id + 'clickInstructions').hide();  
-								if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){$("#" + this.id +"consensusRadarBlockExpander").show();}
+								if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
+									$("#" + this.id +"consensusRadarBlockExpander").show();
+									$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
+								}
 		               			$("#" + this.id +"radarMetricChangerOpenExpander").show();
+		               			$("#" + this.id +"consensusResultFiltersExpander").show();
+								$("#" + this.id +"additionalLayersExpander").show();
+								
+								
 	               			}
 	               			this.identifyIterator ++; 
 	                   		return this.IdentifyFeature;
