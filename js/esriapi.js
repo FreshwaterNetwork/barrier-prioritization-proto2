@@ -9,20 +9,21 @@ function ( 	ArcGISDynamicMapServiceLayer, Extent, SpatialReference, Query, Query
         return declare(null, {
 			esriApiFunctions: function(t){	
 				// zoom to tracker
-				t.zoomTo = 'no'
+				t.zoomTo = 'no';
 				// Add dynamic map service
 				t.dynamicLayer = new ArcGISDynamicMapServiceLayer(t.url, {opacity:0.8});
-				t.map.addLayer(t.dynamicLayer);
-				if (t.obj.visibleLayers.length > 0){	
+				if (t.obj.visibleLayers.length >0){	
 					t.dynamicLayer.setVisibleLayers(t.obj.visibleLayers);
 				}
+				else{t.dynamicLayer.setVisibleLayers[-1];}
+				//t.map.addLayer(t.dynamicLayer);
 				t.dynamicLayer.on("load", function () { 			
 					t.layersArray = t.dynamicLayer.layerInfos;
-					console.log(t.layersArray)
+					console.log(t.layersArray);
 					// Save and Share Handler					
 					if (t.obj.stateSet == "yes"){
 						//extent
-						var extent = new Extent(t.obj.extent.xmin, t.obj.extent.ymin, t.obj.extent.xmax, t.obj.extent.ymax, new SpatialReference({ wkid:4326 }))
+						var extent = new Extent(t.obj.extent.xmin, t.obj.extent.ymin, t.obj.extent.xmax, t.obj.extent.ymax, new SpatialReference({ wkid:4326 }));
 						t.map.setExtent(extent, true);
 						// accordion visibility
 						$('#' + t.id + t.obj.accordVisible).show();

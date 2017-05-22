@@ -10,8 +10,9 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 id="exploreConsensusAccord">Explore the Consensus Anadromous Results</h3>
 	<section>
 		<div class="bp_flexColHCenter">
-			<h4 id="stateStatsExpander" class="bp_expander ">Summary Stats by State <span class="bp_expand">-</span></h4> 
+			<h4 id="stateStatsExpander" class="bp_expander ">Barrier Summary by State <span class="bp_expand">-</span></h4> 
 			<div id="stateStatsContainer" class="bp_flexColHCenter">
+				<p>Zoom to a state to view its barriers</p>
 				<div class="bp_flexColHCenter">
 					<div class="chosen-wrap" style="margin-bottom:10px;">
 						<select data-placeholder="Northeast Region" id="zoomState" class="chosen">
@@ -33,43 +34,52 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 						</select>
 					</div>
 				</div>
-				<div class="stats bp_flexColHCenter">
-					<div class="stat active">
-						<div class="pill bp_flexRowHCenter" >
-							<div class="number">
-								<span class="value" id="damSpan">13,889</span>
-							</div>
-							<div>
-								<span class="number">&nbsp;Dams</span>
-							</div>
-							
+				<div class="bp_flexColHCenter">
+					<div id="barChartDams">
+					</div>
+					<div id="barChartCrossings">
+					</div>
+					<div id="barChartAvgNetwork">
+					</div>
+					<br>
+				</div>
+			<!-- <div class="stats bp_flexColHCenter">
+				<div class="stat active">
+					<div class="pill bp_flexRowHCenter" >
+						<div class="number">
+							<span class="value" id="damSpan">13,889</span>
+						</div>
+						<div>
+							<span class="number">&nbsp;Dams</span>
+						</div>
+						
+					</div>
+				</div>
+				<div class="stat">
+					<div class="pill bp_flexRowHCenter">
+						<div class="number">
+							<span class="value" id="roadCrossingSpan">196,329</span>
+						</div>
+						<div>
+							<span class="number">&nbsp;Road Crossings</span>
 						</div>
 					</div>
 					<div class="stat">
 						<div class="pill bp_flexRowHCenter">
 							<div class="number">
-								<span class="value" id="roadCrossingSpan">196,329</span>
+								<span class="value" id="avgNetSpan">0.9</span>
 							</div>
 							<div>
-								<span class="number">&nbsp;Road Crossings</span>
-							</div>
-						</div>
-						<div class="stat">
-							<div class="pill bp_flexRowHCenter">
-								<div class="number">
-									<span class="value" id="avgNetSpan">0.9</span>
-								</div>
-								<div>
-									<span class="number">&nbsp;Mi Avgerage Network</span>
-								</div>
+								<span class="number">&nbsp;Mi Avgerage Network</span>
 							</div>
 						</div>
 					</div>
 				</div>
+			</div> -->
 			</div>
 		</div>
 		<div class="bp_flexColHCenter">
-			<div id="clickInstructions" class="bp_strong">Click on a barrier to visualize its data</div>
+			<div id="clickInstructions" class="bp_strong"><br><br>Click on a barrier to visualize its data</div>
 			<h4 id="consensusRadarBlockExpander" class="bp_expander">Assess a barrier <span class="bp_expand">-</span></h4> 
 			<div id="consensusRadarBlockContainer" class="bp_flexColHCenter">
 				<div id="consensusRadarContainer" class="bp_flexColHCenter">
@@ -244,7 +254,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 						<label for="useConsensusWeights1">Customize</label>
 					</div>
 					<div class="bp_flexColHCenter" id="customWeightsDiv" >
-						<div  id="currWeight" class="currWeight" style="color:red">0</div>
+						<div  id="currWeight" class="currWeight" style="color:green; font-weight:600">100</div>
 						<div class ="tabs">
 							<ul class="tab-links">
 								<li class="active"><a href="weightIn-Tab1Div" id="tab1" title="Select this tab to weight network-based metrics">Network</a></li>
@@ -255,53 +265,53 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 							</ul>
 							<div class="tab-content" id="tab-content">
 								<div id="weightIn-Tab1Div" class="tab active" >
-									<div><p class="metricLabel" >​<input id="weightIn-batFuncUS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=4" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">Upstream functional network length</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-batCountDS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100" value="100"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=6" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Count of downstream barriers</a></p></div>			
-									<div><p class="metricLabel"><input id="weightIn-DSFalls"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=7" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Count of natural barriers downstream</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-DSHydro"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=8" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​​Count of dams with hydropower facilities downstream</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-dsPassabilityProduct"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=9" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​​Product of all downstream barrier passability scores</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-batAbs"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=10" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Absolute Gain (min of US &amp; DS Func Networks)</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-batTotUSDS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=11" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Total Functional Network (sum of US &amp; DS Func Networks)</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-batLenUS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=12" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Total upstream river length (ignoring all barriers)</a></p></div>
+									<div><p class="bp_metricLabel">​<input id="weightIn-batFuncUS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=4" title="Click the metric name for a description of this metric" target="_blank">Upstream functional network length</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-batCountDS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100" value="100"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=6" title="Click the metric name for a description of this metric" target="_blank">​Count of downstream barriers</a></p></div>			
+									<div><p class="bp_metricLabel"><input id="weightIn-DSFalls"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=7" title="Click the metric name for a description of this metric" target="_blank">​Count of natural barriers downstream</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-DSHydro"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=8" title="Click the metric name for a description of this metric" target="_blank">​​Count of dams with hydropower facilities downstream</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-dsPassabilityProduct"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=9" title="Click the metric name for a description of this metric" target="_blank">​​Product of all downstream barrier passability scores</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-batAbs"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=10" title="Click the metric name for a description of this metric" target="_blank">​Absolute Gain (min of US &amp; DS Func Networks)</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-batTotUSDS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=11" title="Click the metric name for a description of this metric" target="_blank">​Total Functional Network (sum of US &amp; DS Func Networks)</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-batLenUS"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=12" title="Click the metric name for a description of this metric" target="_blank">​Total upstream river length (ignoring all barriers)</a></p></div>
 								</div>
 								<div id="weightIn-Tab2Div" class="tab" >
-									<div><p class="metricLabel"><input id="weightIn-DA_PercFor"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=13" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Forest cover in the total contributing watershed</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-DA_PercNat"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=14" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Natural cover in the total contributing watershed</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-DA_PercAg"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=15" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Agricultural cover in the total contributing watershed</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-DA_PercImp"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=16" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Impervious Surface in the total contributing watershed</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-usForARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=17" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Forest cover in ARA of upstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-dsForARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=18" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Forest cover in ARA of downstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-usNatARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=19" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Natural cover in ARA of upstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-dsNatARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=20" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Natural cover in ARA of downstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-usAgARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=21" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Agricultural cover in ARA of upstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-dsAgARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=22" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Agricultural cover in ARA of downstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-usImpARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=23" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">% Impervious Surface in ARA of upstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-dsImpARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=24" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​% Impervious Surface in ARA of downstream functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-onConsLand"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=25" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Barrier is located on conservation land</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-CumDistInd"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=26" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​NFHAP Cumulative Disturbance Index (by NHD Catchment)</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-DA_PercFor"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=13" title="Click the metric name for a description of this metric" target="_blank">​% Forest cover in the total contributing watershed</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-DA_PercNat"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=14" title="Click the metric name for a description of this metric" target="_blank">​% Natural cover in the total contributing watershed</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-DA_PercAg"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=15" title="Click the metric name for a description of this metric" target="_blank">​% Agricultural cover in the total contributing watershed</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-DA_PercImp"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=16" title="Click the metric name for a description of this metric" target="_blank">​% Impervious Surface in the total contributing watershed</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-usForARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=17" title="Click the metric name for a description of this metric" target="_blank">​% Forest cover in ARA of upstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-dsForARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=18" title="Click the metric name for a description of this metric" target="_blank">​% Forest cover in ARA of downstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-usNatARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=19" title="Click the metric name for a description of this metric" target="_blank">​% Natural cover in ARA of upstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-dsNatARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=20" title="Click the metric name for a description of this metric" target="_blank">​% Natural cover in ARA of downstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-usAgARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=21" title="Click the metric name for a description of this metric" target="_blank">​% Agricultural cover in ARA of upstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-dsAgARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=22" title="Click the metric name for a description of this metric" target="_blank">​% Agricultural cover in ARA of downstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-usImpARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=23" title="Click the metric name for a description of this metric" target="_blank">% Impervious Surface in ARA of upstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-dsImpARA"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=24" title="Click the metric name for a description of this metric" target="_blank">​% Impervious Surface in ARA of downstream functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-onConsLand"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=25" title="Click the metric name for a description of this metric" target="_blank">​Barrier is located on conservation land</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-CumDistInd"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=26" title="Click the metric name for a description of this metric" target="_blank">​NFHAP Cumulative Disturbance Index (by NHD Catchment)</a></p></div>
 								</div>
 					
 								<div id="weightIn-Tab3Div" class="tab">
-									<div><p class="metricLabel"><input id="weightIn-QDSANAD"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=27" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Presence of 1 or more anadromous species downstream of the barrier</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-QDSNUMANAD"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=28" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​# of anadromous species downstream of the barrier</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-QDSANAD"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=27" title="Click the metric name for a description of this metric" target="_blank">​Presence of 1 or more anadromous species downstream of the barrier</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-QDSNUMANAD"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=28" title="Click the metric name for a description of this metric" target="_blank">​# of anadromous species downstream of the barrier</a></p></div>
 								</div>
 								<div id="weightIn-Tab4Div" class="tab">
-									<div><p class="metricLabel"><input id="weightIn-fishRich"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=36" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​# of Resident fish species in HUC8</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-g123Fish"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=37" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​# of  rare (G1, G2, G3) fish species in HUC8</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-g123Mussel"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=38" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​​# of  rare (G1, G2, G3) mussel species in HUC8</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-g123Cray"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=39" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​​# of  rare (G1, G2, G3) crayfish species in HUC8</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-in_EBTJV_2012"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=40" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Barrier is within EBTJV Catchment with Trout</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-in_deWeberTrout"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=41" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Barrier is within a modeled catchment for Trout (DeWeber & Wagner)</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-block_EBTJV_2012"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=42" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Barrier blocks EBTJV 2012 trout catchments</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-block_BT_DeWeber"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=43" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Barrier blocks modeled trout catchments (DeWeber & Wagner)</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-fishRich"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=36" title="Click the metric name for a description of this metric" target="_blank">​# of Resident fish species in HUC8</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-g123Fish"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=37" title="Click the metric name for a description of this metric" target="_blank">​# of  rare (G1, G2, G3) fish species in HUC8</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-g123Mussel"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=38" title="Click the metric name for a description of this metric" target="_blank">​​# of  rare (G1, G2, G3) mussel species in HUC8</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-g123Cray"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=39" title="Click the metric name for a description of this metric" target="_blank">​​# of  rare (G1, G2, G3) crayfish species in HUC8</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-in_EBTJV_2012"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=40" title="Click the metric name for a description of this metric" target="_blank">​Barrier is within EBTJV Catchment with Trout</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-in_deWeberTrout"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=41" title="Click the metric name for a description of this metric" target="_blank">​Barrier is within a modeled catchment for Trout (DeWeber & Wagner)</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-block_EBTJV_2012"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=42" title="Click the metric name for a description of this metric" target="_blank">​Barrier blocks EBTJV 2012 trout catchments</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-block_BT_DeWeber"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=43" title="Click the metric name for a description of this metric" target="_blank">​Barrier blocks modeled trout catchments (DeWeber & Wagner)</a></p></div>
 								</div>
 								<div id="weightIn-Tab5Div" class="tab" >
-									<div><p class="metricLabel"><input id="weightIn-NESZCL_Int"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=44" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">Stream size class (raise headwaters in importance)</a></p></div>				
-									<div><p class="metricLabel"><input id="weightIn-TotNumSzCl"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=45" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​# of Size Classes in Total (US + DS) functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-usNumSzCl"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=46" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​# of Upstream Network size classes</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-usSzClGn"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=47" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Upstream Size Class Gain</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-totMiCold"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=48" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">Miles of Cold water habitat in Total (US + DS) functional network</a></p></div>
-									<div><p class="metricLabel"><input id="weightIn-totMiCC"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=49" title="Click the metric name for a description of this metric" onClick="return windowPopup(this, "def", "width=660,height=590,scrollbars=yes")">​Miles of Cold or Cool water habitat in Total (US + DS) functional network</a></p></div>			
+									<div><p class="bp_metricLabel"><input id="weightIn-NESZCL_Int"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=44" title="Click the metric name for a description of this metric" target="_blank">Stream size class (raise headwaters in importance)</a></p></div>				
+									<div><p class="bp_metricLabel"><input id="weightIn-TotNumSzCl"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=45" title="Click the metric name for a description of this metric" target="_blank">​# of Size Classes in Total (US + DS) functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-usNumSzCl"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=46" title="Click the metric name for a description of this metric" target="_blank">​# of Upstream Network size classes</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-usSzClGn"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=47" title="Click the metric name for a description of this metric" target="_blank">​Upstream Size Class Gain</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-totMiCold"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=48" title="Click the metric name for a description of this metric" target="_blank">Miles of Cold water habitat in Total (US + DS) functional network</a></p></div>
+									<div><p class="bp_metricLabel"><input id="weightIn-totMiCC"  size="2" maxlength="3" class="bp_weightInput" type="text" title="Enter a value between 0-100 to indicate the relative importance of this metric for your objectives.  The sum of all weights must = 100"  value="0"/><a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf#page=49" title="Click the metric name for a description of this metric" target="_blank">​Miles of Cold or Cool water habitat in Total (US + DS) functional network</a></p></div>			
 								</div>
 							</div>
 						</div>
@@ -397,15 +407,65 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 <div id="infoAccord" class="flex1">
 	<h3 class="infoDoc">Documentation</h3>
 	<div class="explainWrap" style="display:block;">
+		<h4 style="text-align:center">Welcome to the aquatic barrier prioritization tool</h4>
+		<figure>
+			<img src="plugins/barrier-prioritization-proto2/images/dam.jpg"></img>
+			<figcaption style="font-size:10px">Dam on the Presumpscot River, Maine.  &copy; Paul Noble Photography <a href="https://creativecommons.org/licenses/by-nc-nd/2.0/">Flickr Creative Commons</a>.</figcaption>
+		</figure>
 		<p>
-			This is a new app. It"s going to be awesome. It just is.
+			<strong>The fragmentation </strong>of river habitats through dams and poorly functioning culverts is one of the primary 
+			threats to aquatic species in the United States.  The impact of fragmentation on aquatic 
+			species generally involves loss of access to quality habitat for one or more life stages of a species.  For example, dams and 
+			impassable culverts limit the ability of anadromous fish species to reach preferred freshwater spawning habitats from the sea 
+			and prevent brook trout populations from reaching thermal refuges. 
 		</p> 
+		<p>
+			This app can be used to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in the states of
+			the Northeastern U.S.  
+		</p>
+		<p>
+			Begin by clicking the "Start Using Aquatic Barrier Prioritization" button above.  Then select a state to 
+			see a sumamry of the status of aquatic connectivity in that state based on the number of dams and road-stream crossings and the 
+			average length of the connected river network that results from these barriers.
+		</p>
+		<p>
+			Click on an individual barrier to get a summary of its ecological attribtues.  A subset of the available attribtues were used to 
+			develop a multi-stakeholder consensus prioritization for anadromous fish like American shad, river herring, and Atlantic salmon. 
+		</p>
+		<p>
+			For additional details and complete documentation about this project, you can downlaod the project report <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>here</strong></a>.
+		</p>
 	</div> 
 	<h3 class="moreInfo">How to Run a Custom Analysis</h3>
 	<div class="explainWrap">
 		<p>
-			More info to come.
+			In addition to the multi-stakeholder consensus prioritization for anadromous fish species, this app provides the ability to run 
+			customized prioritization scenarios objectives.  There are five ways a prioritization can be customized:
 		</p>
+		<ol>
+			<li>
+				The <strong>severity of barriers</strong> that are included in the analysis.  Barriers that are excluded from the analysis do not affect the
+				results in any way -- it is as if they do not exist.  The barrier severity can be set ot dams only, only dams that do NOT have 
+				fish passage facilities (in this case dams WITH fish passage facilities are considered fully permeable), or dams and road-stream
+				crossings of varying degrees of severity (severe, significant, moderate, minor, insignificant).  In each case, the barriers used
+				in the analysis will include degree of severity selected and all those that are more severe.  For example, if "Significant" barriers
+				chosen, the analysis will include "Significant" and "Severe" road-stream crossings as well as all dams (which are always considered Severe)
+			</li>
+			<li>
+				The <strong>geographic extent</strong> of the analysis.  Setting this value will limit the analysis to a given state, watershed, or to rivers with
+				documented presence of one or more anadromous species.  Importantly, barriers that excluded at this step still have an influence on the analysis.
+				For example, if the analysis is restricted to Vermont, the metric which assesses the number of downstream barriers will still count those barriers
+				that are downstream, even if they are outside of Vermont (e.g. dams on the Connecticut River in Massachusetts).  To limit the geographic extent of the 
+				analysis, navigate to the second option of the "Run a Custom Analysis" pane and select "Yes".  Doing so exposes three dropdown menus which can be 
+				used to develop simple expressions.  For example "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the 
+				"IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression see the 
+				<a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm">ArcGIS help pages. </a> 
+			</li>
+			<li>
+				The metric weights can be changed from the values used in the stakeholder-consensus anadromous fish prioritization.  The metrics weights
+				are relative (they must sum to 100) and they indicate how important a given metric is 
+			</li>
+		</ol>
 	</div>
 	<h3 class="resultsInfo">How to Interpret the Custom Results</h3>
 	<div class="explainWrap">

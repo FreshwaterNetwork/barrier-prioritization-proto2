@@ -49,7 +49,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				this.render();
 				$(this.printButton).hide();
 			}else{
-				this.dynamicLayer.setVisibleLayers(this.obj.visibleLayers);
+				this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
 				$('#' + this.id).parent().parent().css('display', 'flex');
 				this.clicks.updateAccord(this);
 			}	
@@ -95,7 +95,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			printDeferred.resolve();
 		},	
 		// Called by activate and builds the plugins elements and functions
-		render: function() {
+		render: function() {		
+			
 			//this.oid = -1;
 			//$('.basemap-selector').trigger('change', 3);
 			this.mapScale  = this.map.getScale();
@@ -125,6 +126,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			this.clicks.appSetup(this);
 			// Create ESRI objects and event listeners	
 			this.esriapi.esriApiFunctions(this);
+			
 			
 			//set varaibles
 			this.severityDict = {5:"Severe", 4:"Significant", 3:"Moderate", 2:"Minor", 1:"Insignificant"};
@@ -279,6 +281,16 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				
 			}));
 			
+			
+			//set up initial barrier summary by for the whole region
+			var avgNetRound = this.round(this.config.zoomTo["Region"][1]["avgNetwork"]*0.000621371, 2);
+			lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo["Region"][1]["dams"], 14000, '#0000b4'));
+			lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"], 200000, '#0082ca'));
+			lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+
+			
+			
+			
 		    //set up metric weight tabs
             jQuery('.tabs .tab-links a').on('click', function(e)  {
                 tabIDprefix = this.id.split("tab")[0];
@@ -311,13 +323,15 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     if (parseFloat(v.value) > 0){$('#' + v.id).addClass('bp_weighted');}
                     else{$('#' + v.id).removeClass('bp_weighted');}                                
                 }));
+                console.log(this.gpVals)
                 this.sumWeights = this.metricWeightCalculator(this.gpVals);
-                $('#'+ this.id + "bp_currWeight").text(this.sumWeights);
+                console.log(this.sumWeights)
+                $('#'+ this.id + "currWeight").text(this.sumWeights);
                 if (this.sumWeights !=100){
-                    $('#'+ this.id +"bp_currWeight").css('color', 'red');
+                    $('#'+ this.id +"currWeight").css('color', 'red');
                 }
                 if (this.sumWeights ==100){
-                    $('#'+ this.id +"bp_currWeight").css('color', 'green');
+                    $('#'+ this.id +"currWeight").css('color', 'green');
                 } 
             }));
 			
@@ -452,7 +466,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id +"radarMetricChangerOpenExpander").hide();
 			$("#" + this.id +"consensusResultFiltersExpander").hide();
 			$("#" + this.id +"additionalLayersExpander").hide();
-			$('#' + this.id + 'clickInstructions').show();  
+			$('#' + this.id + 'clickInstructions').hide();  
 			
 			//Set up the +/- expanders 
 			this.expandContainers = ["consensusRadarBlock", "barrierSeverity", "customFilter","consensusResultFilters", "customMetric", 
@@ -569,7 +583,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					v = "none";
 				}
 				$('#' + c.target.id ).parent().next().find("span").html(v);
-				console.log(v)
 				console.log(this.config.zoomTo[v]);
 				console.log(this.config.zoomTo[v][0]);
 				console.log(this.config.zoomTo[v][1]["dams"]);
@@ -580,14 +593,18 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
           			new SpatialReference({ wkid:3857 }));
 				this.map.setExtent(zoomExt);
 				
+				$("#" + this.id + "damSpan").text(this.config.zoomTo[v][1]["dams"]);	
 				$("#" + this.id + "roadCrossingSpan").text(this.config.zoomTo[v][1]["crossings"]);
-				$("#" + this.id + "damSpan").text(this.config.zoomTo[v][1]["dams"]);
 				$("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2));
-				// var zoomHTML = "<p>There are " + this.config.zoomTo[v][1]["dams"] + " dams</p>" +
-							   // "<p>" + this.config.zoomTo[v][1]["crossings"] + " road-stream crossings</p>" +
-							   // "<p>and the average connected river network upstream of these barriers is " + Math.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371) + "miles</p>" ;
-// 				
-				// $("#" + this.id + "zoomStatsContent").html(zoomHTML);
+				var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2);
+
+				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo[v][1]["dams"], 5000, '#0000b4'));
+				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"], 60000, '#0082ca'));
+				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+
+				this.map.addLayer(this.dynamicLayer);
+
+				$('#' + this.id + 'clickInstructions').show(); 
 			}));
 		},
 		
@@ -1226,7 +1243,59 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			//console.log(this.radarDataFiltered);
 			this.RadarChart.draw("#" + this.id + "consensusRadarContainer", this.radarDataFiltered, radarChartOptions, this);
 		},		
+
+		barChart: function(theme, chartSelector, d, maxVal, color){
+			var categories = [];
+			var values = [];
+			values.push(d);
+			categories.push(theme);	
+			var xscale = d3.scaleLinear()
+							.domain([0,maxVal])
+							.range([0,200]);
+	
+			var yscale = d3.scaleLinear()
+							.domain([0,categories.length])
+							.range([0,10]);
+
+			d3.select("#" + chartSelector).select("svg").remove();
+			var canvas = d3.select("#" + chartSelector)
+							.append('svg')
+							.attr("id", chartSelector + "svg")
+							.attr('width',300)
+							.attr('height',20);
+ 	
+			var chart = canvas.append('g')
+								.attr("transform", "translate(0,0)")
+								.attr('id',chartSelector + 'bars')
+								.selectAll('rect')
+								.data(values)
+								.enter()
+								.append('rect')
+								.attr('height',18)
+								.attr('x',0)
+								.attr('y', function(d,i){ return yscale(i); })
+								.style('fill',color)
+								.attr('width',function(d){ return 0; });
+	
+			var transit = d3.select("#" + chartSelector + "svg").selectAll("rect")
+							    .data(values)
+							    .transition()
+							    .duration(1000) 
+							    .attr("width", function(d) {return xscale(d); });
+	
+			var transitext = d3.select('#' + chartSelector + 'bars')
+								.selectAll('text')
+								.data(values)
+								.enter()
+								.append('text')
+								.attr('x',function(d) {return xscale(d)-0; })
+								.attr('y',function(d,i){ return yscale(i)+14; })
+								.text(function(d){ return " " + d+" " + theme; })
+									.style('fill','#000000')
+									.style('font-size','12px');
 		
+		},
+
 		setUpAdditionalLayers: function(addlLayers){
 			$.each(addlLayers, lang.hitch(this, function(k, v){
 				console.log("layer Name: " + k + " layerID: " + v[0] +" URL: " + v[1]);
@@ -1237,7 +1306,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 							'<div class="check"></div>' +
 							'<span class="form-text">' + k + '</span>' +
 						'</label>' +
-						'<span class="fa fa-info-circle info" title="Could plug in a title here"></span>' +
+						'<span class="fa fa-info-circle info" title="' + v[3] + '"></span>' +
 						'<div class="transparency-control" data-layer="' + v[0] + '" id="' + this.id + v[0]+  'transp" data-opacity="100">' +
 							'<span class="transparency-header">Transparency</span>' +
 							'<div class="transparency-label"><span class="value">100%</span></div>' +

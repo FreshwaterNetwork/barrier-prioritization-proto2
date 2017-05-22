@@ -79,6 +79,7 @@ function ( declare, d3 ) {
 				//Append a g element		
 				var g = svg.append("g")
 						.attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.h/2 + cfg.margin.top) + ")");
+						
 				
 				/////////////////////////////////////////////////////////
 				////////// Glow filter for some extra pizzazz ///////////
@@ -220,7 +221,10 @@ function ( declare, d3 ) {
 					.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
 					//.style("fill", function(d,i,j) {return cfg.color(j); })
 					.style("fill", cfg.color(0))
-					.style("fill-opacity", 0.8);
+					.style("fill-opacity", 0.8)
+					.transition()
+					.duration(1000) ;
+					
 			
 				/////////////////////////////////////////////////////////
 				//////// Append invisible circles for tooltip ///////////
@@ -270,7 +274,8 @@ function ( declare, d3 ) {
 							//just show the value, not the metric name
 							.html(tooltipValue)
 							.transition().duration(200)
-							.style('opacity', 1);
+							.style('opacity', 1)
+							.style('font-weight', 600);
 							//.call(wrap, 50);
 					})
 					.on("mouseout", function(){
