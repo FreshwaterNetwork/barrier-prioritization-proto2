@@ -25,6 +25,16 @@
 		"DC": [[-8600964.674038133,4692317.336831648,-8552159.631478114,4721516.281636545],{"dams":0, "crossings":54, "avgNetwork":533}],
 		"Region": [[-8600964.674038133,4692317.336831648,-8552159.631478114,4721516.281636545],{"dams":13889, "crossings":196329, "avgNetwork":1334}]
 	},
+    "severityDict" : {
+    	'Dams':'Use_Dams',
+		'Dams (Excluding Dams with Passage)':'Use_Dams_ExclPassage',
+		'Severe':'Use_Severe',
+		'Severe (Excluding Dams with Passage)':'Use_Severe_ExclPassage',
+		'Significant':'Use_Significant',
+		'Moderate':'Use_Moderate',
+		'Minor':'Use_Minor',
+		'Insignificant':'Use_Insignificant'
+     },
 	"includePassabilityOption" : true,
 	"resultTier" : "AvgTier",
 	"severityField" : "Passability_Desc",

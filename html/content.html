@@ -248,9 +248,9 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				<h4 style="text-align: center;" id="customMetricExpander" class="bp_expander">3. Do you want to use the consensus anadromous fish metric weights or customize them? <span class="bp_expand">+</span></h4>
 				<div id="customMetricContainer" class="bp_flexColHCenter">
 					<div class="toggle-btn bp_flexRowHCenter" style="width:100px;" >
-						<input type="radio" id="useConsensusWeights2" name="useConsensusWeights" value="no" checked/>
+						<input type="radio" id="useConsensusWeights2" name="useConsensusWeights" value="yes" checked/>
 						<label for="useConsensusWeights2">Consensus</label>
-						<input type="radio" id="useConsensusWeights1" name="useConsensusWeights" value="yes"/>
+						<input type="radio" id="useConsensusWeights1" name="useConsensusWeights" value="no"/>
 						<label for="useConsensusWeights1">Customize</label>
 					</div>
 					<div class="bp_flexColHCenter" id="customWeightsDiv" >
@@ -408,8 +408,8 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 class="infoDoc">Documentation</h3>
 	<div class="explainWrap" style="display:block;">
 		<h4 style="text-align:center">Welcome to the aquatic barrier prioritization tool</h4>
-		<figure>
-			<img src="plugins/barrier-prioritization-proto2/images/dam.jpg"></img>
+		<figure >
+			<img src="plugins/barrier-prioritization-proto2/images/dam.jpg" ></img>
 			<figcaption style="font-size:10px">Dam on the Presumpscot River, Maine.  &copy; Paul Noble Photography <a href="https://creativecommons.org/licenses/by-nc-nd/2.0/">Flickr Creative Commons</a>.</figcaption>
 		</figure>
 		<p>
@@ -439,31 +439,25 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 class="moreInfo">How to Run a Custom Analysis</h3>
 	<div class="explainWrap">
 		<p>
-			In addition to the multi-stakeholder consensus prioritization for anadromous fish species, this app provides the ability to run 
-			customized prioritization scenarios objectives.  There are five ways a prioritization can be customized:
+			In addition to the multi-stakeholder consensus prioritization for anadromous fish species, this app provides the ability to run customized prioritization scenarios objectives.  There are five ways a prioritization can be customized:
 		</p>
 		<ol>
 			<li>
-				The <strong>severity of barriers</strong> that are included in the analysis.  Barriers that are excluded from the analysis do not affect the
-				results in any way -- it is as if they do not exist.  The barrier severity can be set ot dams only, only dams that do NOT have 
-				fish passage facilities (in this case dams WITH fish passage facilities are considered fully permeable), or dams and road-stream
-				crossings of varying degrees of severity (severe, significant, moderate, minor, insignificant).  In each case, the barriers used
-				in the analysis will include degree of severity selected and all those that are more severe.  For example, if "Significant" barriers
-				chosen, the analysis will include "Significant" and "Severe" road-stream crossings as well as all dams (which are always considered Severe)
+				The <strong>severity of barriers</strong> that are included in the analysis.  Barriers that are excluded from the analysis do not affect the results in any way -- it is as if they do not exist.  The barrier severity can be set ot dams only, only dams that do NOT have fish passage facilities (in this case dams WITH fish passage facilities are considered fully permeable), or dams and road-stream crossings of varying degrees of severity (severe, significant, moderate, minor, insignificant).  In each case, the barriers used in the analysis will include degree of severity selected and all those that are more severe.  For example, if "Significant" barriers chosen, the analysis will include "Significant" and "Severe" road-stream crossings as well as all dams (which are always considered Severe)			</li>
+			<br>
+			<li>
+				The <strong>geographic extent</strong> of the analysis.  Setting this value will limit the analysis to a given state, watershed, or to rivers with documented presence of one or more anadromous species.  Importantly, barriers that excluded at this step still have an influence on the analysis. For example, if the analysis is restricted to Vermont, the metric which assesses the number of downstream barriers will still count those barriers that are downstream, even if they are outside of Vermont (e.g. dams on the Connecticut River in Massachusetts).  To limit the geographic extent of the analysis, navigate to the second option of the "Run a Custom Analysis" pane and select "Yes".  Doing so exposes three dropdown menus which can be used to develop simple expressions.  For example "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm">ArcGIS help pages. </a> 
+			</li>
+			<br>
+			<li>
+				The <strong>metric weights</strong> can be changed from the values used in the stakeholder-consensus anadromous fish prioritization.  The metrics weights are relative (they must sum to 100) and they indicate how important a given metric is for the objective of a prioritization.  For example, if the objective of  is to identify priority barriers to restore brook trout habitat, metrics which assess whether the barrier is an Eastern Brook Trout Joint Venture  catchment will be of more importance than the presence of anadromous fish downstream of the barrier (which may have no bearing whatsoever).  The  metrics are organized by thematic tabs, however, these tabs have no bearing on the analysis - they are for oganization only.  By deafult, the metrics  are populated with the weights used in the consensus anadromous fish prioritization.
+			</li>
+			<br>
+			<li>
+				You can <strong>model the removal</strong> of up to 10 barriers in the analysis.  Doing so will treat the barriers as if they did not exist. This functionality can be used to assess the impact of a proposed restoration project on the surround priorities ("if we remove this barrier, will the next barrier upstream become a high priority?"), address known data-errors ("I know this barrier is passable, so is the next barrier upstream a priority?") and to assess multiple barriers in series as a single project ("We are looking at restoring these 3 barriers in succession and I'd like to know their priorty as a single project, not as individual projects").  Selecting this option will reveal a "Select Barriers" button which will add the barriers, symbolized as black points, to the map.  Clicking on these points will select them for removal in the analysis.
 			</li>
 			<li>
-				The <strong>geographic extent</strong> of the analysis.  Setting this value will limit the analysis to a given state, watershed, or to rivers with
-				documented presence of one or more anadromous species.  Importantly, barriers that excluded at this step still have an influence on the analysis.
-				For example, if the analysis is restricted to Vermont, the metric which assesses the number of downstream barriers will still count those barriers
-				that are downstream, even if they are outside of Vermont (e.g. dams on the Connecticut River in Massachusetts).  To limit the geographic extent of the 
-				analysis, navigate to the second option of the "Run a Custom Analysis" pane and select "Yes".  Doing so exposes three dropdown menus which can be 
-				used to develop simple expressions.  For example "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the 
-				"IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression see the 
-				<a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm">ArcGIS help pages. </a> 
-			</li>
-			<li>
-				The metric weights can be changed from the values used in the stakeholder-consensus anadromous fish prioritization.  The metrics weights
-				are relative (they must sum to 100) and they indicate how important a given metric is 
+				<strong>Summary statistics</strong> can be run on the results of the custom analysis.  Selecting this option will reveal dropdown menus for selecting the attribute that the results will be summarized within (e.g. state, watershed) and the value that will be summarized (e.g. reuslt Tier). When complete, the summary statistics will be available from the "Custom Analysis Results" pane. 
 			</li>
 		</ol>
 	</div>

@@ -15,6 +15,7 @@
 	"startingUseFilter" : false,
 	"startingSummarizeBy" : "",
 	"startingSummaryStatField" : "",
+	"startingZoomState" : "",
 	"startingConsensusTierFilterMin":1,
 	"startingConsensusTierFilterMax":20,
 	"startingConsensusSeverityFilterMin":1,
@@ -32,47 +33,5 @@
 		"onConsLand",
 		"usNumSzCl"
 	],
-	"startingWeights" : {
-		"batFuncUS" : 20,
-		"batCountDS" : 10,
-		"DSFalls" : 0,
-		"DSHydro" : 0,
-		"dsPassabilityProduct" : 5,
-		"batAbs" : 0,
-		"batTotUSDS" : 0,
-		"batLenUS" : 0,
-		"DA_PercFor" : 0,
-		"DA_PercNat" : 10,
-		"DA_PercAg" : 0,
-		"DA_PercImp" : 10,
-		"usForARA" : 0,
-		"dsForARA" : 0,
-		"usNatARA" : 5,
-		"dsNatARA" : 0,
-		"usAgARA" : 0,
-		"dsAgARA" : 0,
-		"usImpARA" : 0,
-		"dsImpARA" : 0,
-		"onConsLand" : 5,
-		"CumDistInd" : 0,
-		"QDSANAD" : 20,
-		"QDSNUMANAD" : 10,
-		"fishRich" : 0,
-		"g123Fish" : 0,
-		"g123Mussel" : 0,
-		"g123Cray" : 0,
-		"in_EBTJV_2012" : 0,
-		"in_deWeberTrout" : 0,
-		"block_EBTJV_2012 " : 0,
-		"block_BT_DeWeber " : 0,
-		"NESZCL_Int" : 0,
-		"TotNumSzCl" : 0,
-		"usNumSzCl" : 0,
-		"usSzClGn" : 5,
-		"totMiCold" : 0,
-		"totMiCC" : 0
-	}
-
-
-
+	"startingWeights" : {}
 }
