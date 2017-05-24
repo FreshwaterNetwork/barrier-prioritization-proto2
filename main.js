@@ -15,7 +15,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, SpatialReference) {
 	return declare(PluginBase, {
 		// The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
-		toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
+		toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: false, rendered: false, resizable: false,
 		hasCustomPrint: false, size:'small',
 		
 		// First function called when the user clicks the pluging icon. 
