@@ -16,7 +16,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				<div class="bp_flexColHCenter">
 					<div class="chosen-wrap" style="margin-bottom:10px;">
 						<select data-placeholder="Northeast Region" id="zoomState" class="chosen">
-							<option></option>
+							<option value="Region">Northeast Region</option>
 							<option value="ME">Maine</option>
 							<option value="NH">New Hampshire</option>
 							<option value="VT">Vermont</option>
@@ -80,11 +80,12 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</div>
 		<div class="bp_flexColHCenter">
 			<div id="clickInstructions" class="bp_strong"><br><br>Click on a barrier to visualize its data</div>
-			<h4 id="consensusRadarBlockExpander" class="bp_expander">Assess a barrier <span class="bp_expand">-</span></h4> 
+			<div><h4 id="consensusRadarBlockExpander" style="display:inline" class="bp_expander">Assess a barrier <span class="bp_expand">-</span></h4><img src="plugins/barrier-prioritization-proto2/images/info.png" alt="Learn how to interpret this information" title="Learn how to interpret this information" class="infoIcon" id="-consensusRadarBlockInfo"> </div>
+			
 			<div id="consensusRadarBlockContainer" class="bp_flexColHCenter">
 				<div id="consensusRadarContainer" class="bp_flexColHCenter">
 					
-					<p id="radarHeader"></p>
+					<p id="radarHeader" align="center"></p>
 					<div id="consensusRadar" class="bp_flexColHCenter"></div>
 				</div>
 				<h6 id="radarMetricChangerOpenExpander" class="bp_expanderOpen bp_grayText">Change the metrics that are displayed +</h6>
@@ -127,8 +128,9 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				</div>
 				
 				<div class="bp_flexColHCenter">
-				    <h4 id="consensusResultCustomFilterOpenExpander" class="bp_expanderOpen bp_grayText">Build a Custom Filter <span class="bp_expand bp_grayText">+</span></h4>
+				    <h4 id="consensusResultCustomFilterOpenExpander"  style="display:inline" class="bp_expanderOpen bp_grayText">Build a Custom Filter <span class="bp_expand bp_grayText">+</span></h4>
 				    <div id="consensusResultCustomFilterOpenContainer">
+				    	<p>Build a custom filter to limit the barriers that are shown in the map.  For example "STATE" = 'CT' would only show barriers in Connecticut. While "Type" = 'Dam' would only show dams.  To use multiple values use the IN operator, as in "STATE" in ('CT', 'MA')</p>
 						<div class="chosen-wrap" style="margin-bottom:10px;">
 							<select data-placeholder="Filter By..." id="filterConsensusResultsField" class="chosen"  title="Filter the results...">
 								<option></option>
@@ -380,7 +382,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 id="customAnalysisResultsAccord">Custom Analysis Results</h3>
 	<div>
 		<section>
-			<h3>Learn how to manipulate the results<img src="plugins/barrier-prioritization-proto2/images/info.png" alt="show more info in documentation" class="infoIcon" id="-resultsInfo"></h3>
+			<h3>Learn how to manipulate the results<!-- <img src="plugins/barrier-prioritization-proto2/images/info.png" alt="show more info in documentation" class="infoIcon" id="-resultsInfo"> --></h3>
 			<div id="gpSumStatsTableDivContainer" class="gpSumStatsTableDivContainer">
 			    <div id="gpSumStatsTableDiv" class="gpSumStatsTableDiv">
 			        <table  id="gpSumStatsTable" class="tablesorter" > 
@@ -419,28 +421,58 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			impassable culverts limit the ability of anadromous fish species to reach preferred freshwater spawning habitats from the sea 
 			and prevent brook trout populations from reaching thermal refuges. 
 		</p> 
+		<br/>
 		<p>
 			This app can be used to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in the states of
 			the Northeastern U.S.  
 		</p>
+		<figure >
+			<img src="plugins/barrier-prioritization-proto2/images/culverts.png" ></img>
+			<figcaption style="font-size:10px">Culverts showing different kinds connectivity problems including outlet drop, high water velocity, low water depth, flowconstriction and inlet drop.  &copy; <a href="https://streamcontinuity.org/">NAACC</a>.</figcaption>
+		</figure>
 		<p>
 			Begin by clicking the "Start Using Aquatic Barrier Prioritization" button above.  Then select a state to 
 			see a sumamry of the status of aquatic connectivity in that state based on the number of dams and road-stream crossings and the 
 			average length of the connected river network that results from these barriers.
 		</p>
+		<br/>
 		<p>
 			Click on an individual barrier to get a summary of its ecological attribtues.  A subset of the available attribtues were used to 
 			develop a multi-stakeholder consensus prioritization for anadromous fish like American shad, river herring, and Atlantic salmon. 
 		</p>
+		<br/>
 		<p>
 			For additional details and complete documentation about this project, you can downlaod the project report <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>here</strong></a>.
 		</p>
 	</div> 
+	<h3 class="consensusRadarBlockInfo">Interpreting the barrier data &amp; results</h3>
+	<div class="explainWrap">
+		<p>
+			When a barrier is clicked, the name of the barrier, it's unqiue identifier, the severity of the barrier (passability), and the result Tier from the consensus anadormous prioritization scneario are displayed.  A Tier 1 barrier is the highest priorty -- most potential gained from a passage restoration project -- while a Tier 20 barrier is the lowest priority.
+		</p>
+		<br/>
+		<p>
+			Additionally, a "radar" plot of the barrier's attributes is displayed.  This radar plot is designed to provide a quick and intuitive way to visualize the qualities of that barrier.  Each attribute is arranged so that values that are desirable in a passage restoration project are at the margin of the plot.  For example, a barrier that has the potential to open up 200 miles of habitat would have a value towards the margin of the plot since opening up a lot of upstream abitat is desirable in a passage restoration project for anadromous fish.  Likewise a barrier with 0% impervious surface in its watershed would have a a value at the margin of the plot since no impervious surface (urban paved landcover) is a proxy for good quality.
+		</p>
+		<div class="bp_flexColHCenter"><img src="plugins/barrier-prioritization-proto2/images/radar.png"></div>
+		<p>
+			The axes of the radar plot are normalized relative to the other barriers.  Thus, using the example from above, if the "best" barrier has 2% impervious surface in its watershed, it would have its value at the margin of the plot.  Hovering over the red dot that denotes the value will display the real-world value for that metric.
+		</p>
+		<br/>
+		<p>
+			Importantly, the values that are displayed are based on the metrics generated from all barriers (all degrees of barrier severity: Insignificant through Severe).  Howveer, the metrics can change if a class of barriers is excluded (e.g. if "Insignificant" barriers are excluded from the analysis, the "number of downstream barriers" metric for the remaining barriers will change if they had any insignificant barrier downstream). A custom analysis can be run to generate metrics using a different degree of barrier severity.  
+		</p>
+		<br/>
+		<p>
+			The consensus anadromous results are based on an average score resulting from five sets of metrics - one calcualted for each of the degrees of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf">NE Aquatic Connectivity report</a> for more information about how barrier severity was handled in the analysis. 
+		</p>
+	</div>
 	<h3 class="moreInfo">How to Run a Custom Analysis</h3>
 	<div class="explainWrap">
 		<p>
 			In addition to the multi-stakeholder consensus prioritization for anadromous fish species, this app provides the ability to run customized prioritization scenarios objectives.  There are five ways a prioritization can be customized:
 		</p>
+		<br/>
 		<ol>
 			<li>
 				The <strong>severity of barriers</strong> that are included in the analysis.  Barriers that are excluded from the analysis do not affect the results in any way -- it is as if they do not exist.  The barrier severity can be set ot dams only, only dams that do NOT have fish passage facilities (in this case dams WITH fish passage facilities are considered fully permeable), or dams and road-stream crossings of varying degrees of severity (severe, significant, moderate, minor, insignificant).  In each case, the barriers used in the analysis will include degree of severity selected and all those that are more severe.  For example, if "Significant" barriers chosen, the analysis will include "Significant" and "Severe" road-stream crossings as well as all dams (which are always considered Severe)			</li>
@@ -461,10 +493,10 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			</li>
 		</ol>
 	</div>
-	<h3 class="resultsInfo">How to Interpret the Custom Results</h3>
+	<!-- <h3 class="resultsInfo">How to Interpret the Custom Results</h3>
 	<div class="explainWrap">
 		<p>
 			Here"s how to use the results
 		</p>
-	</div>
+	</div> -->
 </div>

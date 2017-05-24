@@ -20,14 +20,15 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		
 		// First function called when the user clicks the pluging icon. 
 		initialize: function (frameworkParameters) {
+			//only show the "x" not the "_" minimize
 			$('.plugin-minimize').hide();
+			
 			// Access framework parameters
 			declare.safeMixin(this, frameworkParameters);
 			// Define object to access global variables from JSON object. Only add variables to varObject.json that are needed by Save and Share. 
 			this.obj = dojo.eval("[" + obj + "]")[0];	
 			this.config = dojo.eval("[" + config + "]")[0];
 			this.filters = dojo.eval("[" + filters + "]")[0]; 
-			console.log(this.filters);
 			this.url = this.config.url;
 			this.layerDefs = [0];
 			this.gp = new esri.tasks.Geoprocessor(this.config.gpURL);
@@ -150,7 +151,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			var idUpdate = idUpdate0.replace(/id="/g, 'id="' + this.id);
 			$('#' + this.id).html(idUpdate);
 			
-			console.log($('#' + this.id + 'rslider'));
+
+			//make overflow hidden on content pane to avoid having two vertical scrollbars
+			$("#" + this.id).css({overflow: "hidden"});
+
 			// Click listeners
 			this.clicks.appSetup(this);
 			// Create ESRI objects and event listeners	
@@ -174,6 +178,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id +"consensusRadarBlockExpander").hide();
 			$("#" + this.id +"radarMetricChangerOpenExpander").hide();
 			$("#" + this.id +"consensusResultFiltersExpander").hide();
+			$("#" + this.id +"stateStatsExpander").hide();
 			$("#" + this.id +"additionalLayersExpander").hide();
 			$('#' + this.id + 'clickInstructions').hide();  
 
@@ -315,10 +320,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}));
 			
 			//set up initial barrier summary by for the whole region
-			var avgNetRound = this.round(this.config.zoomTo["Region"][1]["avgNetwork"]*0.000621371, 2);
-			lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo["Region"][1]["dams"], 14000, '#0000b4'));
-			lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"], 200000, '#0082ca'));
-			lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+			this.zoomToStates("Region");
+
 
 			
 		    //set up metric weight tabs
@@ -503,6 +506,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			//Hide all expansion containers & set cursor to pointer		
 			for (var i=0; i<this.expandContainers.length; i++){
 				$("#" + this.id + this.expandContainers[i] + "Container").hide();
+				$("#" + this.id + "-" +  this.expandContainers[i] + "Info").hide();
 				$("#" + this.id + this.expandContainers[i] + "Expander").css( 'cursor', 'pointer' );
 				if (this.expandContainers[i] == "stateStats"){
 					$("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
@@ -518,9 +522,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					if (this.id + this.expandContainers[i]+"Expander" == expander && $("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===false){
 						lang.hitch(this, this.selectorTextReplace(e.currentTarget, "+", "-"));
 						$("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
+						$("#" + this.id + "-" +  this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);
 					}
 					else if ($("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===true){
 						$("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
+						$("#" + this.id + "-" + this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);
 						lang.hitch(this, this.selectorTextReplace("#" + this.id + this.expandContainers[i]+"Expander", "-", "+"));
 					}
 				}
@@ -610,6 +616,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		zoomToStates: function(v){
 			//build zoom-to chosen
 			//$('#' + c.target.id ).parent().next().find("span").html(v);
+			console.log(v)
 			console.log(this.config.zoomTo[v]);
 			console.log(this.config.zoomTo[v][0]);
 			console.log(this.config.zoomTo[v][1]["dams"]);
@@ -623,11 +630,20 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id + "damSpan").text(this.config.zoomTo[v][1]["dams"]);	
 			$("#" + this.id + "roadCrossingSpan").text(this.config.zoomTo[v][1]["crossings"]);
 			$("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2));
-			var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2);
+			var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2);	
 
-			lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo[v][1]["dams"], 5000, '#0000b4'));
-			lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"], 60000, '#0082ca'));
-			lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+			if (v != "Region"){
+				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo[v][1]["dams"], 5000, '#0000b4'));
+				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"], 60000, '#0082ca'));
+				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+			}
+			//use different max values for the whole region
+			if (v == "Region"){
+				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo["Region"][1]["dams"], 14000, '#0000b4'));
+				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"], 200000, '#0082ca'));
+				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+			}			
+			
 			this.map.addLayer(this.dynamicLayer);
 			$('#' + this.id + 'clickInstructions').show(); 
 			
@@ -1542,13 +1558,18 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                        this.IdentifyFeature.setInfoTemplate(this.popupInfoTemplate);							
 							if (this.useRadar === true){
 								lang.hitch(this, this.radarChart());
-								$("#" + this.id +"radarHeader").html(this.radarClickAllData[this.config.barrierNameField]);
-								//hide the click instructions and show the "Assess a barrier" div if not visible
+								$("#" + this.id +"radarHeader").html("Name: " + this.radarClickAllData[this.config.barrierNameField] +"<br> ID: " + this.radarClickAllData[this.config.uniqueID] +"<br>" + this.radarClickAllData[this.config.severityField] + "<br>Anadromous Result Tier= " + this.radarClickAllData[this.config.resultTier]);
+								//hide the click instructions and show the "Assess a barrier" div if not visible - on first click
 								$('#' + this.id + 'clickInstructions').hide();  
 								if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
 									$("#" + this.id +"consensusRadarBlockExpander").show();
 									$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
 								}
+								//switch to the radar plot on every identify click
+								if ($("#" + this.id +"consensusRadarBlockExpander").html().indexOf("-") == -1){
+									$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
+								}
+								
 		               			$("#" + this.id +"radarMetricChangerOpenExpander").show();
 		               			$("#" + this.id +"consensusResultFiltersExpander").show();
 								$("#" + this.id +"additionalLayersExpander").show();
