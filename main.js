@@ -182,6 +182,15 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id +"additionalLayersExpander").hide();
 			$('#' + this.id + 'clickInstructions').hide();  
 
+			//disable identify if not on explore consensus accordion
+			// $(".accord-header").on("click", lang.hitch(this, function(e){
+				// if (e.currentTarget.id != "#" + this.id + "exploreConsensusAccord"){
+					// this.activateIdentify=false;
+					// lang.hitch(this, this.refreshIdentify(this.config.url));
+				// }
+// 
+			// }));
+
 			if (this.config.includeExploreConsensus == true){
 				//Consensus Tier Slider
 				$('#' + this.id + 'consensusResultFilterSliderTier').slider({
@@ -311,18 +320,20 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				}
 			}));
 			$('#' + this.id +'exploreConsensusAccord').on('click', lang.hitch(this,function(e){
-				try{this.map.removeLayer(this.gpResLayer);}catch(err){console.log("no gp layer " + err.message );}
-				try{this.map.removeLayer(this.dynamicLayer);} catch(err){console.log("no dyn layer " + err.message );}
+				if (this.gpResLayer != undefined){
+					this.map.addLayer(this.dynamicLayer);
+                	this.map.removeLayer(this.gpResLayer);
+				}
+				// if (this.gpResLayer.visible === true){this.map.removeLayer(this.gpResLayer);}
+				// if (this.dynamicLayer.visible === true){this.map.removeLayer(this.dynamicLayer);}
+				//try{this.map.removeLayer(this.gpResLayer);}catch(err){console.log("no gp layer " + err.message );}
+				//try{this.map.removeLayer(this.dynamicLayer);} catch(err){console.log("no dyn layer " + err.message );}
 				this.map.addLayer(this.dynamicLayer);
 				this.useRadar = true;
+				this.activateIdentify=true;
 				lang.hitch(this, this.refreshIdentify(this.config.url));
-				
 			}));
 			
-			//set up initial barrier summary by for the whole region
-			this.zoomToStates("Region");
-
-
 			
 		    //set up metric weight tabs
             jQuery('.tabs .tab-links a').on('click', function(e)  {
@@ -451,11 +462,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
  
         				
 			//apply starting weights 
-        	lang.hitch(this, this.applyWeights(this.obj.startingWeights));
 	        if (this.obj.startingUseConsensusWeights === "no"){
+	        	lang.hitch(this, this.applyWeights(this.obj.startingWeights));
 	        	$("input[name='useConsensusWeights']").filter('[value=no]').prop('checked', true); 
 	        	$("#" + this.id +"customWeightsDiv").show();
 	        }
+	        else{lang.hitch(this, this.applyWeights(this.config.diadromous));}
+
               
            	//apply starting passability
 			$("#" + this.id + "passability").val(this.obj.startingPassability).trigger("chosen:updated");
@@ -483,10 +496,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 						
 			//apply starting zoom state
+			
 			if (this.obj.startingZoomState != ""){
 				$("#" + this.id + "zoomState").val(this.obj.startingZoomState).trigger("chosen:updated");
-				lang.hitch(this, this.zoomToStates(this.obj.startingZoomState));
+				lang.hitch(this, this.zoomToStates(this.obj.startingZoomState, "no"));
             }
+            else{lang.hitch(this, this.zoomToStates("Region", "no"));}
            
             //clear all metric weights, filters, barriers to remove, uncheck all options
             $('#' + this.id +"applyZeroWeight").on('click',lang.hitch(this,function(e){ 
@@ -607,22 +622,14 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 						var v = c.target.value;
 						// check for a deselect
 						if (v.length == 0){v = "none";}
-					lang.hitch(this, this.zoomToStates(v));
+					lang.hitch(this, this.zoomToStates(v, "yes"));
 			}));
 	
 			this.rendered = true;	
 		},	
 		
-		zoomToStates: function(v){
+		zoomToStates: function(v, bool){
 			//build zoom-to chosen
-			//$('#' + c.target.id ).parent().next().find("span").html(v);
-			console.log(v)
-			console.log(this.config.zoomTo[v]);
-			console.log(this.config.zoomTo[v][0]);
-			console.log(this.config.zoomTo[v][1]["dams"]);
-			console.log(this.config.zoomTo[v][1]["crossings"]);
-			console.log(this.config.zoomTo[v][1]["avgNetwork"]);
-		
 			var zoomExt = new Extent(this.config.zoomTo[v][0][0],this.config.zoomTo[v][0][1], this.config.zoomTo[v][0][2], this.config.zoomTo[v][0][3],
       			new SpatialReference({ wkid:3857 }));
 			this.map.setExtent(zoomExt);
@@ -643,10 +650,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"], 200000, '#0082ca'));
 				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
 			}			
-			
-			this.map.addLayer(this.dynamicLayer);
-			$('#' + this.id + 'clickInstructions').show(); 
-			
+			if (bool === "yes"){
+				this.map.addLayer(this.dynamicLayer);
+				$('#' + this.id + 'clickInstructions').show(); 
+			}
 		},
 		
 		
@@ -961,13 +968,14 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 
 //prepare and pass the GP request object to gpURL
         submit: function(){
-            this.gpVals = {};
-            this.gpValsList = [];
-            this.weights = $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
-                this.gpVals[v.id] = v.value; 
-                this.gpValsList.push(v.value);               
-            }));
-            this.sumWeights = this.metricWeightCalculator(this.gpVals);
+        	this.getCurrentWeights();
+            // this.gpVals = {};
+            // this.gpValsList = [];
+            // this.weights = $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
+                // this.gpVals[v.id] = v.value; 
+                // this.gpValsList.push(v.value);               
+            // }));
+            // this.sumWeights = this.metricWeightCalculator(this.gpVals);
             if (this.sumWeights != 100){
                 alert("Metric weights must sum to 100");
             }
@@ -1496,7 +1504,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		
 		refreshIdentify: function(layerURL, layerDef) {           		
        		if (this.activateIdentify == true){  
-       			
+  
                 //Identify functionality...     
                 this.identifyRes = new IdentifyTask(layerURL);
                 this.identifyParams = new IdentifyParameters();
@@ -1528,8 +1536,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		                        this.IdentifyFeature = idResult.feature;
 		                        console.log(this.IdentifyFeature);
 		                        this.idContent = "";
-		                        $.each(idResult.feature.attributes, lang.hitch(this, function(k, v){
-		                        	console.log(this.identifyIterator);
+		                        $.each(idResult.feature.attributes, lang.hitch(this, function(k, v){ 
 		                            //HTML for identify popup -- loop through and include all fields except those in plugin-config blakclist
 		                            if ($.inArray(k, this.config.idBlacklist) == -1){
 		                            	this.radarClickAllData[k] = v;
@@ -1561,20 +1568,26 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 								$("#" + this.id +"radarHeader").html("Name: " + this.radarClickAllData[this.config.barrierNameField] +"<br> ID: " + this.radarClickAllData[this.config.uniqueID] +"<br>" + this.radarClickAllData[this.config.severityField] + "<br>Anadromous Result Tier= " + this.radarClickAllData[this.config.resultTier]);
 								//hide the click instructions and show the "Assess a barrier" div if not visible - on first click
 								$('#' + this.id + 'clickInstructions').hide();  
-								if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
-									$("#" + this.id +"consensusRadarBlockExpander").show();
-									$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
+								
+								if (this.identifyIterator ===0){
+									//go to the "Explore COnsensus ACcrodion" if not currently
+									if ($("#" + this.id + "exploreConsensusSection").is("visible")===false){
+										$("#" + this.id + "exploreConsensusAccord").trigger("click");
+									}
+									if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
+										$("#" + this.id +"consensusRadarBlockExpander").show();
+										$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
+									}
+									//switch to the radar plot on every identify click
+									if ($("#" + this.id +"consensusRadarBlockExpander").html().indexOf("-") == -1){
+										$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
+									}
+									
+			               			$("#" + this.id +"radarMetricChangerOpenExpander").show();
+			               			$("#" + this.id +"consensusResultFiltersExpander").show();
+									$("#" + this.id +"additionalLayersExpander").show();
+								
 								}
-								//switch to the radar plot on every identify click
-								if ($("#" + this.id +"consensusRadarBlockExpander").html().indexOf("-") == -1){
-									$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
-								}
-								
-		               			$("#" + this.id +"radarMetricChangerOpenExpander").show();
-		               			$("#" + this.id +"consensusResultFiltersExpander").show();
-								$("#" + this.id +"additionalLayersExpander").show();
-								
-								
 	               			}
 	               			this.identifyIterator ++; 
 	                   		return this.IdentifyFeature;
