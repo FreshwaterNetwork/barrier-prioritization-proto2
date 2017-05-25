@@ -29,12 +29,16 @@ function ( declare ) {
 						$('#' + t.id + 'infoAccord').show();
 						$('#' + t.id + 'mainAccord').hide();
 						$('#' + t.id + 'getHelpBtn').html('Back to Barrier Prioritization App');
+						$('#' + t.id + 'getHelpBtn').removeClass('button-default');
+						$('#' + t.id + 'getHelpBtn').addClass('button-primary');
 						t.clicks.updateAccord(t);
 						$('#' + t.id + 'infoAccord .infoDoc').trigger('click');
 					}else{
 						$('#' + t.id + 'infoAccord').hide();
 						$('#' + t.id + 'mainAccord').show();
 						$('#' + t.id + 'getHelpBtn').html('Back to Documentation');
+						$('#' + t.id + 'getHelpBtn').addClass('button-default');
+						$('#' + t.id + 'getHelpBtn').removeClass('button-primary');
 						t.clicks.updateAccord(t);
 					}			
 				});						
@@ -45,6 +49,8 @@ function ( declare ) {
 					$('#' + t.id + 'getHelpBtnWrap').show();
 					var ben = c.target.id.split("-").pop();
 					$('#' + t.id + 'getHelpBtn').html('Back to Barrier Prioritization App');
+					$('#' + t.id + 'getHelpBtn').removeClass('button-default');
+					$('#' + t.id + 'getHelpBtn').addClass('button-primary');
 					t.clicks.updateAccord(t);	
 					$('#' + t.id + 'infoAccord .' + ben).trigger('click');
 				});
