@@ -515,13 +515,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					lang.hitch(this, this.filterConsensusMapServiceSlider());
 					console.log("applying filter sliders");
 					$("#" + this.id + "clickInstructions").show();
-					console.log(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 0))
 					$("#" + this.id +"consFiltMax").text(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 0));
 					$("#" + this.id +"consFiltMin").text(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 1));
 					$("#" + this.id +"consSevMin").text(this.severityDict[$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 0)]);
 					$("#" + this.id +"consSevMax").text(this.severityDict[$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 1)]);					
-					// $("#" + this.id + "consensusResultFilterSliderTier").data("uiSlider")._change(); TODO
-					// $("#" + this.id + "consensusResultFilterSliderSeverity").data("lider")._change();
 				}
 			}
            
