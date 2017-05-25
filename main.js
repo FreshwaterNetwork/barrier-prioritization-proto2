@@ -85,29 +85,33 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				this.obj.extent = this.map.geographicExtent;
 				this.obj.stateSet = "yes";	
 				
+				//get the current map layers
+				if (this.dynamicLayer.visible === true){this.obj.startingMapLayers =true;}
+				
+				
 				//Get the state zoomed into
 				this.obj.startingZoomState = $("#" + this.id + "zoomState").val();
 				
 				//Get the current weights
-				$("input[id^=" + this.appDiv.id + "weightIn]").each(lang.hitch(this, function(i, v){
-                        var m = v.id.replace(this.appDiv.id + "weightIn-", "");
+				$("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
+                        var m = v.id.replace(this.id + "weightIn-", "");
                         this.obj.startingWeights[m] = parseInt(v.value);                
                  }));
                 this.obj.startingUseConsensusWeights = $("input[name='useConsensusWeights']:checked").val();
                 
 				//Get filter
-				this.obj.startingFilter = $("#" + this.appDiv.id + "userFilter").val();
+				this.obj.startingFilter = $("#" + this.id + "userFilter").val();
 				//Get list of barriers to remove
-				this.obj.startingBarriers2Remove = $("#" + this.appDiv.id + 'barriers2Remove').val();			
+				this.obj.startingBarriers2Remove = $("#" + this.id + 'barriers2Remove').val();			
 				this.obj.startingRemovingBarriers = this.removingBarriers;
-				this.obj.startingPassability = $("#" + this.appDiv.id + "passability").val();		
-				this.obj.startingConsensusTierFilterMin =$('#' + this.appDiv.id + 'consensusResultFilterSliderTier').slider("values", 0);
-				this.obj.startingConsensusTierFilterMax =$('#' + this.appDiv.id + 'consensusResultFilterSliderTier').slider("values", 1);
-				this.obj.startingConsensusSeverityFilterMin =$('#' + this.appDiv.id + 'consensusResultFilterSliderSeverity').slider("values", 0);
-				this.obj.startingConsensusSeverityFilterMax =$('#' + this.appDiv.id + 'consensusResultFilterSliderSeverity').slider("values", 1);
-				if ($('#' + this.appDiv.id + 'resultsConsensusFilter').val() != ""){
+				this.obj.startingPassability = $("#" + this.id + "passability").val();		
+				this.obj.startingConsensusTierFilterMin =$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 0);
+				this.obj.startingConsensusTierFilterMax =$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 1);
+				this.obj.startingConsensusSeverityFilterMin =$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 0);
+				this.obj.startingConsensusSeverityFilterMax =$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 1);
+				if ($('#' + this.id + 'resultsConsensusFilter').val() != ""){
 					this.obj.startingUseConsensusCustomFilter = true;
-					this.obj.startingConsensusCustomFilter = $('#' + this.appDiv.id + 'resultsConsensusFilter').val();
+					this.obj.startingConsensusCustomFilter = $('#' + this.id + 'resultsConsensusFilter').val();
 				}				
 				var state = new Object();
 				state = this.obj;
@@ -119,6 +123,9 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		//It's overwrites the default JSON definfed in initialize with the saved stae JSON.
 		setState: function (state) {
 			this.obj = state;
+			this.stateSet = this.obj.stateSet;
+			
+			console.log(this.obj);
 		},
 		// Called when the user hits the print icon
 		beforePrint: function(printDeferred, $printArea, mapObject) {
@@ -182,14 +189,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id +"additionalLayersExpander").hide();
 			$('#' + this.id + 'clickInstructions').hide();  
 
-			//disable identify if not on explore consensus accordion
-			// $(".accord-header").on("click", lang.hitch(this, function(e){
-				// if (e.currentTarget.id != "#" + this.id + "exploreConsensusAccord"){
-					// this.activateIdentify=false;
-					// lang.hitch(this, this.refreshIdentify(this.config.url));
-				// }
-// 
-			// }));
+
 
 			if (this.config.includeExploreConsensus == true){
 				//Consensus Tier Slider
@@ -197,7 +197,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					range:true, 
 					min:1, 
 					max:20, 
-					values:[1,20],
 					values: [this.obj.startingConsensusTierFilterMin, this.obj.startingConsensusTierFilterMax],
 					// called at end of slide. use change to ask server for data
 					change:lang.hitch(this,function(event,ui){
@@ -474,7 +473,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id + "passability").val(this.obj.startingPassability).trigger("chosen:updated");
 			
            
-			//apply starting filter
+			//apply starting filter for custom analysis
 			if (this.obj.startingFilter != ""){
 				$("input[name='filterBarriers']").filter('[value=yes]').prop('checked', true);
 				$("#" + this.id + "filterBuilderContainer").show();
@@ -487,6 +486,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				$("input[name='removeBarriers']").filter('[value=yes]').prop('checked', true);
 				$("#" + this.id + 'barrier2RemoveContainer').show();
 				$("#" + this.id + 'barriers2Remove').val(this.obj.startingBarriers2Remove);
+				lang.hitch(this, this.addSavedBarriersToRemove());
 			}
 
 			//apply starting summary stats inputs
@@ -496,17 +496,39 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 						
 			//apply starting zoom state
-			
 			if (this.obj.startingZoomState != ""){
 				$("#" + this.id + "zoomState").val(this.obj.startingZoomState).trigger("chosen:updated");
 				lang.hitch(this, this.zoomToStates(this.obj.startingZoomState, "no"));
             }
             else{lang.hitch(this, this.zoomToStates("Region", "no"));}
            
-            //clear all metric weights, filters, barriers to remove, uncheck all options
-            $('#' + this.id +"applyZeroWeight").on('click',lang.hitch(this,function(e){ 
-            	lang.hitch(this, this.clearAllInputs());
-            }));
+			//add barriers & apply filter if from saved state
+		    if (this.stateSet== "yes"){
+		    	if (this.obj.startingUseConsensusCustomFilter == true){
+					$('#' + this.id + 'resultsConsensusFilter').val(this.obj.startingConsensusCustomFilter);
+		   			$('#' + this.id + 'applyResultConsensusFilterButton').trigger('click');
+					console.log("applying custom filter");
+					$("#" + this.id + "clickInstructions").show();
+					
+				}
+				else{
+					lang.hitch(this, this.filterConsensusMapServiceSlider());
+					console.log("applying filter sliders");
+					$("#" + this.id + "clickInstructions").show();
+					console.log(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 0))
+					$("#" + this.id +"consFiltMax").text(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 0));
+					$("#" + this.id +"consFiltMin").text(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 1));
+					$("#" + this.id +"consSevMin").text(this.severityDict[$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 0)]);
+					$("#" + this.id +"consSevMax").text(this.severityDict[$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 1)]);					
+					// $("#" + this.id + "consensusResultFilterSliderTier").data("uiSlider")._change(); TODO
+					// $("#" + this.id + "consensusResultFilterSliderSeverity").data("lider")._change();
+				}
+			}
+           
+            // //clear all metric weights, filters, barriers to remove, uncheck all options
+            // $('#' + this.id +"applyZeroWeight").on('click',lang.hitch(this,function(e){ 
+            	// lang.hitch(this, this.clearAllInputs());
+            // }));
 			
 			//Start custom analysis 
 			$('#' + this.id +"submitButton").on('click',lang.hitch(this,function(e){
@@ -624,8 +646,9 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 						if (v.length == 0){v = "none";}
 					lang.hitch(this, this.zoomToStates(v, "yes"));
 			}));
-	
+			
 			this.rendered = true;	
+
 		},	
 		
 		zoomToStates: function(v, bool){
@@ -655,7 +678,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				$('#' + this.id + 'clickInstructions').show(); 
 			}
 		},
-		
+
 		
         //calculate current metric weights
         metricWeightCalculator: function (gpVals){
@@ -798,7 +821,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             }
             
             this.removeFeatureLayer.on("click", lang.hitch(this, function(e){
-
                 this.currID = e.graphic.attributes[this.uniqueID];
                 console.log(this.currID);
                 for (i = 0; i< this.removeFeatureLayer.graphics.length; i++){  
@@ -969,13 +991,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 //prepare and pass the GP request object to gpURL
         submit: function(){
         	this.getCurrentWeights();
-            // this.gpVals = {};
-            // this.gpValsList = [];
-            // this.weights = $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
-                // this.gpVals[v.id] = v.value; 
-                // this.gpValsList.push(v.value);               
-            // }));
-            // this.sumWeights = this.metricWeightCalculator(this.gpVals);
             if (this.sumWeights != 100){
                 alert("Metric weights must sum to 100");
             }
@@ -1162,10 +1177,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             this.identifyRes = new IdentifyTask(this.resMapServ);
             this.activateIdentify = true;
             this.useRadar = false;
-            lang.hitch(this, this.refreshIdentify(this.resMapServ));
-                                
+            lang.hitch(this, this.refreshIdentify(this.resMapServ));                                
 		},
-
 
 
 		//Display Summary Stats table
@@ -1247,6 +1260,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
             $("#" + this.id + "selectRadarAttrs").html(this.radarAttrs);
             
+            //this sets the starting radar metrics to be shown via config array
             this.startingRadarMetrics = []; //array from obj 
             for (var i=0; i<this.obj.startingRadarMetrics.length; i++){ 
             	this.startingRadarMetrics.push("PR" + this.obj.startingRadarMetrics[i]);

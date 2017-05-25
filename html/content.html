@@ -12,7 +12,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		<div class="bp_flexColHCenter">
 			<h4 id="stateStatsExpander" class="bp_expander ">Barrier Summary by State <span class="bp_expand">-</span></h4> 
 			<div id="stateStatsContainer" class="bp_flexColHCenter zoomState">
-				<p>Zoom to a state to view its barriers</p>
+				<p><br/>Zoom to a state to view its barriers</p>
 				<div class="bp_flexColHCenter">
 					<div class="chosen-wrap" style="margin-bottom:10px;">
 						<select data-placeholder="Northeast Region" id="zoomState" class="chosen">
@@ -43,43 +43,10 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 					</div>
 					<br>
 				</div>
-			<!-- <div class="stats bp_flexColHCenter">
-				<div class="stat active">
-					<div class="pill bp_flexRowHCenter" >
-						<div class="number">
-							<span class="value" id="damSpan">13,889</span>
-						</div>
-						<div>
-							<span class="number">&nbsp;Dams</span>
-						</div>
-						
-					</div>
-				</div>
-				<div class="stat">
-					<div class="pill bp_flexRowHCenter">
-						<div class="number">
-							<span class="value" id="roadCrossingSpan">196,329</span>
-						</div>
-						<div>
-							<span class="number">&nbsp;Road Crossings</span>
-						</div>
-					</div>
-					<div class="stat">
-						<div class="pill bp_flexRowHCenter">
-							<div class="number">
-								<span class="value" id="avgNetSpan">0.9</span>
-							</div>
-							<div>
-								<span class="number">&nbsp;Mi Avgerage Network</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div> -->
 			</div>
 		</div>
 		<div class="bp_flexColHCenter">
-			<div id="clickInstructions" class="bp_strong"><br><br>Click on a barrier to visualize its data</div>
+			<div id="clickInstructions" class="bp_strong"><br><br>Click on a barrier to visualize its data and expose additional functionality</div>
 			<div><h4 id="consensusRadarBlockExpander" style="display:inline" class="bp_expander">Assess a barrier <span class="bp_expand">-</span></h4><img src="plugins/barrier-prioritization-proto2/images/info.png" alt="Learn how to interpret this information" title="Learn how to interpret this information" class="infoIcon" id="-consensusRadarBlockInfo"> </div>
 			
 			<div id="consensusRadarBlockContainer" class="bp_flexColHCenter">
@@ -109,7 +76,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 						<div class="slider-container range-slider bp_flexColHCenter" style="width:275px;">
 							<div id="consensusResultFilterSliderTier" class="slider" style="width:275px;"></div>
 							<div style="text-align:center; margin-top:10px;">
-								<span class="blueFont">20</span> - <span class="blueFont">1</span>
+								<span class="blueFont" id="consFiltMax">20</span> - <span class="blueFont" id="consFiltMin">1</span>
 							</div>
 						</div>
 					</div>
@@ -121,7 +88,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 						<div class="slider-container range-slider bp_flexColHCenter" style="width:275px;">
 							<div id="consensusResultFilterSliderSeverity" class="slider" style="width:275px;"></div>
 							<div style="text-align:center; margin-top:10px;">
-								<span class="blueFont">Insignificant</span> - <span class="blueFont">Severe</span>
+								<span class="blueFont" id="consSevMin">Insignificant</span> - <span class="blueFont" id="consSevMax">Severe</span>
 							</div>
 						</div>
 					</div>
@@ -407,7 +374,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 
 
 <div id="infoAccord" class="flex1">
-	<h3 class="infoDoc">Documentation</h3>
+	<h3 class="infoDoc">Welcome</h3>
 	<div class="explainWrap" style="display:block;">
 		<h4 style="text-align:center">Welcome to the aquatic barrier prioritization tool</h4>
 		<figure >
@@ -415,34 +382,26 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			<figcaption style="font-size:10px">Dam on the Presumpscot River, Maine.  &copy; Paul Noble Photography <a href="https://creativecommons.org/licenses/by-nc-nd/2.0/">Flickr Creative Commons</a>.</figcaption>
 		</figure>
 		<p>
-			<strong>The fragmentation </strong>of river habitats through dams and poorly functioning culverts is one of the primary 
-			threats to aquatic species in the United States.  The impact of fragmentation on aquatic 
-			species generally involves loss of access to quality habitat for one or more life stages of a species.  For example, dams and 
-			impassable culverts limit the ability of anadromous fish species to reach preferred freshwater spawning habitats from the sea 
-			and prevent brook trout populations from reaching thermal refuges. 
+			<strong>The fragmentation </strong>of river habitats through dams and poorly functioning culverts is one of the primary threats to aquatic species in the United States.  The impact of fragmentation on aquatic species generally involves loss of access to quality habitat for one or more life stages of a species.  For example, dams and impassable culverts limit the ability of anadromous fish species to reach preferred freshwater spawning habitats from the sea and prevent brook trout populations from reaching thermal refuges. 
 		</p> 
 		<br/>
 		<p>
-			This app can be used to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in the states of
-			the Northeastern U.S.  
+			This app can be used to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in the states of the Northeastern U.S.  
 		</p>
 		<figure >
 			<img src="plugins/barrier-prioritization-proto2/images/culverts.png" ></img>
 			<figcaption style="font-size:10px">Culverts showing different kinds connectivity problems including outlet drop, high water velocity, low water depth, flowconstriction and inlet drop.  &copy; <a href="https://streamcontinuity.org/">NAACC</a>.</figcaption>
 		</figure>
 		<p>
-			Begin by clicking the "Start Using Aquatic Barrier Prioritization" button above.  Then select a state to 
-			see a sumamry of the status of aquatic connectivity in that state based on the number of dams and road-stream crossings and the 
-			average length of the connected river network that results from these barriers.
+			Begin by clicking the "Start Using Aquatic Barrier Prioritization" button above.  Then select a state to see a sumamry of the status of aquatic connectivity in that state based on the number of dams and road-stream crossings and the average length of the connected river network that results from these barriers.
 		</p>
 		<br/>
 		<p>
-			Click on an individual barrier to get a summary of its ecological attribtues.  A subset of the available attribtues were used to 
-			develop a multi-stakeholder consensus prioritization for anadromous fish like American shad, river herring, and Atlantic salmon. 
+			Click on an individual barrier to get a summary of its ecological attribtues.  A subset of the available attribtues were used to develop a multi-stakeholder consensus prioritization for anadromous fish like American shad, river herring, and Atlantic salmon. 
 		</p>
 		<br/>
 		<p>
-			For additional details and complete documentation about this project, you can downlaod the project report <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>here</strong></a>.
+			For additional details and complete documentation about this project, you can download the project report <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>here</strong></a>.
 		</p>
 	</div> 
 	<h3 class="consensusRadarBlockInfo">Interpreting the barrier data &amp; results</h3>
@@ -464,7 +423,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</p>
 		<br/>
 		<p>
-			The consensus anadromous results are based on an average score resulting from five sets of metrics - one calcualted for each of the degrees of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf">NE Aquatic Connectivity report</a> for more information about how barrier severity was handled in the analysis. 
+			The consensus anadromous results are based on an average score resulting from five sets of metrics - one calcualted for each of the degrees of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>>NE Aquatic Connectivity report</strong</a> for more information about how barrier severity was handled in the analysis. 
 		</p>
 	</div>
 	<h3 class="moreInfo">How to Run a Custom Analysis</h3>
