@@ -236,6 +236,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.consensusResultFilterOperator ="";
                 this.consensusResultFilterValue = "";       
                 this.consensusResultFilterFieldList = "";
+
                 for (var i=0; i< this.filters.resultFilters.resultFilterFields.length; i++){
                     this.consensusResultFilterFieldList += "<option value='" + this.filters.resultFilters.resultFilterFields[i].resultGISName + "'>" + this.filters.resultFilters.resultFilterFields[i].resultPrettyName + "</option>";
 				}
@@ -365,136 +366,184 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 lang.hitch(this, this.getCurrentWeights());
             }));
 			
-        	//FILTER BUILDER listener to fill in filter as drop downs are used
-        	//Only show the filter build inputs if yes is selected
-        	$('#'+ this.id +"filterBuilderContainer").hide();
-        	$("input[name='filterBarriers']").on('change',lang.hitch(this,function(){
-        		$('#'+ this.id +"filterBuilderContainer").animate({height:"toggle"}, 500);
-        		
-        		//if "No" is selected reset the values
-        		if ($("input[name='filterBarriers']:checked").val()=="no"){
-        			 $("#" + this.id + "userFilter").val("");
-        			 $("#" + this.id + "filterBuildField").val('').trigger('chosen:updated');
-        			 $("#" + this.id + "filterBuildOperator").val('').trigger('chosen:updated');
-        			 $("#" + this.id + "filterBuildValue").val('').trigger('chosen:updated');
-        		}
-        		
-        	}));
-            this.filterField = "";
-            this.filterOperator ="";
-            this.filterValue = "";       
-            this.filterFieldList = "";
-            for (var i=0; i< this.filters.inputFilters.metricNamesTable.length; i++){
-                this.filterFieldList += "<option value='" + this.filters.inputFilters.metricNamesTable[i].metricGISName + "'>" + this.filters.inputFilters.metricNamesTable[i].metricPrettyName + "</option>";
-			}
-            $("#" + this.id + "filterBuildField").html(this.filterFieldList);
-            this.updateMetricValues = (lang.hitch(this,function (metric){    
-                this.metricValsList = "";
-                for (var i=0; i < this.filters.inputFilters.metricValuesTable[metric].length; i++){
-                	if (this.filters.inputFilters.metricValuesTable[metric][i].metricValuePrettyName !=undefined){
-                		this.metricValsList += "<option value='" + this.filters.inputFilters.metricValuesTable[metric][i].metricValue + "'>" + this.filters.inputFilters.metricValuesTable[metric][i].metricValuePrettyName + "</option>";
-                	}
-                	else{
-                    	this.metricValsList += "<option value='" + this.filters.inputFilters.metricValuesTable[metric][i].metricValue + "'>" + this.filters.inputFilters.metricValuesTable[metric][i].metricValue + "</option>";
-                	}
-                }
-                $("#" + this.id + "filterBuildValue").html(this.metricValsList);
-                this.filterValue = $("#" + this.id + "filterBuildValue").val();
-                $(".chosen").trigger("chosen:updated");
-            
-                //set operator to = as a default
-                if (this.filterOperator == ""){
-                    //$("#" + this.id + "filterBuildOperator").val("=");
-                    $('#'+ this.id +"filterBuildOperator").val($('#'+ this.id +"filterBuildOperator option:eq(1)").val());
-                    $(".chosen").trigger("chosen:updated");
-                    this.filterOperator = $("#" + this.id + "filterBuildOperator").val();
-                }
-                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
-            }));
-            $("#" + this.id + "filterBuildField").on('change',lang.hitch(this,function(e){
-                this.selectedMetric = $("#" + this.id + "filterBuildField option:selected").text();
-                this.updateMetricValues(this.selectedMetric);
-				this.filterField = $("#" + this.id + "filterBuildField").val(); 
-                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
-            }));
-            $(".chosen").trigger("chosen:updated");
-            $("#" + this.id + "filterBuildOperator").on('change',lang.hitch(this,function(e){
-                this.filterOperator = $("#" + this.id + "filterBuildOperator").val();
-                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
-            }));
-            $("#" + this.id + "filterBuildValue").on('change',lang.hitch(this,function(e){
-                this.filterValue = $("#" + this.id + "filterBuildValue").val();
-                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
-            }));      
-			$("#"+ this.id + "passability").chosen({allow_single_deselect:true, width:"130px"});
-			$("#"+ this.id + "filterBuildField").chosen({allow_single_deselect:true, width:"125px"});
-			$("#"+ this.id + "filterBuildValue").chosen({allow_single_deselect:true, width:"125px"});
-			$("#"+ this.id + "filterBuildOperator").chosen({allow_single_deselect:true, width:"55px"});
-			$("#"+ this.id + "summarizeBy").chosen({allow_single_deselect:true, width:"150px"});
-			$("#"+ this.id + "summaryStatField").chosen({allow_single_deselect:true, width:"150px"});
-			
-			// show barriers to remove if yes is selected.  When "no" is selected clear 
-        	$('#'+ this.id +"barriers2RemoveContainer").hide();
-        	$("input[name='removeBarriers']").on('change',lang.hitch(this,function(){
-				$('#'+ this.id +"barriers2RemoveContainer").animate({height:"toggle"}, 500);
-				if ($("input[name='removeBarriers']:checked").val()=="no"){
-					if (this.removeFeatureLayer){this.map.removeLayer(this.removeFeatureLayer);}
-					if (this.selectedBarriers){this.map.removeLayer(this.selectedBarriers);}
-					$("#" + this.id + "barriers2Remove").val("");
-					this.barriers2RemoveCount = 0;       
-            		this.workingRemoveBarriers = [];
-            		this.workingRemoveBarriersString = "";
+			if (this.config.includeCustomAnalysis == true){
+	        	//FILTER BUILDER listener to fill in filter as drop downs are used
+	        	//Only show the filter build inputs if yes is selected
+	        	$('#'+ this.id +"filterBuilderContainer").hide();
+	        	$("input[name='filterBarriers']").on('change',lang.hitch(this,function(){
+	        		$('#'+ this.id +"filterBuilderContainer").animate({height:"toggle"}, 500);
+	        		
+	        		//if "No" is selected reset the values
+	        		if ($("input[name='filterBarriers']:checked").val()=="no"){
+	        			 $("#" + this.id + "userFilter").val("");
+	        			 $("#" + this.id + "filterBuildField").val('').trigger('chosen:updated');
+	        			 $("#" + this.id + "filterBuildOperator").val('').trigger('chosen:updated');
+	        			 $("#" + this.id + "filterBuildValue").val('').trigger('chosen:updated');
+	        		}
+	        		
+	        	}));
+	            this.filterField = "";
+	            this.filterOperator ="";
+	            this.filterValue = "";       
+	            this.filterFieldList = "";
+	            for (var i=0; i< this.filters.inputFilters.metricNamesTable.length; i++){
+	                this.filterFieldList += "<option value='" + this.filters.inputFilters.metricNamesTable[i].metricGISName + "'>" + this.filters.inputFilters.metricNamesTable[i].metricPrettyName + "</option>";
 				}
-        	}));
- 			
- 			//Set up select barriers to remove button
-			$('#'+ this.id +'graphicSelectBarriers2Remove').on('click', lang.hitch(this, function(){
-				this.selectRemovalBarriers();
-			}));
- 			
- 			
-			// //show sum stats tabs if yes is selected
-        	$('#'+ this.id +"sumStatsInputContainer").hide();
-        	$("input[name='runSumStats']").on('change',lang.hitch(this,function(){
-				$('#'+ this.id +"sumStatsInputContainer").animate({height:"toggle"}, 500);
-        	}));    	
- 
-        				
-			//apply starting weights 
-	        if (this.obj.startingUseConsensusWeights === "no"){
-	        	lang.hitch(this, this.applyWeights(this.obj.startingWeights));
-	        	$("input[name='useConsensusWeights']").filter('[value=no]').prop('checked', true); 
-	        	$("#" + this.id +"customWeightsDiv").show();
-	        }
-	        else{lang.hitch(this, this.applyWeights(this.config.diadromous));}
-
-              
-           	//apply starting passability
-			$("#" + this.id + "passability").val(this.obj.startingPassability).trigger("chosen:updated");
+	            $("#" + this.id + "filterBuildField").html(this.filterFieldList);
+	            this.updateMetricValues = (lang.hitch(this,function (metric){    
+	                this.metricValsList = "";
+	                for (var i=0; i < this.filters.inputFilters.metricValuesTable[metric].length; i++){
+	                	if (this.filters.inputFilters.metricValuesTable[metric][i].metricValuePrettyName !=undefined){
+	                		this.metricValsList += "<option value='" + this.filters.inputFilters.metricValuesTable[metric][i].metricValue + "'>" + this.filters.inputFilters.metricValuesTable[metric][i].metricValuePrettyName + "</option>";
+	                	}
+	                	else{
+	                    	this.metricValsList += "<option value='" + this.filters.inputFilters.metricValuesTable[metric][i].metricValue + "'>" + this.filters.inputFilters.metricValuesTable[metric][i].metricValue + "</option>";
+	                	}
+	                }
+	                $("#" + this.id + "filterBuildValue").html(this.metricValsList);
+	                this.filterValue = $("#" + this.id + "filterBuildValue").val();
+	                $(".chosen").trigger("chosen:updated");
+	            
+	                //set operator to = as a default
+	                if (this.filterOperator == ""){
+	                    //$("#" + this.id + "filterBuildOperator").val("=");
+	                    $('#'+ this.id +"filterBuildOperator").val($('#'+ this.id +"filterBuildOperator option:eq(1)").val());
+	                    $(".chosen").trigger("chosen:updated");
+	                    this.filterOperator = $("#" + this.id + "filterBuildOperator").val();
+	                }
+	                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
+	            }));
+	            $("#" + this.id + "filterBuildField").on('change',lang.hitch(this,function(e){
+	                this.selectedMetric = $("#" + this.id + "filterBuildField option:selected").text();
+	                this.updateMetricValues(this.selectedMetric);
+					this.filterField = $("#" + this.id + "filterBuildField").val(); 
+	                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
+	            }));
+	            $(".chosen").trigger("chosen:updated");
+	            $("#" + this.id + "filterBuildOperator").on('change',lang.hitch(this,function(e){
+	                this.filterOperator = $("#" + this.id + "filterBuildOperator").val();
+	                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
+	            }));
+	            $("#" + this.id + "filterBuildValue").on('change',lang.hitch(this,function(e){
+	                this.filterValue = $("#" + this.id + "filterBuildValue").val();
+	                $("#" + this.id + "userFilter").val('"' + this.filterField + '" ' + this.filterOperator + " (" + this.filterValue + ")");
+	            }));      
+				$("#"+ this.id + "passability").chosen({allow_single_deselect:true, width:"130px"});
+				$("#"+ this.id + "filterBuildField").chosen({allow_single_deselect:true, width:"125px"});
+				$("#"+ this.id + "filterBuildValue").chosen({allow_single_deselect:true, width:"125px"});
+				$("#"+ this.id + "filterBuildOperator").chosen({allow_single_deselect:true, width:"55px"});
+				$("#"+ this.id + "summarizeBy").chosen({allow_single_deselect:true, width:"150px"});
+				$("#"+ this.id + "summaryStatField").chosen({allow_single_deselect:true, width:"150px"});
+				
+				// show barriers to remove if yes is selected.  When "no" is selected clear 
+	        	$('#'+ this.id +"barriers2RemoveContainer").hide();
+	        	$("input[name='removeBarriers']").on('change',lang.hitch(this,function(){
+					$('#'+ this.id +"barriers2RemoveContainer").animate({height:"toggle"}, 500);
+					if ($("input[name='removeBarriers']:checked").val()=="no"){
+						if (this.removeFeatureLayer){this.map.removeLayer(this.removeFeatureLayer);}
+						if (this.selectedBarriers){this.map.removeLayer(this.selectedBarriers);}
+						$("#" + this.id + "barriers2Remove").val("");
+						this.barriers2RemoveCount = 0;       
+	            		this.workingRemoveBarriers = [];
+	            		this.workingRemoveBarriersString = "";
+					}
+	        	}));
+	 			
+	 			//Set up select barriers to remove button
+				$('#'+ this.id +'graphicSelectBarriers2Remove').on('click', lang.hitch(this, function(){
+					this.selectRemovalBarriers();
+				}));
+	 			
+	 			
+				// //show sum stats tabs if yes is selected
+	        	$('#'+ this.id +"sumStatsInputContainer").hide();
+	        	$("input[name='runSumStats']").on('change',lang.hitch(this,function(){
+					$('#'+ this.id +"sumStatsInputContainer").animate({height:"toggle"}, 500);
+	        	}));    	
+	 
+	        				
+				//apply starting weights 
+		        if (this.obj.startingUseConsensusWeights === "no"){
+		        	lang.hitch(this, this.applyWeights(this.obj.startingWeights));
+		        	$("input[name='useConsensusWeights']").filter('[value=no]').prop('checked', true); 
+		        	$("#" + this.id +"customWeightsDiv").show();
+		        }
+		        else{lang.hitch(this, this.applyWeights(this.config.diadromous));}
+	
+	              
+	           	//apply starting passability
+				$("#" + this.id + "passability").val(this.obj.startingPassability).trigger("chosen:updated");
+				
+	           
+				//apply starting filter for custom analysis
+				if (this.obj.startingFilter != ""){
+					$("input[name='filterBarriers']").filter('[value=yes]').prop('checked', true);
+					$("#" + this.id + "filterBuilderContainer").show();
+					$("#" + this.id + "userFilter").val(this.obj.startingFilter);
+				}
+				
+				//apply starting barriers to remove
+				if (this.obj.startingBarriers2Remove != ""){
+					this.removingBarriers = true;
+					$("input[name='removeBarriers']").filter('[value=yes]').prop('checked', true);
+					$("#" + this.id + 'barrier2RemoveContainer').show();
+					$("#" + this.id + 'barriers2Remove').val(this.obj.startingBarriers2Remove);
+					lang.hitch(this, this.addSavedBarriersToRemove());
+				}
+	
+				//apply starting summary stats inputs
+				if (this.obj.startingSummarizeBy != "" ||this.obj.startingSummaryStatField != ""){
+					$("input[name='runSumStats']").filter('[value=Consensus]').prop('checked', true);
+					$("#" + this.id + "sumStatsInputContainer").show();
+				}
 			
-           
-			//apply starting filter for custom analysis
-			if (this.obj.startingFilter != ""){
-				$("input[name='filterBarriers']").filter('[value=yes]').prop('checked', true);
-				$("#" + this.id + "filterBuilderContainer").show();
-				$("#" + this.id + "userFilter").val(this.obj.startingFilter);
-			}
+				//Start custom analysis 
+				$('#' + this.id +"submitButton").on('click',lang.hitch(this,function(e){
+					console.log("clicked gp button");
+					this.submit();
+				}));
 			
-			//apply starting barriers to remove
-			if (this.obj.startingBarriers2Remove != ""){
-				this.removingBarriers = true;
-				$("input[name='removeBarriers']").filter('[value=yes]').prop('checked', true);
-				$("#" + this.id + 'barrier2RemoveContainer').show();
-				$("#" + this.id + 'barriers2Remove').val(this.obj.startingBarriers2Remove);
-				lang.hitch(this, this.addSavedBarriersToRemove());
-			}
-
-			//apply starting summary stats inputs
-			if (this.obj.startingSummarizeBy != "" ||this.obj.startingSummaryStatField != ""){
-				$("input[name='runSumStats']").filter('[value=Consensus]').prop('checked', true);
-				$("#" + this.id + "sumStatsInputContainer").show();
-			}
-						
+			
+	            //download input parameters 
+	            $('#' + this.id + 'dlInputs').on('click',lang.hitch(this,function(e) { 
+	                 this.requestObjectPretty = {};
+	                 for (var key in this.requestObject){    	
+	                     value = this.requestObject[key];         
+	                     if (this.config.metricNames.hasOwnProperty(value)){
+	                        //Use the pretty metric name
+	                        this.requestObjectPretty[key] = this.config.metricNames[value];
+	                        console.log(this.config.metricNames[value]);
+	                     } 
+	                     //don't include sort order & log transform in the downloaded inputs
+	                     else if (key.indexOf("Order") == -1 && key.indexOf("Log") == -1){
+	                         this.requestObjectPretty[key] = this.requestObject[key];
+	                     }
+	                 }
+	                 this.requestObjectArray = [];
+	                 this.requestObjectArray.push(this.requestObjectPretty);
+	                 //add tabs to beautify the JSON
+	                 this.requestObjectJSON = JSON.stringify(this.requestObjectArray, null, "\t");
+	                 this.requestObjectJSON = this.requestObjectJSON.replace(/[\u200B-\u200D\uFEFF]/g, "");
+	                 this.JSONToCSVConvertor(this.requestObjectJSON, this.customResultBaseName +"_Inputs", true);
+	            }));			
+			
+				//download buttons
+	            $('#' + this.id + 'dlCustom').on('click',lang.hitch(this,function(e) {
+	            	//download zipped result
+	            	e.preventDefault();
+	            	window.location.href = this.zippedResultURL;             
+	            }));		
+	            
+	             $('#' + this.id + 'dlStats').on('click',lang.hitch(this,function(e) {
+	            	//download summary stats table
+	                require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tabletoCSV"],lang.hitch(this,function($) {
+	                     $("#" + this.id + "gpSumStatsTable").tableToCSV(this.customResultBaseName + "_SumStats");
+	                }));           
+	            }));   
+			}	//END custom analysis 				
+			
+			
+			
 			//apply starting zoom state
 			if (this.obj.startingZoomState != ""){
 				$("#" + this.id + "zoomState").val(this.obj.startingZoomState).trigger("chosen:updated");
@@ -527,12 +576,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             	// lang.hitch(this, this.clearAllInputs());
             // }));
 			
-			//Start custom analysis 
-			$('#' + this.id +"submitButton").on('click',lang.hitch(this,function(e){
-				console.log("clicked gp button");
-				this.submit();
-			}));
-			
+
 			
 			//Set up the +/- expanders 
 			this.expandContainers = ["consensusRadarBlock", "barrierSeverity", "customFilter","consensusResultFilters", "customMetric", 
@@ -597,41 +641,9 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             	e.preventDefault();
             	window.location.href = this.config.zippedConsensusResultURL;                    
             }));            
-            $('#' + this.id + 'dlCustom').on('click',lang.hitch(this,function(e) {
-            	//download zipped result
-            	e.preventDefault();
-            	window.location.href = this.zippedResultURL;             
-            }));		
-            
-             $('#' + this.id + 'dlStats').on('click',lang.hitch(this,function(e) {
-            	//download summary stats table
-                require(["jquery", "plugins/barrier-prioritization-proto2/js/jquery.tabletoCSV"],lang.hitch(this,function($) {
-                     $("#" + this.id + "gpSumStatsTable").tableToCSV(this.customResultBaseName + "_SumStats");
-                }));           
-            }));           
         
-            //download input parameters 
-            $('#' + this.id + 'dlInputs').on('click',lang.hitch(this,function(e) { 
-                 this.requestObjectPretty = {};
-                 for (var key in this.requestObject){    	
-                     value = this.requestObject[key];         
-                     if (this.config.metricNames.hasOwnProperty(value)){
-                        //Use the pretty metric name
-                        this.requestObjectPretty[key] = this.config.metricNames[value];
-                        console.log(this.config.metricNames[value]);
-                     } 
-                     //don't include sort order & log transform in the downloaded inputs
-                     else if (key.indexOf("Order") == -1 && key.indexOf("Log") == -1){
-                         this.requestObjectPretty[key] = this.requestObject[key];
-                     }
-                 }
-                 this.requestObjectArray = [];
-                 this.requestObjectArray.push(this.requestObjectPretty);
-                 //add tabs to beautify the JSON
-                 this.requestObjectJSON = JSON.stringify(this.requestObjectArray, null, "\t");
-                 this.requestObjectJSON = this.requestObjectJSON.replace(/[\u200B-\u200D\uFEFF]/g, "");
-                 this.JSONToCSVConvertor(this.requestObjectJSON, this.customResultBaseName +"_Inputs", true);
-            }));
+        
+
 			
 			//build checkboxes for additonal layers
 			lang.hitch(this, this.setUpAdditionalLayers(this.config.additionalLayers));
@@ -658,17 +670,17 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id + "roadCrossingSpan").text(this.config.zoomTo[v][1]["crossings"]);
 			$("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2));
 			var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2);	
-
+		
 			if (v != "Region"){
-				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo[v][1]["dams"], 5000, '#0000b4'));
-				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"], 60000, '#0082ca'));
-				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo[v][1]["dams"], this.config.zoomToMax.MaxSubRegion.dams, '#0000b4'));
+				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"], this.config.zoomToMax.MaxSubRegion.crossings, '#0082ca'));
+				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, this.config.zoomToMax.MaxSubRegion.avgNetwork*0.000621371, '#0094ff'));	
 			}
 			//use different max values for the whole region
 			if (v == "Region"){
-				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo["Region"][1]["dams"], 14000, '#0000b4'));
-				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"], 200000, '#0082ca'));
-				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, 4, '#0094ff'));	
+				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo["Region"][1]["dams"], this.config.zoomToMax.MaxRegion.dams, '#0000b4'));
+				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"], this.config.zoomToMax.MaxRegion.crossings, '#0082ca'));
+				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, this.config.zoomToMax.MaxRegion.avgNetwork*0.000621371, '#0094ff'));	
 			}			
 			if (bool === "yes"){
 				this.map.addLayer(this.dynamicLayer);
@@ -747,7 +759,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 			console.log(this.consensusSeverityRange);
 			this.consensusSeverityRangeStr = this.consensusSeverityRange.toString();
-			this.consensusFilterQuery = this.config.resultTier + " >= " + this.consensusTierMinVal + " AND " + this.config.resultTier + " <= " + this.consensusTierMaxVal + " AND " + this.config.severityField + " IN (" + this.consensusSeverityRangeStr + ")";
+			this.consensusFilterQuery = this.config.resultTier + " >= " + this.consensusTierMinVal + " AND " + this.config.resultTier + " <= " + this.consensusTierMaxVal ;
+			if (this.config.includeBarrierSeverity === true){
+				this.consensusFilterQuery +=  " AND " + this.config.severityField + " IN (" + this.consensusSeverityRangeStr + ")";
+			}
+			
 			console.log(this.consensusFilterQuery);
 			this.map.removeLayer(this.dynamicLayer);
 
@@ -1380,10 +1396,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 							'<span class="form-text">' + k + '</span>' +
 						'</label>' +
 						'<span class="fa fa-info-circle info" title="' + v[3] + '"></span>' +
-						'<div class="transparency-control" data-layer="' + v[0] + '" id="' + this.id + v[0]+  'transp" data-opacity="100">' +
-							'<span class="transparency-header">Transparency</span>' +
-							'<div class="transparency-label"><span class="value">100%</span></div>' +
-							'<div class="transparency-slider">' +
+						'<div class="bp_transparency-control" data-layer="' + v[0] + '" id="' + this.id + v[0]+  'transp" data-opacity="100">' +
+							'<span class="bp_transparency-header">Transparency</span>' +
+							'<div class="bp_transparency-label"><span class="value">100%</span></div>' +
+							'<div class="bp_transparency-slider">' +
 								'<div class="slider"></div>' +
 							'</div>'+
 						'</div>' +
@@ -1411,9 +1427,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 						  this[addlLayerVis].splice( index, 1 );
 						}
 						this[addlLayer].setVisibleLayers(this[addlLayerVis]);
-						$("#" + e.taregt.id + "transp").hide();
+						$("#" + e.target.id + "transp").hide();
 					}
 				}));
+				//turn on by default if config says to
+				if (v[4] == "on"){$("#" + this.id + v[0]).trigger("click");}
     		}));
     		
 			//set up barrier default toggle.  This is done separately, since it is not listed in the additional layers of the config file
@@ -1434,19 +1452,19 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}));
     		
     		//hide all the transparency sliders by default
-    		$(".transparency-control").hide();
+    		$(".bp_transparency-control").hide();
     		//except for the barriers which are turned on by default
     		$("#" + this.id + "barrierstransp").show();
     		
     		//transparency
-    		$(".transparency-slider .slider").slider({
+    		$(".bp_transparency-slider .slider").slider({
             		min: 0,
             		max: 100,
             		step: 1,
             		value: [100],
             		range: false,
             		slide: lang.hitch(this, function(e, ui) { 
-            			var control = $(e.target).parents('.transparency-control');
+            			var control = $(e.target).parents('.bp_transparency-control');
             			console.log(control[0].id);
             			if (control[0].id.indexOf("barriers") != -1){
             				this.dynamicLayer.setOpacity(ui.value / 100);
@@ -1463,12 +1481,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			});
     		
     		//
-    		$('.transparency-label').on('mousedown', lang.hitch(this, function(e) {
-				var control = $(e.target).parent('.transparency-control').toggleClass('open');
+    		$('.bp_transparency-label').on('mousedown', lang.hitch(this, function(e) {
+				var control = $(e.target).parent('.bp_transparency-control').toggleClass('open');
 				var dataLayer = control.attr('data-layer');
 				if (control.hasClass('open')) {
 					$('body').on('click.tranSlider', lang.hitch(this, function(e) {
-						if ($(e.target).parents('.transparency-control[data-layer=' + dataLayer + ']').length || ($(e.target).hasClass('transparency-control') && $(e.target).attr('data-layer') === dataLayer)) {
+						if ($(e.target).parents('.bp_transparency-control[data-layer=' + dataLayer + ']').length || ($(e.target).hasClass('bp_transparency-control') && $(e.target).attr('data-layer') === dataLayer)) {
 							// Do nothing
 						} else {
 							control.removeClass('open');
