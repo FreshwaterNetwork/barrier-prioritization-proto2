@@ -2,11 +2,13 @@
     "url": "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized7a/MapServer",
 	"removeSelectionURL" : "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized7a/MapServer/1",
 	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP20/GPServer/Prioritize",
+	"includeCustomAnalysis" : false,
+	"includeBarrierSeverity" : true,
 	"visibleLayers": [0],
 	"additionalLayers":{	
-		"Rivers" : ["rivers", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "0", "Zoom in to the scale of a city or town to view the rivers in the region."],
-		"Subbasins (HUC 8)" :["huc8s", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "1", "View the USGS 8-digit Hydrologic Units"],
-		"Northeast States" : ["states", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "2", "View the political boundaries of the Northeastern states."]
+		"Rivers" : ["rivers", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "0", "Zoom in to the scale of a city or town to view the rivers in the region.", "off"],
+		"Subbasins (HUC 8)" :["huc8s", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "1", "View the USGS 8-digit Hydrologic Units", "off"],
+		"Northeast States" : ["states", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/Northeast_Map_Layers/MapServer/", "2", "View the political boundaries of the Northeastern states.", "off"]
 	},
 	"zoomTo" : {
 		"ME" : [[-8196803.886980368,5111536.218461686,-7189058.106068872,6132734.91635137],{"dams":614, "crossings":8898, "avgNetwork":3702}],
@@ -25,15 +27,19 @@
 		"DC": [[-8600964.674038133,4692317.336831648,-8552159.631478114,4721516.281636545],{"dams":0, "crossings":54, "avgNetwork":533}],
 		"Region": [[-9324094.458336517,4101275.5978420195,-7357522.594616026,6236620.420016137],{"dams":13889, "crossings":196329, "avgNetwork":1334}]
 	},
+	"zoomToMax" :{
+		"MaxSubRegion":{"dams":5000, "crossings":60000, "avgNetwork":3800},
+		"MaxRegion":{"dams":14000, "crossings":200000, "avgNetwork":3800}
+	},
     "severityDict" : {
-    	'Dams':'Use_Dams',
-		'Dams (Excluding Dams with Passage)':'Use_Dams_ExclPassage',
-		'Severe':'Use_Severe',
-		'Severe (Excluding Dams with Passage)':'Use_Severe_ExclPassage',
-		'Significant':'Use_Significant',
-		'Moderate':'Use_Moderate',
-		'Minor':'Use_Minor',
-		'Insignificant':'Use_Insignificant'
+    	"Dams":"Use_Dams",
+		"Dams (Excluding Dams with Passage)":"Use_Dams_ExclPassage",
+		"Severe":"Use_Severe",
+		"Severe (Excluding Dams with Passage)":"Use_Severe_ExclPassage",
+		"Significant":"Use_Significant",
+		"Moderate":"Use_Moderate",
+		"Minor":"Use_Minor",
+		"Insignificant":"Use_Insignificant"
      },
 	"includePassabilityOption" : true,
 	"resultTier" : "AvgTier",
@@ -170,10 +176,7 @@
 		"totMiCold" : "mi",
 		"totMiCC" : "mi"
 	},
-	
 	"idBlacklist" : ["OBJECTID_1", "Shape", "OBJECTID", "Use_Dams", "Use_Dams_ExclPassage", "Use_Severe", "Use_Severe_ExclPassage", "Use_Significant", "Use_Moderate", "Use_Minor", "Use_Insignificant"],
-
-
 	"metricOrder":{
 		"batFuncUS" : "D",
 		"batCountDS" : "A",
@@ -296,6 +299,7 @@
 		"totMiCold" : 0,
 		"totMiCC" : 0
 	},
+
 
 	"maxValues":{
 		"batFuncUS" : 200000,
