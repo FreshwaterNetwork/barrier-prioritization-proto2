@@ -285,6 +285,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				$("#"+ this.id + "filterConsensusResultsField").chosen({allow_single_deselect:true, width:"110px"});
 				$("#"+ this.id + "filterConsensusResultsValue").chosen({allow_single_deselect:true, width:"110px"});
 				$("#"+ this.id + "filterConsensusResultsOperator").chosen({allow_single_deselect:true, width:"50px"});
+
 				
                 //applyFilter to Consensus results
                 $("#" + this.id +"applyResultConsensusFilterButton").on('click',lang.hitch(this,function(e){
@@ -1594,12 +1595,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                        this.IdentifyFeature.setInfoTemplate(this.popupInfoTemplate);							
 							if (this.useRadar === true){
 								lang.hitch(this, this.radarChart());
-								$("#" + this.id +"radarHeader").html("Name: " + this.radarClickAllData[this.config.barrierNameField] +"<br> ID: " + this.radarClickAllData[this.config.uniqueID] +"<br>" + this.radarClickAllData[this.config.severityField] + "<br>Anadromous Result Tier= " + this.radarClickAllData[this.config.resultTier]);
+								$("#" + this.id +"radarHeader").html("Name: " + this.radarClickAllData[this.config.barrierNameField] +"<br> ID: " + this.radarClickAllData[this.config.uniqueID] +"<br>Type:" + this.radarClickAllData[this.config.barrierTypeField]+"<br>" + this.radarClickAllData[this.config.severityField] + "<br>Anadromous Result Tier= " + this.radarClickAllData[this.config.resultTier]);
 								//hide the click instructions and show the "Assess a barrier" div if not visible - on first click
 								$('#' + this.id + 'clickInstructions').hide();  
 								
 								if (this.identifyIterator ===0){
-									//go to the "Explore COnsensus ACcrodion" if not currently
+									//go to the "Explore Consensus ACcrodion" if not currently
 									if ($("#" + this.id + "exploreConsensusSection").is("visible")===false){
 										$("#" + this.id + "exploreConsensusAccord").trigger("click");
 									}

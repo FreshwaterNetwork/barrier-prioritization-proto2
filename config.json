@@ -2,7 +2,7 @@
     "url": "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized7a/MapServer",
 	"removeSelectionURL" : "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized7a/MapServer/1",
 	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP20/GPServer/Prioritize",
-	"includeCustomAnalysis" : false,
+	"includeCustomAnalysis" : true,
 	"includeBarrierSeverity" : true,
 	"visibleLayers": [0],
 	"additionalLayers":{	
@@ -44,6 +44,7 @@
 	"includePassabilityOption" : true,
 	"resultTier" : "AvgTier",
 	"severityField" : "Passability_Desc",
+	"barrierTypeField" : "Type",
 	"uniqueID" : "UNIQUE_ID",
 	"barrierNameField" : "Barrier_Name",
 	"tableResults" : false,
