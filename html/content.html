@@ -131,14 +131,14 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</div>
 		
 		<div class="bp_flexColHCenter">
-			<h4 id="additionalLayersExpander" class="bp_expander">Additional Layers <span class="bp_expand">+</span></h4> 
+			<h4 id="additionalLayersExpander" class="bp_expander">Layers <span class="bp_expand">+</span></h4> 
 			<div id="additionalLayersContainer" class="bp_flexColHCenter">
 				<div class="additionalLayers" id="additionalLayers">
 					<div class="description" id="additionalLayersDesc">Learn more about your area of interest by selecting from these additional information layers.<br><br>		
 					</div>
-						<div class="layer" id="toggleBarriers">
+						<div class="layer" id="toggleLayers">
 							<label class="form-component">
-								<input type="checkbox" data-layer="barriers" id="barriers" checked>
+								<input type="checkbox" data-layer="barriers" id="barriers">
 								<div class="check"></div>
 								<span class="form-text">Barriers</span> 
 							</label>
@@ -156,7 +156,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</div>
 		
 		<div class="bp_flexColHCenter bp_footerContainer">
-			<button class="button button-primary bp_footerButton" id="dlConsensus" >Download Anadromous Prioritization</button>
+			<button class="button button-primary bp_footerButton" id="dlConsensus" title="Download the anadromous prioritization result spatial data as a file geodatabase">Download Anadromous Prioritization GIS Data</button>
 		</div>
 	
 	</section>
@@ -349,7 +349,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 id="customAnalysisResultsAccord" class="customAnalysisResultsAccord">Custom Analysis Results</h3>
 	<div>
 		<section>
-			<h3>Learn how to manipulate the results<!-- <img src="plugins/barrier-prioritization-proto2/images/info.png" alt="show more info in documentation" class="infoIcon" id="-resultsInfo"> --></h3>
+			<h3><!--Learn how to manipulate the results <img src="plugins/barrier-prioritization-proto2/images/info.png" alt="show more info in documentation" class="infoIcon" id="-resultsInfo"> --></h3>
 			<div id="gpSumStatsTableDivContainer" class="gpSumStatsTableDivContainer">
 			    <div id="gpSumStatsTableDiv" class="gpSumStatsTableDiv">
 			        <table  id="gpSumStatsTable" class="tablesorter" > 
@@ -382,22 +382,22 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			<figcaption style="font-size:10px">Dam on the Presumpscot River, Maine.  &copy; Paul Noble Photography <a href="https://creativecommons.org/licenses/by-nc-nd/2.0/">Flickr Creative Commons</a>.</figcaption>
 		</figure>
 		<p>
-			<strong>The fragmentation </strong>of river habitats through dams and poorly functioning culverts is one of the primary threats to aquatic species in the United States.  The impact of fragmentation on aquatic species generally involves loss of access to quality habitat for one or more life stages of a species.  For example, dams and impassable culverts limit the ability of anadromous fish species to reach preferred freshwater spawning habitats from the sea and prevent brook trout populations from reaching thermal refuges. 
+			<strong>The fragmentation </strong>of river habitats through dams and poorly functioning culverts is one of the primary threats to aquatic species in the United States.  The impact of fragmentation on aquatic species generally involves loss of access to quality habitat for one or more life stages of a species.  For example, dams and impassable culverts limit the ability of anadromous fish species to travel from the sea to their preferred freshwater spawning habitats and prevent brook trout populations from reaching upstream thermal refuges. 
 		</p> 
 		<br/>
 		<p>
-			This app can be used to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in the states of the Northeastern U.S.  
+			The purpose of this app is to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in thirteen northeastern U.S. states.
 		</p>
 		<figure >
 			<img src="plugins/barrier-prioritization-proto2/images/culverts.png" ></img>
-			<figcaption style="font-size:10px">Culverts showing different kinds connectivity problems including outlet drop, high water velocity, low water depth, flowconstriction and inlet drop.  &copy; <a href="https://streamcontinuity.org/">NAACC</a>.</figcaption>
+			<figcaption style="font-size:10px">Culverts showing different kinds of connectivity problems including outlet drop, high water velocity, low water depth, flow constriction, and inlet drop.  &copy; <a href="https://streamcontinuity.org/">NAACC</a>.</figcaption>
 		</figure>
 		<p>
-			Begin by clicking the "Start Using Aquatic Barrier Prioritization" button above.  Then select a state to see a sumamry of the status of aquatic connectivity in that state based on the number of dams and road-stream crossings and the average length of the connected river network that results from these barriers.
+			Begin by clicking the "Start Using Aquatic Barrier Prioritization" button above.  Then select a state to see a summary of the status of aquatic connectivity in that state based on the number of dams and road-stream crossings and the average length of the connected river network that results from these barriers.
 		</p>
 		<br/>
 		<p>
-			Click on an individual barrier to get a summary of its ecological attribtues.  A subset of the available attribtues were used to develop a multi-stakeholder consensus prioritization for anadromous fish like American shad, river herring, and Atlantic salmon. 
+			Click on an individual barrier to get a summary of its ecological attributes.  A subset of the available attributes were used to develop a multi-stakeholder consensus prioritization for anadromous fish like American shad, river herring, and Atlantic salmon. 
 		</p>
 		<br/>
 		<p>
@@ -407,49 +407,56 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 class="consensusRadarBlockInfo">Interpreting the barrier data &amp; results</h3>
 	<div class="explainWrap">
 		<p>
-			When a barrier is clicked, the name of the barrier, it's unqiue identifier, the severity of the barrier (passability), and the result Tier from the consensus anadormous prioritization scneario are displayed.  A Tier 1 barrier is the highest priorty -- most potential gained from a passage restoration project -- while a Tier 20 barrier is the lowest priority.
+			When a barrier is clicked, the name of the barrier, its unique identifier, the severity of the barrier (passability), and the result Tier from the consensus anadromous prioritization scenario are displayed.  A Tier 1 barrier is the highest priority -- most potential gained from a passage restoration project -- while a Tier 20 barrier is the lowest priority.
 		</p>
 		<br/>
 		<p>
-			Additionally, a "radar" plot of the barrier's attributes is displayed.  This radar plot is designed to provide a quick and intuitive way to visualize the qualities of that barrier.  Each attribute is arranged so that values that are desirable in a passage restoration project are at the margin of the plot.  For example, a barrier that has the potential to open up 200 miles of habitat would have a value towards the margin of the plot since opening up a lot of upstream abitat is desirable in a passage restoration project for anadromous fish.  Likewise a barrier with 0% impervious surface in its watershed would have a a value at the margin of the plot since no impervious surface (urban paved landcover) is a proxy for good quality.
+			Additionally, a "radar plot” of the barrier's attributes is displayed.  The radar plot is designed to provide a quick and intuitive way to visualize the qualities of that barrier. Each attribute is arranged so that values that are desirable in a fish passage restoration project are at the margin of the plot. For example, a barrier that has the potential to open 200 miles of upstream habitat would have a value towards the margin of the plot since opening up a lot of upstream abitat is desirable in a passage restoration project for anadromous fish. Likewise, a barrier with 0% impervious surface in its watershed would have a a value at the margin of the plot since no impervious surface (urban paved landcover) is a proxy for good water quality.
 		</p>
 		<div class="bp_flexColHCenter"><img src="plugins/barrier-prioritization-proto2/images/radar.png"></div>
 		<p>
-			The axes of the radar plot are normalized relative to the other barriers.  Thus, using the example from above, if the "best" barrier has 2% impervious surface in its watershed, it would have its value at the margin of the plot.  Hovering over the red dot that denotes the value will display the real-world value for that metric.
+			The axes of the radar plot are normalized relative to the other barriers.  Thus, using the example from above, Lewiston Falls Dam performs relatively well on the Upstream Functional Network length metric; when compared to the other barriers in the analysis, it would open more upstream habitat than approximately 95% of them (if the point for US Functional Network was on the outer margin of the radar plot, it would open more upstream habitat that 100% of the barriers in the region).  Conversely, Lewiston Falls Dam performs relatively poorly on the number of upstream size classes metric; relative to other barriers in the analysis, it has few different size classes in its upstream functionali network, and so would add little to the habitat diversity of a reconnected network.  Hovering the mouse over the red dot for a metric that displays the real-world value for that metric.
 		</p>
 		<br/>
 		<p>
-			Importantly, the values that are displayed are based on the metrics generated from all barriers (all degrees of barrier severity: Insignificant through Severe).  Howveer, the metrics can change if a class of barriers is excluded (e.g. if "Insignificant" barriers are excluded from the analysis, the "number of downstream barriers" metric for the remaining barriers will change if they had any insignificant barrier downstream). A custom analysis can be run to generate metrics using a different degree of barrier severity.  
+			Below the radra plot is an expandable dialog which can be used to change the metrics that are displayed in the radar plot.  
 		</p>
 		<br/>
 		<p>
-			The consensus anadromous results are based on an average score resulting from five sets of metrics - one calcualted for each of the degrees of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>NE Aquatic Connectivity report</strong></a> for more information about how barrier severity was handled in the analysis. 
+			Importantly, the values displayed are based on the metrics generated from all barriers (all degrees of barrier severity: Insignificant through Severe).  However, the metrics can change if a class of barriers is excluded (e.g., if "Insignificant" barriers are excluded from the analysis, the "number of downstream barriers" metric for the remaining barriers will change if they had any insignificant barrier downstream). A custom analysis can be run to generate metrics using a different degree of barrier severity.  
+		</p>
+		<br/>
+		<p>
+			The consensus anadromous results are based on an average score resulting from five sets of metrics - one calculated for each of the degrees of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>NE Aquatic Connectivity report</strong></a> for more information about how barrier severity was handled in the analysis. 
 		</p>
 	</div>
 	<h3 class="moreInfo">How to Run a Custom Analysis</h3>
 	<div class="explainWrap">
 		<p>
-			In addition to the multi-stakeholder consensus prioritization for anadromous fish species, this app provides the ability to run customized prioritization scenarios objectives.  There are five ways a prioritization can be customized:
+			In addition to the multi-stakeholder consensus prioritization for anadromous fish species, this app can be used to run customized prioritization scenarios objectives.  There are five ways to create a custom prioritization:
 		</p>
 		<br/>
 		<ol>
 			<li>
-				The <strong>severity of barriers</strong> that are included in the analysis.  Barriers that are excluded from the analysis do not affect the results in any way -- it is as if they do not exist.  The barrier severity can be set ot dams only, only dams that do NOT have fish passage facilities (in this case dams WITH fish passage facilities are considered fully permeable), or dams and road-stream crossings of varying degrees of severity (severe, significant, moderate, minor, insignificant).  In each case, the barriers used in the analysis will include degree of severity selected and all those that are more severe.  For example, if "Significant" barriers chosen, the analysis will include "Significant" and "Severe" road-stream crossings as well as all dams (which are always considered Severe)			</li>
-			<br>
-			<li>
-				The <strong>geographic extent</strong> of the analysis.  Setting this value will limit the analysis to a given state, watershed, or to rivers with documented presence of one or more anadromous species.  Importantly, barriers that excluded at this step still have an influence on the analysis. For example, if the analysis is restricted to Vermont, the metric which assesses the number of downstream barriers will still count those barriers that are downstream, even if they are outside of Vermont (e.g. dams on the Connecticut River in Massachusetts).  To limit the geographic extent of the analysis, navigate to the second option of the "Run a Custom Analysis" pane and select "Yes".  Doing so exposes three dropdown menus which can be used to develop simple expressions.  For example "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm">ArcGIS help pages. </a> 
+				The <strong>severity of barriers</strong> that are included in the analysis.  Barriers that are excluded from the analysis do not affect the results in any way -- it is as if they do not exist.  The barrier severity can be set to dams only, only dams that do NOT have fish passage facilities (in this case dams WITH fish passage facilities are considered fully permeable), or dams and road-stream crossings of varying degrees of severity (severe, significant, moderate, minor, insignificant).  In each case, the barriers used in the analysis will include degree of severity selected and all those that are more severe.  For example, if "Significant" barriers are chosen, the analysis will include "Significant" and "Severe" road-stream crossings as well as all dams (which are always considered “Severe”).			
 			</li>
 			<br>
 			<li>
-				The <strong>metric weights</strong> can be changed from the values used in the stakeholder-consensus anadromous fish prioritization.  The metrics weights are relative (they must sum to 100) and they indicate how important a given metric is for the objective of a prioritization.  For example, if the objective of  is to identify priority barriers to restore brook trout habitat, metrics which assess whether the barrier is an Eastern Brook Trout Joint Venture  catchment will be of more importance than the presence of anadromous fish downstream of the barrier (which may have no bearing whatsoever).  The  metrics are organized by thematic tabs, however, these tabs have no bearing on the analysis - they are for oganization only.  By deafult, the metrics  are populated with the weights used in the consensus anadromous fish prioritization.
+				The <strong>geographic extent</strong> of the analysis.  Setting this value will limit the analysis to a given state or watershed, or to rivers with documented presence of one or more anadromous species.  Importantly, barriers excluded at this step still have an influence on the analysis. For example, if the analysis is restricted to Vermont, the metric which assesses the number of downstream barriers will still count those barriers that are downstream, even if they are outside of Vermont (e.g., dams on the Connecticut River in Massachusetts).  To limit the geographic extent of the analysis, navigate to the second option of the "Run a Custom Analysis" pane and select "Yes."  Doing so exposes three drop-down menus which can be used to develop simple expressions.  For example, "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression, see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm">ArcGIS help pages. </a> 
 			</li>
 			<br>
 			<li>
-				You can <strong>model the removal</strong> of up to 10 barriers in the analysis.  Doing so will treat the barriers as if they did not exist. This functionality can be used to assess the impact of a proposed restoration project on the surround priorities ("if we remove this barrier, will the next barrier upstream become a high priority?"), address known data-errors ("I know this barrier is passable, so is the next barrier upstream a priority?") and to assess multiple barriers in series as a single project ("We are looking at restoring these 3 barriers in succession and I'd like to know their priorty as a single project, not as individual projects").  Selecting this option will reveal a "Select Barriers" button which will add the barriers, symbolized as black points, to the map.  Clicking on these points will select them for removal in the analysis.
+				The <strong>metric weights</strong> can be changed from the values used in the stakeholder-consensus anadromous fish prioritization.  The metrics weights, which must sum to 100, indicate the relative importance of the metrics for the objective of a prioritization.  For example, if the objective is to identify priority barriers to restore brook trout habitat, metrics which assess whether the barrier is inside a designated Eastern Brook Trout Joint Venture catchment will be of more importance than the presence of anadromous fish downstream of the barrier (which may have no bearing whatsoever).  The metrics are organized by thematic tabs for organization, but these tabs have no bearing on the analysis results.  By default, the metrics weights are populated with those used in the consensus anadromous fish prioritization; you can then modify the values for your custom prioritization inside the boxes.
 			</li>
+			<br>
 			<li>
-				<strong>Summary statistics</strong> can be run on the results of the custom analysis.  Selecting this option will reveal dropdown menus for selecting the attribute that the results will be summarized within (e.g. state, watershed) and the value that will be summarized (e.g. reuslt Tier). When complete, the summary statistics will be available from the "Custom Analysis Results" pane. 
+				You can <strong>model the removal</strong> of up to ten barriers in the analysis.  Doing so will treat the barriers as if they did not exist. This functionality can be used to assess the impact of a proposed restoration project on the surround priorities (e.g., "If we remove this barrier, will the next barrier upstream become a high priority?"), address known data-errors (e.g., "I know this barrier is passable, so is the next barrier upstream a priority?") and assess multiple barriers in series as a single project (e.g., "We are looking at restoring these 3 barriers in succession and I'd like to know their priority as a single project, not as individual projects").  Selecting this option will reveal a "Select Barriers" button which will add the barriers, symbolized as black points, to the map.  Clicking on these points will select them for removal in the analysis.
 			</li>
+			<br>
+			<li>
+				<strong>Summary statistics</strong> can be run on the results of the custom analysis.  Selecting this option will reveal dropdown menus for selecting the geographic unit within which  the results will be summarized (e.g. state, watershed) and the value that will be summarized (e.g. Tier). When complete, the summary statistics will be available from the "Custom Analysis Results" pane. 
+			</li>
+
 		</ol>
 	</div>
 	<!-- <h3 class="resultsInfo">How to Interpret the Custom Results</h3>

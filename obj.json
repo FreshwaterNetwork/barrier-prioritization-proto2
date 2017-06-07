@@ -6,8 +6,13 @@
 	"buttonText": "",
 	"extent": "",
 	"stateSet": "no",
-
 	"getStarted" : "open",
+	
+	"startingAdditionalLayers":	{	
+		"rivers":"off",
+		"huc8s":"off",
+		"states":"off"
+	},
 	"startingMapLayers" : false,
 	"startingFilter" : "",
 	"startingPassability" : "Dams",
