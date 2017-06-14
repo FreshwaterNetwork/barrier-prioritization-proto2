@@ -67,7 +67,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</div>
 
 		<div class="bp_flexColHCenter">
-			<h4 id="consensusResultFiltersExpander" class="bp_expander">Filter the Results in the Map <span class="bp_expand">+</span></h4> 
+			<div><h4 id="consensusResultFiltersExpander"  style="display:inline" class="bp_expander">Filter the Results in the Map <span class="bp_expand">+</span></h4><img src="plugins/barrier-prioritization-proto2/images/info.png"  title="Learn how to filter the results in the map" class="infoIcon" id="-consensusResultFiltersInfo"></div>
 			<div id="consensusResultFiltersContainer" class="bp_flexColHCenter bp_flexBottom">
 				<div class="bp_flexColHCenter">
 					<h4 id="consensusResultFilterSliderTierOpenExpander" class="bp_expanderOpen bp_grayText">Filter the Results by Tier <span class="bp_expand bp_grayText">+</span></h4> 
@@ -121,11 +121,13 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 							</div>
 							<div class="bp_flexRowHCenter bp_flexNoWrap">
 								<button class="button button-primary bp_button" type="button" id="applyResultConsensusFilterButton"  title="Click to filter the results of the analysis">Apply Filter</button>
-								<button class="button button-primary bp_button" type="button" id="clearResultConsensusFilterButton" title="Click to clear the filter">Clear Filter</button>
 							</div>
 							
 						</div>
 					</div>
+				</div>
+				<div class="bp_flexRowHCenter bp_flexNoWrap">
+					<button class="button button-primary bp_button" type="button" id="clearResultConsensusFilterButton" title="Click to clear the filter">Clear All Filters</button>
 				</div>
 			</div>
 		</div>
@@ -136,7 +138,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				<div class="additionalLayers" id="additionalLayers">
 					<div class="description" id="additionalLayersDesc">Learn more about your area of interest by selecting from these additional information layers.<br><br>		
 					</div>
-						<div class="layer" id="toggleLayers">
+						<div class="layer" id="toggleBarriers">
 							<label class="form-component">
 								<input type="checkbox" data-layer="barriers" id="barriers">
 								<div class="check"></div>
@@ -419,7 +421,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</p>
 		<br/>
 		<p>
-			Below the radra plot is an expandable dialog which can be used to change the metrics that are displayed in the radar plot.  
+			Below the radar plot is an expandable dialog which can be used to change the metrics that are displayed in the radar plot.  
 		</p>
 		<br/>
 		<p>
@@ -429,6 +431,14 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		<p>
 			The consensus anadromous results are based on an average score resulting from five sets of metrics - one calculated for each of the degrees of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>NE Aquatic Connectivity report</strong></a> for more information about how barrier severity was handled in the analysis. 
 		</p>
+	</div>
+	<h3 class="consensusResultFiltersInfo">Filtering Results and Adding Layers</h3>
+	<div class="explainWrap">
+		<p>The data can be filtered based on the result tier and barrier severity using sliders. Customized filters can also be built to filter based on one or more of several attribtues in the data including state, watershed, and anadromous fish habitat. These filters are are cumulative; if the slider is used to only show the top 5 tiers and a custom filter added built to only show a single state, then the map will only display the top 5 tiers in that state.</p>
+		<br/>
+		<p><strong>Custom filters</strong> can be developed using dropdown menus to build simple expressions.  For example, "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression, see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm"><strong>ArcGIS help pages</strong>. </a>   </p>
+		<br/>
+		<p><strong>Additional layers</strong> can be toggled on and off from the "Additional Layers" pane under "Explore the Consnensus Anadromous Results" by simply checking the layer on or off.  A slider to adjust the layer transparency is exposed when a layer is turned on.</p>
 	</div>
 	<h3 class="moreInfo">How to Run a Custom Analysis</h3>
 	<div class="explainWrap">
@@ -440,7 +450,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			<li>
 				The <strong>severity of barriers</strong> that are included in the analysis.  Barriers that are excluded from the analysis do not affect the results in any way -- it is as if they do not exist.  The barrier severity can be set to dams only, only dams that do NOT have fish passage facilities (in this case dams WITH fish passage facilities are considered fully permeable), or dams and road-stream crossings of varying degrees of severity (severe, significant, moderate, minor, insignificant).  In each case, the barriers used in the analysis will include degree of severity selected and all those that are more severe.  For example, if "Significant" barriers are chosen, the analysis will include "Significant" and "Severe" road-stream crossings as well as all dams (which are always considered “Severe”).			
 			</li>
-			<br>
+			<br/>
 			<li>
 				The <strong>geographic extent</strong> of the analysis.  Setting this value will limit the analysis to a given state or watershed, or to rivers with documented presence of one or more anadromous species.  Importantly, barriers excluded at this step still have an influence on the analysis. For example, if the analysis is restricted to Vermont, the metric which assesses the number of downstream barriers will still count those barriers that are downstream, even if they are outside of Vermont (e.g., dams on the Connecticut River in Massachusetts).  To limit the geographic extent of the analysis, navigate to the second option of the "Run a Custom Analysis" pane and select "Yes."  Doing so exposes three drop-down menus which can be used to develop simple expressions.  For example, "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression, see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm">ArcGIS help pages. </a> 
 			</li>
