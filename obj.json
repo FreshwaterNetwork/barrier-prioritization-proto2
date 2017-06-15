@@ -27,6 +27,8 @@
 	"startingConsensusSeverityFilterMin":1,
 	"startingConsensusSeverityFilterMax":5,
 	"startingUseConsensusCustomFilter":false,
+	"startingUseCustomFilter":false,
+	"startingConsensusFilter":"",
 	"startingConsensusCustomFilter":"",
 	"startingRadarMetrics" : [
 		"batFuncUS",

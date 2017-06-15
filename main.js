@@ -121,17 +121,29 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				if (document.getElementById(this.id + 'consensusResultFilterSliderTier')) {
 					this.obj.startingConsensusTierFilterMin =$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 0);
 					this.obj.startingConsensusTierFilterMax =$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 1);
+					this.obj.startingUseConsensusFilter = true;
+					if (this.consensusCustomFilter !="" && this.consensusCustomFilter  != undefined){this.obj.startingConsensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
+					else{this.obj.startingConsensusFilter = this.consensusSliderFilter;}
 				}
 				if (document.getElementById(this.id + 'consensusResultFilterSliderSeverity')) {
 					this.obj.startingConsensusSeverityFilterMin =$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 0);
 					this.obj.startingConsensusSeverityFilterMax =$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 1);
+					this.obj.startingUseConsensusFilter = true;
+					if (this.consensusCustomFilter !="" && this.consensusCustomFilter  != undefined){this.obj.startingConsensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
+					else{this.obj.startingConsensusFilter = this.consensusSliderFilter;}
 				}
 				if (document.getElementById(this.id + 'resultsConsensusFilter')){
 					if ($('#' + this.id + 'resultsConsensusFilter').val() != ""){
 						this.obj.startingUseConsensusCustomFilter = true;
 						this.obj.startingConsensusCustomFilter = $('#' + this.id + 'resultsConsensusFilter').val();
+						this.obj.startingUseConsensusFilter = true;
+						if (this.consensusSliderFilter !="" && this.consensusSliderFilter  != undefined){this.obj.startingConsensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
+						else{this.obj.startingConsensusFilter = this.consensusCustomFilter;}
 					}	
-					else{this.obj.startingUseConsensusCustomFilter = false;}
+					else{
+						this.obj.startingUseConsensusFilter = false;
+						this.obj.startingUseConsensusCustomFilter = false;
+					}
 				}
 				
 				var state = new Object();
@@ -315,8 +327,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 	this.consensusCustomFilter = $("#" + this.id + "resultsConsensusFilter").val();
                 	console.log(this.consensusCustomFilter);
                 	this.map.removeLayer(this.dynamicLayer);
-                	if (this.consensusSliderFilter != "" && this.consensusSliderFilter != undefined){this.consensusFilter = this.consensusSilderQuery + " AND " + this.consensusCustomFilter;}
+                	if (this.consensusSliderFilter != "" && this.consensusSliderFilter != undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
 					else{this.consensusFilter = this.consensusCustomFilter;}
+                	console.log(this.consensusSliderFilter)
+                	console.log(this.consensusFilter);
                 	this.dynamicLayer = this.filterMapService(this.consensusFilter, this.dynamicLayer, this.config.url); 
 					console.log(this.dynamicLayer);
 					this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
@@ -586,22 +600,25 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
            
 			//add barriers & apply filter if from saved state
 		    if (this.stateSet== "yes"){
-		    	if (this.obj.startingUseConsensusCustomFilter == true){
+		    	
 					$('#' + this.id + 'resultsConsensusFilter').val(this.obj.startingConsensusCustomFilter);
-		   			$('#' + this.id + 'applyResultConsensusFilterButton').trigger('click');
-					console.log("applying custom filter");
 					$("#" + this.id + "clickInstructions").show();
-					
-				}
-				else{
 					lang.hitch(this, this.filterConsensusMapServiceSlider());
-					console.log("applying filter sliders");
-					$("#" + this.id + "clickInstructions").show();
+
 					$("#" + this.id +"consFiltMax").text(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 0));
 					$("#" + this.id +"consFiltMin").text(21-$('#' + this.id + 'consensusResultFilterSliderTier').slider("values", 1));
 					$("#" + this.id +"consSevMin").text(this.severityDict[$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 0)]);
 					$("#" + this.id +"consSevMax").text(this.severityDict[$('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 1)]);					
-				}
+
+		    		this.map.removeLayer(this.dynamicLayer);
+		        	this.dynamicLayer = this.filterMapService(this.obj.startingConsensusFilter, this.dynamicLayer, this.config.url);
+					this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
+					setTimeout(lang.hitch(this, function(){
+					    this.map.addLayer(this.dynamicLayer);
+					},500));		
+					lang.hitch(this, this.refreshIdentify(this.config.url, this.consensusFilter));
+		    		this.filterMapService(this.obj.startingConsensusFilter, this.dynamicLayer, this.config.url); 
+		
 			}
            
             // //clear all metric weights, filters, barriers to remove, uncheck all options
@@ -763,9 +780,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             $('#'+ this.id +"filterConsensusResultsValue").val('option: first').trigger("chosen:updated");
 			this.resetFilterSliders();
 			this.consensusFilter = "";
-			this.consensusSilderQuery = "";
+			this.consensusSliderFilter = "";
 			this.consensusCustomFilter = "";
 			//set these back to original position -- otherwise sAve & share can rememebr them and won't update if changes are made
+			this.obj.startingConsensusFilter ="";
 			this.obj.startingConsensusCustomFilter = "";
 			this.obj.startingConsensusSeverityFilterMax = 5;
 			this.obj.startingConsensusSeverityFilterMin = 1;
@@ -805,37 +823,19 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 			console.log(this.consensusSeverityRange);
 			this.consensusSeverityRangeStr = this.consensusSeverityRange.toString();
-			this.consensusSilderQuery = this.config.resultTier + " >= " + this.consensusTierMinVal + " AND " + this.config.resultTier + " <= " + this.consensusTierMaxVal ;
+			this.consensusSliderFilter = this.config.resultTier + " >= " + this.consensusTierMinVal + " AND " + this.config.resultTier + " <= " + this.consensusTierMaxVal ;
 			if (this.config.includeBarrierSeverity === true){
-				this.consensusSilderQuery +=  " AND " + this.config.severityField + " IN (" + this.consensusSeverityRangeStr + ")";
+				this.consensusSliderFilter +=  " AND " + this.config.severityField + " IN (" + this.consensusSeverityRangeStr + ")";
 			}
 			this.map.removeLayer(this.dynamicLayer);
-			if (this.consensusCustomFilter !="" && this.consensusCustomFilter  != undefined){this.consensusFilter = this.consensusSilderQuery + " AND " + this.consensusCustomFilter;}
-			else{this.consensusFilter = this.consensusSilderQuery;}
+			if (this.consensusCustomFilter !="" && this.consensusCustomFilter  != undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
+			else{this.consensusFilter = this.consensusSliderFilter;}
         	this.dynamicLayer = this.filterMapService(this.consensusFilter, this.dynamicLayer, this.config.url);
 			this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
 			setTimeout(lang.hitch(this, function(){
 			    this.map.addLayer(this.dynamicLayer);
 			},500));		
 			lang.hitch(this, this.refreshIdentify(this.config.url, this.consensusFilter));
-			
-			// this.map.removeLayer(this.dynamicLayer);
-			// this.consensusFilterParameters = new ImageParameters();
-			// this.layerDefs = [];
-			// this.layerDefs[0] = this.consensusSilderQuery + "AND" + this.consensusSilderQuery; //TODO;
-			// this.consensusFilterParameters.layerDefinitions = this.layerDefs;
-			// this.consensusFilterParameters.layerIds = [0];
-			// this.consensusFilterParameters.layerOption = ImageParameters.LAYER_OPTION_SHOW;
-			// this.consensusFilterParameters.transparent = true;
-			// this.dynamicLayer = new esri.layers.ArcGISDynamicMapServiceLayer(this.config.url, 
-				// {"imageParameters" : this.consensusFilterParameters});
-// 			
-			// setTimeout(lang.hitch(this, function(){
-				// console.log(this);
-			    // this.map.addLayer(this.dynamicLayer);
-			    // lang.hitch(this, this.refreshIdentify(this.url, this.consensusSilderQuery));	
-			    // console.log(this.consensusSilderQuery);
-			// },500));		
 
 		},
 

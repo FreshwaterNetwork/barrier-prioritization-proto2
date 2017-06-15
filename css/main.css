@@ -144,6 +144,11 @@
 	color: #999999;
 }
 
+.bp_h4{
+	margin-top:0px !important;
+	margin-bottom:0px !important;		
+}
+
 .bp_metricLabel{
 	font-size:11px;
 	right: 40px !important;
