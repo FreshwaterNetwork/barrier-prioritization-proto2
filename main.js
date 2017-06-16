@@ -1080,7 +1080,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                
                
                 this.requestObject = {};                
-                if($("#" + this.id + "filterBarriers").is(':checked')){this.filterBarr = true;}
+                if($("input[name='filterBarriers']:checked").val()=="yes"){this.filterBarr = true;}
                 else{this.filterBarr = false;}
 			
 				//if passability option is an input get it
