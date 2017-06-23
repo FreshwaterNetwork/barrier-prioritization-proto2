@@ -1182,6 +1182,9 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 if ($("input[name='takeAverage']:checked").val()=="yes"){this.takeAverage = true;}
                 else{this.takeAverage = false;}
                 
+                //TODO -- make button
+                this.exportCSV = false;
+                
                 this.requestObject["Passability"] = this.passability;
                 this.requestObject["Take_Average_Value"] = this.takeAverage;
                 this.requestObject["FilterBarriers"] = this.filterBarr;
@@ -1191,6 +1194,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 this.requestObject["Run_Watershed_Summary_Stats"] = this.runSumStats;
                 this.requestObject["Summarize_By"] = this.summarizeBy;
                 this.requestObject["Summary_Stat_Field"] = this.sumStatField;
+                this.requestObject["ExportCSV"] = this.exportCSV;
                 this.weightIterator = 1;
                 $.each(this.gpVals, lang.hitch(this, function(metric, weight){
                     if (weight >0){
@@ -1830,7 +1834,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				}
 				
 				if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
-					var radarSeverityDisplay = this.radarClickAllData[this.currentSeverity] + " Iteration";
+					var radarSeverityDisplay = this.currentSeverity + " Iteration";
 				}
 				if (this.config.includeBarrierSeverity === true && this.currentSeverity ===0){
 					var radarSeverityDisplay = "Insignificant Barrier Iteration";
