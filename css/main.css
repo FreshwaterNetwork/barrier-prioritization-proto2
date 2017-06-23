@@ -109,9 +109,12 @@
 	padding-top:10px;
 	height:60%;
  	flex:1 1 auto;	
+ 	margin-top:0px;
+ 	margin-bottom: 0px;
 }
-.bp_footerButton{
+.bp_footerButtonDiv{
 	margin-top: auto;
+
 }
 
 .bp_expand{
@@ -159,9 +162,17 @@
 	box-decoration-break: clone;
 }
 
+.bp_barChartLabel{
+	margin-bottom: 0px !important;
+	margin-top: 10px !important;
+}
 .d3_legend{
 	font-family: 'Raleway', sans-serif;
 	fill: #333333;
+}
+
+.bp_expander{
+
 }
 
 .bp_currWeight{

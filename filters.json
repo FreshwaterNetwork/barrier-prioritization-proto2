@@ -38,6 +38,7 @@
 					{"metricValue" : "&#39;NJ&#39;"},
 					{"metricValue" : "&#39;NY&#39;"},
 					{"metricValue" : "&#39;PA&#39;"},
+					{"metricValue" : "&#39;RI&#39;"},
 					{"metricValue" : "&#39;VA&#39;"},
 					{"metricValue" : "&#39;VT&#39;"},
 					{"metricValue" : "&#39;WV&#39;"}
@@ -776,6 +777,7 @@
 					{"resultValue" : "&#39;NJ&#39;"},
 					{"resultValue" : "&#39;NY&#39;"},
 					{"resultValue" : "&#39;PA&#39;"},
+					{"resultValue" : "&#39;RI&#39;"},
 					{"resultValue" : "&#39;VA&#39;"},
 					{"resultValue" : "&#39;VT&#39;"},
 					{"resultValue" : "&#39;WV&#39;"}  

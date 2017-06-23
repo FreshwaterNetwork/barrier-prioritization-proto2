@@ -52,7 +52,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				this.render();
 				$(this.printButton).hide();
 			}else{
-				this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
+				
 				$('#' + this.id).parent().parent().css('display', 'flex');
 				this.clicks.updateAccord(this);
 			}	
@@ -145,7 +145,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 						this.obj.startingUseConsensusCustomFilter = false;
 					}
 				}
-				
+				this.obj.startingVisibleLayers = this.visibleLayers;
 				var state = new Object();
 				state = this.obj;
 				console.log(this.obj);
@@ -210,6 +210,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             this.workingRemoveBarriers = [];
             this.workingRemoveBarriersString = "";
  			this.useRadar = true;
+ 			this.visibleLayers = this.obj.startingVisibleLayers;
+ 			this.selectSeverityCounter = 0;
 
    			
 			//hide elements until they're needed 
@@ -221,7 +223,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id +"stateStatsExpander").hide();
 			//$("#" + this.id +"additionalLayersExpander").hide();
 			$('#' + this.id + 'clickInstructions').hide();  
-
+			$("#" + this.id + "consensusRadarNoUse").hide();
 
 
 			if (this.config.includeExploreConsensus == true){
@@ -298,10 +300,16 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 }));
                 
                 $("#" + this.id + "filterConsensusResultsField").on('change',lang.hitch(this,function(e){
-                     $(".chosen").trigger("chosen:updated");
+                    $(".chosen").trigger("chosen:updated");
                     this.consensusSelectedField = $("#" + this.id + "filterConsensusResultsField option:selected").text();
                     this.updateConsensusResultValues(this.consensusSelectedField);
 					this.consensusResultFilterField = $("#" + this.id + "filterConsensusResultsField").val();
+                    if (this.currentSeverity !=0 && this.consensusResultFilterField.startsWith("DS")){
+                    	this.consensusResultFilterField= "s" + this.currentSeverity + this.consensusResultFilterField;
+                    }
+                    if (this.currentSeverity ==0 && this.consensusResultFilterField.startsWith("DS")){
+                    	this.consensusResultFilterField= "s1" + this.consensusResultFilterField;
+                    }
                     $("#" + this.id + "resultsConsensusFilter").val( this.consensusResultFilterField + ' ' + this.consensusResultFilterOperator + " (" + this.consensusResultFilterValue + ")");
                 }));
 				
@@ -315,26 +323,21 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     $("#" + this.id + "resultsConsensusFilter").val(this.consensusResultFilterField + ' ' + this.consensusResultFilterOperator + " (" + this.consensusResultFilterValue + ")");
                 })); 
 				
-				$("#"+ this.id + "filterConsensusResultsField").chosen({allow_single_deselect:true, width:"110px"});
-				$("#"+ this.id + "filterConsensusResultsValue").chosen({allow_single_deselect:true, width:"110px"});
+				$("#"+ this.id + "filterConsensusResultsField").chosen({allow_single_deselect:true, width:"110px"});		
 				$("#"+ this.id + "filterConsensusResultsOperator").chosen({allow_single_deselect:true, width:"50px"});
+				$("#"+ this.id + "filterConsensusResultsValue").chosen({allow_single_deselect:true, width:"110px"});
 
 				
                 //applyFilter to Consensus results
                 $("#" + this.id +"applyResultConsensusFilterButton").on('click',lang.hitch(this,function(e){
-    				
-                	//this.resetFilterSliders();
-                	this.consensusCustomFilter = $("#" + this.id + "resultsConsensusFilter").val();
-                	console.log(this.consensusCustomFilter);
+                	this.consensusCustomFilter = $("#" + this.id + "resultsConsensusFilter").val();     	
                 	this.map.removeLayer(this.dynamicLayer);
                 	if (this.consensusSliderFilter != "" && this.consensusSliderFilter != undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
 					else{this.consensusFilter = this.consensusCustomFilter;}
-                	console.log(this.consensusSliderFilter)
                 	console.log(this.consensusFilter);
                 	this.dynamicLayer = this.filterMapService(this.consensusFilter, this.dynamicLayer, this.config.url); 
 					console.log(this.dynamicLayer);
-					this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
-				
+					this.dynamicLayer.setVisibleLayers(this.visibleLayers);
 					setTimeout(lang.hitch(this, function(){
 					    this.map.addLayer(this.dynamicLayer);
 					},500));		
@@ -358,21 +361,20 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 	this.useRadar = false;
                 	this.activateIdentify=true;
 					lang.hitch(this, this.refreshIdentify(this.resMapServ));
+					if (this.map.infoWindow){this.map.infoWindow.hide();}
 				}
 			}));
 			$('#' + this.id +'exploreConsensusAccord').on('click', lang.hitch(this,function(e){
 				if (this.gpResLayer){
-					this.map.addLayer(this.dynamicLayer);
                 	this.map.removeLayer(this.gpResLayer);
 				}
-				// if (this.gpResLayer.visible === true){this.map.removeLayer(this.gpResLayer);}
-				// if (this.dynamicLayer.visible === true){this.map.removeLayer(this.dynamicLayer);}
-				//try{this.map.removeLayer(this.gpResLayer);}catch(err){console.log("no gp layer " + err.message );}
-				//try{this.map.removeLayer(this.dynamicLayer);} catch(err){console.log("no dyn layer " + err.message );}
+				if (this.dynamicLayer.visible === true){this.map.removeLayer(this.dynamicLayer);}
 				this.map.addLayer(this.dynamicLayer);
 				this.useRadar = true;
 				this.activateIdentify=true;
 				lang.hitch(this, this.refreshIdentify(this.config.url));
+				$('#' + this.id +'selectSeverity').trigger("updated");
+				if (this.map.infoWindow){this.map.infoWindow.hide();}
 			}));
 			
 			
@@ -495,7 +497,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	        	}));
 	 			
 	 			//Set up select barriers to remove button
-				$('#'+ this.id +'graphicSelectBarriers2Remove').on('click', lang.hitch(this, function(){
+				$('input[name="graphicSelectBarriers2Remove"]').on('change', lang.hitch(this, function(){
+
 					this.selectRemovalBarriers();
 				}));
 	 			
@@ -580,6 +583,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	            	e.preventDefault();
 	            	window.location.href = this.zippedResultURL;             
 	            }));		
+	           $('#' + this.id + 'dlCustomExcel').on('click',lang.hitch(this,function(e) {
+	            	//download Excel result
+	            	e.preventDefault();
+	            	window.location.href = this.excelResultURL;             
+	            }));	
 	            
 	             $('#' + this.id + 'dlStats').on('click',lang.hitch(this,function(e) {
 	            	//download summary stats table
@@ -600,7 +608,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
            
 			//add barriers & apply filter if from saved state
 		    if (this.stateSet== "yes"){
-		    	
 					$('#' + this.id + 'resultsConsensusFilter').val(this.obj.startingConsensusCustomFilter);
 					$("#" + this.id + "clickInstructions").show();
 					lang.hitch(this, this.filterConsensusMapServiceSlider());
@@ -612,13 +619,15 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 
 		    		this.map.removeLayer(this.dynamicLayer);
 		        	this.dynamicLayer = this.filterMapService(this.obj.startingConsensusFilter, this.dynamicLayer, this.config.url);
-					this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
+					this.dynamicLayer.setVisibleLayers(this.visibleLayers);
 					setTimeout(lang.hitch(this, function(){
 					    this.map.addLayer(this.dynamicLayer);
 					},500));		
 					lang.hitch(this, this.refreshIdentify(this.config.url, this.consensusFilter));
 		    		this.filterMapService(this.obj.startingConsensusFilter, this.dynamicLayer, this.config.url); 
-		
+		    		
+		    		//set the severity dropdown
+		    		$("#" + this.id + "selectSeverity").val(parseInt(this.visibleLayers)).trigger('chosen:updated');
 			}
            
             // //clear all metric weights, filters, barriers to remove, uncheck all options
@@ -630,20 +639,21 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
 			//Set up the +/- expanders 
 			this.expandContainers = ["consensusRadarBlock", "barrierSeverity", "customFilter","consensusResultFilters", "customMetric", 
-			"barrierRemoval", "sumStats", "additionalLayers", "stateStats"];
+			"barrierRemoval", "sumStats", "additionalLayers", "stateStats", "severitySelection", "takeAverage"];
 			//Hide all expansion containers & set cursor to pointer		
 			for (var i=0; i<this.expandContainers.length; i++){
 				$("#" + this.id + this.expandContainers[i] + "Container").hide();
 				$("#" + this.id + "-" +  this.expandContainers[i] + "Info").hide();
 				$("#" + this.id + this.expandContainers[i] + "Expander").css( 'cursor', 'pointer' );
-				if (this.expandContainers[i] == "stateStats"){
+				if (this.expandContainers[i] == "severitySelection"){
 					$("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
+					$("#" + this.id + "-severitySelectionInfo").show();
 				}
 			}
 			//on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
 			$('.bp_expander').on("click", lang.hitch(this, function(e){
 				//show the assess a barrier expander if it's hidden, which it is by default
-				if ($("#" + this.id +"stateStatsExpander").is(":visible") == false){$("#" + this.id +"stateStatsExpander").animate({height:"toggle"}, 500);}
+				if ($("#" + this.id +"severitySelectionExpander").is(":visible") == false){$("#" + this.id +"severitySelectionExpander").animate({height:"toggle"}, 500);}
 				var expander = e.currentTarget.id;
 				var container = e.currentTarget.id.replace("Expander", "Container");
 				for (var i=0; i<this.expandContainers.length; i++){
@@ -691,56 +701,114 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             	e.preventDefault();
             	window.location.href = this.config.zippedConsensusResultURL;                    
             }));            
-        
+        	$('#' + this.id + 'dlConsensusExcel').on('click',lang.hitch(this,function(e) { 
+            	//download excel result
+            	e.preventDefault();
+            	window.location.href = this.config.excelConsensusResultURL;                    
+            }));
         
 
 			
 			//build checkboxes for additonal layers
 			lang.hitch(this, this.setUpAdditionalLayers(this.config.additionalLayers));
 			
-			//build zoom-to chosen
-			$("#" + this.id + "zoomState").chosen({allow_single_deselect:true, width:"155px"}).change(lang.hitch(this, function(c){
-						var v = c.target.value;
-						// check for a deselect
-						if (v.length == 0){v = "none";}
-					lang.hitch(this, this.zoomToStates(v, "yes"));
+			//build select severity chosen
+			$("#" + this.id + "selectSeverity").chosen({allow_single_deselect:true, width:"220px"}).change(lang.hitch(this, function(c){
+				
+				var v = c.target.value;
+				// check for a deselect
+				if (v.length == 0){v = "none";}
+				console.log(v);	
+				$("#" + this.id +"stateStatsExpander").show();
+				
+				
+				lang.hitch(this, this.selectBarrSeverity(v));
 			}));
 			
+			//build zoom-to chosen
+			$("#" + this.id + "zoomState").chosen({allow_single_deselect:true, width:"155px"}).change(lang.hitch(this, function(c){
+				var v = c.target.value;
+				// check for a deselect
+				if (v.length == 0){v = "none";}
+				lang.hitch(this, this.zoomToStates(v, "yes"));
+			}));
+			
+
 			this.rendered = true;	
 
 		},	
 		
+		
+		selectBarrSeverity:function(v){
+			if (this.selectSeverityCounter ==0){
+				$("#" + this.id + "stateStatsExpander").trigger("click");
+			}
+			this.visibleLayers = [];
+			this.visibleLayers.push(parseInt(v));
+			this.dynamicLayer.setVisibleLayers(this.visibleLayers);
+			this.currentSeverity = v;
+			
+			if (this.currentSeverity ==='0'){
+				$("#" + this.id + "consensusRadarUse").hide();
+				$("#" + this.id + "consensusRadarNoUse").show();
+				this.activateIdentify = false;
+			}
+			else{
+				$("#" + this.id + "consensusRadarUse").show();
+				$("#" + this.id + "consensusRadarNoUse").hide();
+				this.activateIdentify = true;
+			}
+			console.log(this.visibleLayers);
+			this.refreshBarChart();
+			lang.hitch(this,this.clearConsensusFilterMapService()); 
+			this.selectSeverityCounter++;
+			lang.hitch(this, this.refreshIdentify(this.config.url));
+			
+		},
+		
+		
 		zoomToStates: function(v, bool){
-
 			//build zoom-to chosen
 			var zoomExt = new Extent(this.config.zoomTo[v][0][0],this.config.zoomTo[v][0][1], this.config.zoomTo[v][0][2], this.config.zoomTo[v][0][3],
       			new SpatialReference({ wkid:3857 }));
 			this.map.setExtent(zoomExt);
-			
+			lang.hitch(this,this.refreshBarChart()); 
+			if (bool === "yes" && this.toggleBarriers !=false){
+				$("#" + this.id +"barriers").trigger("click");
+				$('#' + this.id + 'clickInstructions').show(); 
+				$("#" + this.id +"consensusResultFiltersExpander").show();
+				this.toggleBarriers = false;
+			}
+		},
+
+		refreshBarChart: function(v){
+			var v = $("#" + this.id + "zoomState").val();
 			$("#" + this.id + "damSpan").text(this.config.zoomTo[v][1]["dams"]);	
-			$("#" + this.id + "roadCrossingSpan").text(this.config.zoomTo[v][1]["crossings"]);
-			$("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2));
-			var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"]*0.000621371, 2);	
-		
+			$("#" + this.id + "roadCrossingSpan").text(this.config.zoomTo[v][1]["crossings"+String(this.currentSeverity)]);
+			$("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"+String(this.currentSeverity)]*0.000621371, 2));
+			var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"+String(this.currentSeverity)]*0.000621371, 2);	
+			if (this.currentSeverity != "6"){
+				$("#" + this.id + "xingBarChartLabel").text("# " + this.config.severityNumDict[this.currentSeverity] + " Crossings");
+				$("#" + this.id + "barChartCrossings").show();
+				//$("#" + this.id + "xingBarChartLabel").show();
+			}
+			else{
+				$("#" + this.id + "barChartCrossings").hide();
+				//$("#" + this.id + "xingBarChartLabel").hide();
+			}
 			if (v != "Region"){
 				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo[v][1]["dams"], this.config.zoomToMax.MaxSubRegion.dams, '#0000b4'));
-				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"], this.config.zoomToMax.MaxSubRegion.crossings, '#0082ca'));
+				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"+String(this.currentSeverity)], this.config.zoomToMax.MaxSubRegion.crossings, '#0082ca'));
 				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, this.config.zoomToMax.MaxSubRegion.avgNetwork*0.000621371, '#0094ff'));	
 			}
 			//use different max values for the whole region
 			if (v == "Region"){
 				lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo["Region"][1]["dams"], this.config.zoomToMax.MaxRegion.dams, '#0000b4'));
-				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"], this.config.zoomToMax.MaxRegion.crossings, '#0082ca'));
+				lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"+String(this.currentSeverity)], this.config.zoomToMax.MaxRegion.crossings, '#0082ca'));
 				lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, this.config.zoomToMax.MaxRegion.avgNetwork*0.000621371, '#0094ff'));	
 			}			
-			if (bool === "yes"){
-				$("#" + this.id +"barriers").trigger("click");
-				$('#' + this.id + 'clickInstructions').show(); 
-				$("#" + this.id +"consensusResultFiltersExpander").show();
-			
-			}
-		},
 
+		},
 		
         //calculate current metric weights
         metricWeightCalculator: function (gpVals){
@@ -761,10 +829,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		filterMapService: function(filter, mapServLayer, mapServURL){
 			var filterParameters = new ImageParameters();
 			var layerDefs = [];
-			layerDefs[0] = filter;
+			layerDefs[this.currentSeverity] = filter;
 			console.log("in function " +filter);
+			console.log(this.currentSeverity);
 			filterParameters.layerDefinitions = layerDefs;
-			filterParameters.layerIds = [0];
+			filterParameters.layerIds = [this.currentSeverity];
 			filterParameters.layerOption = ImageParameters.LAYER_OPTION_SHOW;
 			filterParameters.transparent = true;
 			var filteredMapServLayer = new esri.layers.ArcGISDynamicMapServiceLayer(mapServURL, 
@@ -791,7 +860,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			this.obj.startingConsensusTierFilterMin = 1;
 			
 			this.dynamicLayer = new esri.layers.ArcGISDynamicMapServiceLayer(this.config.url);
-			this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
+			this.dynamicLayer.setVisibleLayers(this.visibleLayers);
 			setTimeout(lang.hitch(this, function(){
 			    this.map.addLayer(this.dynamicLayer);
 			},500));
@@ -831,7 +900,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			if (this.consensusCustomFilter !="" && this.consensusCustomFilter  != undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
 			else{this.consensusFilter = this.consensusSliderFilter;}
         	this.dynamicLayer = this.filterMapService(this.consensusFilter, this.dynamicLayer, this.config.url);
-			this.dynamicLayer.setVisibleLayers(this.config.visibleLayers);
+			this.dynamicLayer.setVisibleLayers(this.visibleLayers);
 			setTimeout(lang.hitch(this, function(){
 			    this.map.addLayer(this.dynamicLayer);
 			},500));		
@@ -853,79 +922,88 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 
 
         selectRemovalBarriers: function() {  
-            this.removingBarriers = true;
-            
-           
-            console.log("removing barriers");
-            var removeBarrierSymbol = new SimpleMarkerSymbol().setSize(5).setColor(new Color([0,0,0]));
-            this.selectedRemoveBarrierSymbol = new SimpleMarkerSymbol().setSize(10).setColor(new Color([255,0,0]));                                      
-            var renderer = new SimpleRenderer(removeBarrierSymbol);
-            
-            this.removeFeatureLayer = new FeatureLayer(this.config.removeSelectionURL);
-            this.removeFeatureLayer.setRenderer(renderer);
-            this.removeFeatureLayer.MODE_SNAPSHOT;
-
-			// Set layer definition so barriers to remove layer only shows passability level of barriers being analyzed (e.g. Dams only)
-			this.severityQueryDict = this.config.severityDict;
-
-            this.severityField = this.severityQueryDict[$('#'+ this.id + 'passability').val()];
-            this.severityQuery = this.severityField +' = 1';
-            console.log(this.severityQuery);
-            this.removeFeatureLayer.setDefinitionExpression(this.severityQuery); 
-            this.removeFeatureLayer.dataAttributes = [this.uniqueID, this.severityField];
-            this.selectedBarriers = new GraphicsLayer();
-            
-            //if there's already values in the text box, include the corresponding graphics
-			if ($("#" + this.id + 'barriers2Remove').val() != ''){
-				lang.hitch(this, this.addSavedBarriersToRemove());
-            }
-            
-            this.removeFeatureLayer.on("click", lang.hitch(this, function(e){
-                this.currID = e.graphic.attributes[this.uniqueID];
-                console.log(this.currID);
-                for (i = 0; i< this.removeFeatureLayer.graphics.length; i++){  
-                    if (this.alreadySelBarr2Remove != undefined && this.alreadySelBarr2Remove.indexOf(this.currID)>=0){
-                    	console.log(this.currID + "is already selected");
-                    }           	
-                	//the following statement check if each graphic is either the one clicked on or in the list of previously selected 
-                    if (this.removeFeatureLayer.graphics[i].attributes[this.uniqueID] == this.currID ){
-                        this.barriers2RemoveCount ++;  
-            
-                        if (this.barriers2RemoveCount <= 10) {
-                            //Make a graphic copy of the selected point.  Changing the symbology of the existing point worked, but then
-                            //symbology would revert on zoom in/out
-							var key = this.uniqueID;
-                            var attr = {};
-                            attr[key] = this.removeFeatureLayer.graphics[i].attributes[this.uniqueID];
-                            this.selectedBarrier = new Graphic(this.removeFeatureLayer.graphics[i].geometry, this.selectedRemoveBarrierSymbol, attr );
-                            this.selectedBarriers.add(this.selectedBarrier);
-                             
-                            //if an existing selected graphic is clicked remove it and its UNIQUE_ID from String
-                            this.selectedBarriers.on("click", lang.hitch(this, function(e){
-                                if (this.workingRemoveBarriers.indexOf(e.graphic.attributes[this.uniqueID]) >-1){
-                                    this.workingRemoveBarriers.splice(this.workingRemoveBarriers.indexOf(e.graphic.attributes[this.uniqueID]), 1);
-                                    this.barriers2RemoveCount --;
-                                }
-                                this.workingRemoveBarriersString = "'" + this.workingRemoveBarriers.join("', '") + "'";
-                                if (this.workingRemoveBarriersString == "''"){this.workingRemoveBarriersString = "";}
-                                $("#" + this.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
-                                this.selectedBarriers.remove(e.graphic);
-                            }));    
-                            this.workingRemoveBarriers.push(this.currID);
-                            this.workingRemoveBarriersString = "'" + this.workingRemoveBarriers.join("', '") + "'";       
-                            $("#" + this.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
-                        }
-                        else{alert("You may only select 10 barriers");}
-                    }
-                    else{this.alreadySelBarr2Remove = ""; }
-                }   
-            }));
-          
-          this.map.addLayer(this.removeFeatureLayer);
-          console.log(this.removeFeatureLayer);
-          this.map.addLayer(this.selectedBarriers);
-          this.activateIdentify = false;
-          lang.hitch(this, this.refreshIdentify());
+        	if($("input[name='graphicSelectBarriers2Remove']:checked").val()=="yes"){this.filterBarr = true;}
+               
+        	if ($("input[name='graphicSelectBarriers2Remove']:checked").val()=="hide"){
+				if (this.removeFeatureLayer){
+					this.map.removeLayer(this.removeFeatureLayer);
+					this.map.removeLayer(this.selectedBarriers);
+				}
+		 	}
+        	if ($("input[name='graphicSelectBarriers2Remove']:checked").val()=="show"){
+	            this.removingBarriers = true;
+	            this.activateIdentify = false;
+	          	lang.hitch(this, this.refreshIdentify());
+	            if (this.removeFeatureLayer === undefined){
+		            console.log("removing barriers");
+		            var removeBarrierSymbol = new SimpleMarkerSymbol().setSize(5).setColor(new Color([0,0,0]));
+		            this.selectedRemoveBarrierSymbol = new SimpleMarkerSymbol().setSize(10).setColor(new Color([255,0,0]));                                      
+		            var renderer = new SimpleRenderer(removeBarrierSymbol);
+		            
+		            this.removeFeatureLayer = new FeatureLayer(this.config.removeSelectionURL);
+		            this.removeFeatureLayer.setRenderer(renderer);
+		            this.removeFeatureLayer.MODE_SNAPSHOT;
+		
+					// Set layer definition so barriers to remove layer only shows passability level of barriers being analyzed (e.g. Dams only)
+					this.severityQueryDict = this.config.severityDict;
+		
+		            this.severityField = this.severityQueryDict[$('#'+ this.id + 'passability').val()];
+		            this.severityQuery = this.severityField +' = 1';
+		            console.log(this.severityQuery);
+		            this.removeFeatureLayer.setDefinitionExpression(this.severityQuery); 
+		            this.removeFeatureLayer.dataAttributes = [this.uniqueID, this.severityField];
+		            this.selectedBarriers = new GraphicsLayer();
+		            
+		            //if there's already values in the text box, include the corresponding graphics
+					if ($("#" + this.id + 'barriers2Remove').val() != ''){
+						lang.hitch(this, this.addSavedBarriersToRemove());
+		            }
+		            
+		            this.removeFeatureLayer.on("click", lang.hitch(this, function(e){
+		                this.currID = e.graphic.attributes[this.uniqueID];
+		                console.log(this.currID);
+		                for (i = 0; i< this.removeFeatureLayer.graphics.length; i++){  
+		                    if (this.alreadySelBarr2Remove != undefined && this.alreadySelBarr2Remove.indexOf(this.currID)>=0){
+		                    	console.log(this.currID + "is already selected");
+		                    }           	
+		                	//the following statement check if each graphic is either the one clicked on or in the list of previously selected 
+		                    if (this.removeFeatureLayer.graphics[i].attributes[this.uniqueID] == this.currID ){
+		                        this.barriers2RemoveCount ++;  
+		            
+		                        if (this.barriers2RemoveCount <= 10) {
+		                            //Make a graphic copy of the selected point.  Changing the symbology of the existing point worked, but then
+		                            //symbology would revert on zoom in/out
+									var key = this.uniqueID;
+		                            var attr = {};
+		                            attr[key] = this.removeFeatureLayer.graphics[i].attributes[this.uniqueID];
+		                            this.selectedBarrier = new Graphic(this.removeFeatureLayer.graphics[i].geometry, this.selectedRemoveBarrierSymbol, attr );
+		                            this.selectedBarriers.add(this.selectedBarrier);
+		                             
+		                            //if an existing selected graphic is clicked remove it and its UNIQUE_ID from String
+		                            this.selectedBarriers.on("click", lang.hitch(this, function(e){
+		                                if (this.workingRemoveBarriers.indexOf(e.graphic.attributes[this.uniqueID]) >-1){
+		                                    this.workingRemoveBarriers.splice(this.workingRemoveBarriers.indexOf(e.graphic.attributes[this.uniqueID]), 1);
+		                                    this.barriers2RemoveCount --;
+		                                }
+		                                this.workingRemoveBarriersString = "'" + this.workingRemoveBarriers.join("', '") + "'";
+		                                if (this.workingRemoveBarriersString == "''"){this.workingRemoveBarriersString = "";}
+		                                $("#" + this.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
+		                                this.selectedBarriers.remove(e.graphic);
+		                            }));    
+		                            this.workingRemoveBarriers.push(this.currID);
+		                            this.workingRemoveBarriersString = "'" + this.workingRemoveBarriers.join("', '") + "'";       
+		                            $("#" + this.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
+		                        }
+		                        else{alert("You may only select 10 barriers");}
+		                    }
+		                    else{this.alreadySelBarr2Remove = ""; }
+		                }   
+		            }));
+	            }
+		      	this.map.addLayer(this.removeFeatureLayer);
+		      	console.log(this.removeFeatureLayer);
+		      	this.map.addLayer(this.selectedBarriers);
+			}
         },
         
         addSavedBarriersToRemove: function(){
@@ -1101,8 +1179,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				this.summarizeBy = $("#" + this.id + "summarizeBy").val();
                 this.sumStatField = $("#" + this.id + "summaryStatField").val();
                 
+                if ($("input[name='takeAverage']:checked").val()=="yes"){this.takeAverage = true;}
+                else{this.takeAverage = false;}
+                
                 this.requestObject["Passability"] = this.passability;
-                this.requestObject["Take_Average_Value"] = false;
+                this.requestObject["Take_Average_Value"] = this.takeAverage;
                 this.requestObject["FilterBarriers"] = this.filterBarr;
                 this.requestObject["UserFilter"] = this.filter;
                 this.requestObject["ModelRemoval"] = this.removeBarr;
@@ -1207,6 +1288,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 	this.gp.getResultData(jobInfo.jobId, this.config.resultsParamName, lang.hitch(this, this.displayResultMapServ));          	
                 }
                 this.gp.getResultData(jobInfo.jobId, this.config.zippedResultParamName, lang.hitch(this, this.getZippedResultURL));  
+                this.gp.getResultData(jobInfo.jobId, this.config.excelResultParamName, lang.hitch(this, this.getExcelResultURL));  
                 $( "#" + this.id + "customAnalysisResultsAccord" ).trigger( "click" );
        
                 this.statusCallbackIterator = 0;
@@ -1227,7 +1309,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
 		},
 		
-		
+		getExcelResultURL: function (result, messages){
+			console.log(result.value.url);
+			this.excelResultURL = result.value.url; //this is accessed when the download button is pressed
+		},
 
 		//Display GP Result Map Service  
 		displayResultMapServ: function (result, messages){
@@ -1238,7 +1323,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             $('#' + this.id +"submitButton").prop('disabled', false);
             
 	        //set identify to GP service
-            this.identifyRes = new IdentifyTask(this.resMapServ);
+            //this.identifyRes = new IdentifyTask(this.resMapServ);
             this.activateIdentify = true;
             this.useRadar = false;
             lang.hitch(this, this.refreshIdentify(this.resMapServ));                                
@@ -1327,7 +1412,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             //this sets the starting radar metrics to be shown via config array
             this.startingRadarMetrics = []; //array from obj 
             for (var i=0; i<this.obj.startingRadarMetrics.length; i++){ 
-            	this.startingRadarMetrics.push("PR" + this.obj.startingRadarMetrics[i]);
+            	this.startingRadarMetrics.push(this.obj.startingRadarMetrics[i]);
             };
             
             //This set the weighted anadromous metrics to show in the radar by default 
@@ -1380,7 +1465,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			this.temp = [];
 			this.temp.push(this.radarDataFiltered);
 			this.radarDataFiltered = this.temp;
-			//console.log(this.radarDataFiltered);
 			this.RadarChart.draw("#" + this.id + "consensusRadarContainer", this.radarDataFiltered, radarChartOptions, this);
 		},		
 
@@ -1388,7 +1472,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			var categories = [];
 			var values = [];
 			values.push(d);
-			categories.push(theme);	
+			categories.push(theme);  
 			var xscale = d3.scaleLinear()
 							.domain([0,maxVal])
 							.range([0,200]);
@@ -1430,7 +1514,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 								.append('text')
 								.attr('x',function(d) {return xscale(d)-0; })
 								.attr('y',function(d,i){ return yscale(i)+14; })
-								.text(function(d){ return " " + d+" " + theme; })
+								.text(function(d){ return " " + d;}) //+" " + theme; }) //This adds a label - can use inseatd of 	
 									.style('fill','#000000')
 									.style('font-size','12px');
 		
@@ -1497,7 +1581,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				else{
 					this.map.removeLayer(this.dynamicLayer);
 					this.activateIdentify = false;
-					this.refreshIdentify(undefined, undefined);
+					//this.refreshIdentify(undefined, undefined);
 					$("#" + this.id + "barrierstransp").hide();
 				}
 			}));
@@ -1583,126 +1667,210 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
         },           		
 		
 		refreshIdentify: function(layerURL, layerDef) { 
-			console.log(this.activateIdentify);
+			console.log("identify active = " +this.activateIdentify);
+			this.idLayerURL = layerURL;
+			if (this.activateIdentify === false){ 
+				dojo.disconnect(this.identifyClick);
+			}
+			if (this.activateIdentify === true){  
+				//this.map.on("click", lang.hitch(this, this.doIdentify));
+				this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt){this.doIdentify(evt);}));	
+					
+	            //Identify functionality...     
+	            this.identifyRes = new IdentifyTask(layerURL);
+	            this.identifyParams = new IdentifyParameters();
+	            this.identifyParams.tolerance = 6;
+	            this.identifyParams.returnGeometry = true;
+	            if (layerURL === this.config.url){
+	            	var visLayer = this.visibleLayers;
+	            }
+	            else{var visLayer = 0;}
+	      
+	            this.identifyParams.layerIds = visLayer;
+	            this.identifyParams.layerDefinitions=[];
+	            if (layerURL === this.config.url){
+	            	var idLayer = parseInt(this.currentSeverity);
+	            }
+	            else{var idLayer = 0;}
+	            console.log(idLayer);
+	            console.log(visLayer);
+	            if (layerDef != undefined){
+	            	this.identifyParams.layerDefinitions[idLayer] = layerDef;
+	            	console.log("layer def= " + this.identifyParams.layerDefinitions);
+	            }
+	            else{this.identifyParams.layerDefinitions = [];}
+	            this.identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_VISIBLE;
+	            this.identifyParams.width = this.map.width;
+	            this.identifyParams.height = this.map.height;
 
-                //Identify functionality...     
-                this.identifyRes = new IdentifyTask(layerURL);
-                this.identifyParams = new IdentifyParameters();
-                this.identifyParams.tolerance = 6;
-                this.identifyParams.returnGeometry = true;
-                this.identifyParams.layerIds = this.config.visibleLayers;
-                this.identifyParams.layerDefinitions=[];
-                if (layerDef != undefined){
-                	this.identifyParams.layerDefinitions[0] = layerDef;
-                	console.log("layer def= " + this.identifyParams.layerDefinitions);
+            }    
+        },
+            
+        doIdentify: function(evt){
+        	if (this.activateIdentify === true){
+				this.identifyParams.geometry = evt.mapPoint;
+		        this.identifyParams.mapExtent = this.map.extent;
+	
+                this.identifyIterator = 0;      
+                this.identifyRes       
+                    .execute(this.identifyParams)
+                    .addCallback(lang.hitch(this, function (response) {
+                        if (this.identifyIterator ===0 && response[0].feature){
+                        	console.log(response[0].feature);
+                        	lang.hitch(this, this.displayIDResult(response[0].feature, this.identifyParams.geometry));
+                        }
+                        this.identifyIterator ++;    
+                        this.idContent = "";
+				}));
+		     }        
+        },
+		displayIDResult: function(idResult, point){
+			this.idContent="";
+    		this.radarData =[];
+			this.radarClickAllData = {}; //build an object to get the all real values.  Used in RadarChart.js to make tooltip labels
+			$.each(idResult.attributes, lang.hitch(this, function(k, v){ 
+                if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
+                	var metricSev = "s"+String(this.currentSeverity);
                 }
-                else{this.identifyParams.layerDefinitions = [];}
-                this.identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_ALL;
-                this.identifyParams.width = this.map.width;
-                this.identifyParams.height = this.map.height;
-				
-				this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt) {  
-					if (this.activateIdentify === true){  
-		                this.identifyParams.geometry = evt.mapPoint;
-		                this.identifyParams.mapExtent = this.map.extent;
-		                this.identifyIterator = 0;      
-		                this.deferred = this.identifyRes       
-		                    .execute(this.identifyParams)
-		                    .addCallback(lang.hitch(this, function (response) {
-		                    return arrayUtils.map(response, lang.hitch(this, function (idResult) {
-		                  
-	                    		if (this.identifyIterator ==0){
-		                    		this.radarData =[];
-									this.radarClickAllData = {}; //build an object to get the real values for labels
-			                        this.IdentifyFeature = idResult.feature;
-			                        console.log(this.IdentifyFeature);
-			                        this.idContent = "";
-			                        $.each(idResult.feature.attributes, lang.hitch(this, function(k, v){ 
-			                            
-			                            if ($.inArray(k, this.config.idBlacklist) == -1){
-			                            	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
-			                            	if (this.config.metricMetersToMiles.indexOf(k)!=-1){
-			                            		var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
-			                            	}
-			                            	else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
-			                            	else{vDisplay = v;}
-			                            	if(this.config.metricUnits[k] === "yes/no"){
-			                            		if(parseInt(v)==0){vDisplay ="no";}
-			                            		if(parseInt(v)==1){vDisplay ="yes";}
-			                            	}
-			                               	this.radarClickAllData[k] = v;  
-			                            	//HTML for identify popup -- loop through and include all fields except those in plugin-config blakclist
-			                            	if (this.config.metricNames[k] != undefined){this.idContent = this.idContent + "<b>" + this.config.metricNames[k] + "</b> : " + vDisplay + "<hr>";}
-			                               	
-			                                //else if (k.startsWith("PR" === false)){this.idContent = this.idContent + "<b>" + k + "</b> : " + v + "<hr>";}
-					                            if (this.useRadar === true){
-					                                if (k.startsWith("PR") === true){
-					        							this.radarItem = {};
-					                                	this.radarItem["axis"] = this.config.metricShortNames[k];
-					                                	this.radarItem["coreName"] = k;
-					                                	this.radarItem["unit"]= this.config.metricUnits[k.replace("PR", "")];
-					                                	// var vals = Object.values(this.config.metricNames);
-					                                	// var ind = vals.indexOf(k);
-					                                	this.radarItem["value"] =parseFloat(v)/100;
-					                                	this.radarItem["valDisp"]=vDisplay;
-					                                	this.radarData.push(this.radarItem);
-					                                }
-					                            }
-			                                }		                            
-			                        }));
-		                        }
-		                        this.identJSON = {
-		                            title: "${" + this.uniqueID+ "} = Tier ${" + this.config.resultTier +"}",
-		                            content: this.idContent
-		                        };
-		                        this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
-		                        this.IdentifyFeature.setInfoTemplate(this.popupInfoTemplate);							
-								if (this.useRadar === true){
-									lang.hitch(this, this.radarChart());
-									$("#" + this.id +"radarHeader").html("Name: " + this.radarClickAllData[this.config.barrierNameField] +"<br> ID: " + this.radarClickAllData[this.config.uniqueID] +"<br>Type:" + this.radarClickAllData[this.config.barrierTypeField]+"<br>" + this.radarClickAllData[this.config.severityField] + "<br>Anadromous Result Tier= " + this.radarClickAllData[this.config.resultTier]);
-									//hide the click instructions and show the "Assess a barrier" div if not visible - on first click
-									$('#' + this.id + 'clickInstructions').hide();  
-									
-									if (this.identifyIterator ===0){
-										//go to the "Explore Consensus Accordion" if not currently
-										if ($("#" + this.id + "exploreConsensusSection").is("visible")===false){
-											$("#" + this.id + "exploreConsensusAccord").trigger("click");
-										}
-										if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
-											$("#" + this.id +"consensusRadarBlockExpander").show();
-											$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
-										}
-										//switch to the radar plot on every identify click -- No -- don't like this
-										// if ($("#" + this.id +"consensusRadarBlockExpander").html().indexOf("-") == -1){
-											// $("#" + this.id +"consensusRadarBlockExpander").trigger("click");
-										// }
-										
-				               			$("#" + this.id +"radarMetricChangerOpenExpander").show();
-				               			$("#" + this.id +"consensusResultFiltersExpander").show();
-									}
-		               			}
-		               			this.identifyIterator ++; 
-		               		
-		                   		return this.IdentifyFeature;
-	                  		
-							}));
-						}));
-		                //console.log(this.deferred.results)	           
-		                //var idRes =this.deferred.results[0][0]
-		                //this.deferred.results = idRes
-		                //console.log(this.deferred)
-		                this.map.infoWindow.setFeatures([this.deferred]);
-		                this.map.infoWindow.show(this.identifyParams.geometry);
-					}
-					else{
-						dojo.disconnect(this.identifyClick);
-						console.log("identify disconnected");
-					}
-				})); 
-				
 
-       },
+                else{var metricSev = k;}
+                //console.log(metricSev)
+                if (k.startsWith(metricSev)===true){
+                	if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
+               			var basename = k.replace(metricSev, "");
+               		}
+               		else{var basename = k;}
+               		console.log(k);
+               		console.log(basename);
+               		console.log(k + "=" + v);
+                    if ($.inArray(k, this.config.idBlacklist) == -1){
+                    	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
+                    	if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
+                    		var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
+                    	}
+                    	else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
+                    	else{vDisplay = v;}
+                    	if(this.config.metricUnits[basename] === "yes/no"){
+                    		if(parseInt(v)==0){vDisplay ="no";}
+                    		if(parseInt(v)==1){vDisplay ="yes";}
+                    	}
+                       	
+                    	//HTML for identify popup -- loop through and include all fields except those in plugin-config blakclist
+                    	if (this.config.metricNames[basename] != undefined){
+                    		//console.log(this.config.metricNames[basename]);
+                    		this.idContent = this.idContent + "<b>" + this.config.metricNames[basename] + "</b> : " + vDisplay + "<hr>";
+                    	}
+                    	if (this.config.idWhiteList[basename] != undefined){
+                    		this.idContent = this.idContent + "<b>" + basename+ "</b> : " + vDisplay + "<hr>";
+                    	}
+                    }
+                }	
+				if (this.useRadar === true){
+	            	if (this.config.includeBarrierSeverity === true){
+	            		var PRsev = "PR" + String(this.currentSeverity);
+	            	}
+	            	else{var PRsev = "PR";}
+	            	basename = k.replace(PRsev, "");
+	            		
+	            	this.radarClickAllData[k] = v; 
+	            	
+	            	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
+	            	if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
+	            		var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
+	            	}
+	            	else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
+	            	else{vDisplay = v;}
+	            	if(this.config.metricUnits[basename] === "yes/no"){
+	            		if(parseInt(v)==0){vDisplay ="no";}
+	            		if(parseInt(v)==1){vDisplay ="yes";}
+	            	}
+	                if (k.startsWith(PRsev) === true && this.config.metricNames[basename] != undefined){
+						this.radarItem = {};
+	                	this.radarItem["axis"] = this.config.metricShortNames[basename];
+	                	this.radarItem["coreName"] = basename;
+	                	this.radarItem["unit"]= this.config.metricUnits[basename];
+	                	this.radarItem["value"] =parseFloat(v)/100;
+	                	this.radarItem["valDisp"]=vDisplay;
+	                	this.radarData.push(this.radarItem);
+	                }
+		                                
+				} 
+			}));
+				
+           	if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
+				var tierName = "Tier" + String(this.currentSeverity);
+			}
+			else{var tierName = "AvgTier";}
+            
+            this.identJSON = {
+                title: "${" + this.uniqueID+ "} = Tier ${" + tierName +"}",
+                content: this.idContent
+            };
+            
+            this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
+            idResult.setInfoTemplate(this.popupInfoTemplate);							
+			if (this.useRadar === true){
+				console.log(this.radarData);
+				var survDate = this.radarClickAllData["SurveyDate"];
+				var survID = this.radarClickAllData["surveyID"];
+				var survLink =this.config.xingSurveyURL + survID;
 		
-		
+				if (this.radarClickAllData[this.config.barrierTypeField]==="Crossing" && survID != ""){
+					//var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
+					var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
+				}
+				if (this.radarClickAllData[this.config.barrierTypeField]==="Crossing" && (survID === "" || survDate === "Null")){
+					var type = 'Crossing (No Survey Available)';
+				}
+				if (this.radarClickAllData[this.config.barrierTypeField]==="Dam" &&  this.radarClickAllData["FERC"] != ""){
+					var type= 'Dam (FERC prj: ' + this.radarClickAllData["FERC"] + ') + <br>NOI Exp Date: ' + this.radarClickAllData["FERC_NOIExpDate"];
+				}
+				if (this.radarClickAllData[this.config.barrierTypeField]==="Dam" &&  this.radarClickAllData["FERC"] ===  ""){
+					var type= 'Dam (No known FERC prj)';
+				}
+				
+				if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
+					var radarSeverityDisplay = this.radarClickAllData[this.currentSeverity] + " Iteration";
+				}
+				if (this.config.includeBarrierSeverity === true && this.currentSeverity ===0){
+					var radarSeverityDisplay = "Insignificant Barrier Iteration";
+				}
+				$("#" + this.id +"radarHeader").html("Name: " + this.radarClickAllData[this.config.barrierNameField] +
+				"<br/> ID: " + this.radarClickAllData[this.config.uniqueID] +
+				"<br/>Type: " + type+
+				"<br/>" + this.radarClickAllData[this.config.severityField] + 
+				"<br/>Anadromous Result Tier= " + this.radarClickAllData[tierName] +
+				"<br/>Plot Values for " + radarSeverityDisplay);
+				
+				
+				lang.hitch(this, this.radarChart());
+				
+				//hide the click instructions and show the "Assess a barrier" div if not visible - on first click
+				$('#' + this.id + 'clickInstructions').hide();  
+				
+				if (this.identifyIterator ===0){
+					//go to the "Explore Consensus Accordion" if not currently
+					if ($("#" + this.id + "exploreConsensusSection").is("visible")===false){
+						$("#" + this.id + "exploreConsensusAccord").trigger("click");
+					}
+					if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
+						$("#" + this.id +"consensusRadarBlockExpander").show();
+						$("#" + this.id +"consensusRadarBlockExpander").trigger("click");
+					}
+					//switch to the radar plot on every identify click -- No -- don't like this
+					// if ($("#" + this.id +"consensusRadarBlockExpander").html().indexOf("-") == -1){
+						// $("#" + this.id +"consensusRadarBlockExpander").trigger("click");
+					// }
+					
+           			$("#" + this.id +"radarMetricChangerOpenExpander").show();
+           			$("#" + this.id +"consensusResultFiltersExpander").show();
+				}
+   			}	
+   			console.log(point)
+			this.map.infoWindow.show(point);				
+			this.map.infoWindow.setFeatures([idResult]);
+           	
+		},			
+//End of functions...
 	});
 });

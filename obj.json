@@ -1,5 +1,4 @@
 {
-	"visibleLayers": [0],
 	"accordVisible": "",
 	"accordHidden": "",
 	"accordActive": 0,
@@ -13,6 +12,7 @@
 		"huc8s":"off",
 		"states":"off"
 	},
+	"startingVisibleLayers":[0],
 	"startingMapLayers" : false,
 	"startingFilter" : "",
 	"startingPassability" : "Dams",
