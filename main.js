@@ -1834,7 +1834,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				}
 				
 				if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
-					var radarSeverityDisplay = this.currentSeverity + " Iteration";
+					var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
 				}
 				if (this.config.includeBarrierSeverity === true && this.currentSeverity ===0){
 					var radarSeverityDisplay = "Insignificant Barrier Iteration";
