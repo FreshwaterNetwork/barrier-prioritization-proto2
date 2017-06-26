@@ -81,7 +81,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 							</select>
 						</div>
 					</div>
-					<p>View a <a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf" target="_blank"><strong>glossary of the metrics</strong></a></p>
+					<p style="text-align:center">View a <a href="plugins/barrier-prioritization-proto2/images/Metric_Glossary.pdf" target="_blank"><strong>glossary of the metrics</strong></a> or <a href="plugins/barrier-prioritization-proto2/images/Abbreviations.pdf" target="_blank"><strong>list of abbreviations</strong></a></p>
 				</div>
 				<div id="consensusRadarNoUse" class="bp_flexColHCenter">
 					<p>
@@ -389,6 +389,11 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				<br><br>
 				<button type="button" id="submitButton" class="button button-primary bp_button" title="Click to begin an analysis when weights are applied">Start!</button>
 				<br>
+				<label class="form-component" for="exportCustomCSV">
+					<input type="checkbox" id="exportCustomCSV">
+					<div class="check"></div>
+					<span class="form-text">Export results as .csv? (Increases process time)</span>
+				</label>
 				<div id="gpStatusReportHead" style="display: none;">Analysis status:</div>
 				<div><p class = "gpStatusReport" id="gpStatusReport"></p></div>
 
@@ -413,7 +418,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			</div>
 			<div id="downloadCustomContainer" class="bp_flexColHCenter bp_footerContainer">
 				<button class="button button-primary bp_footerButton" id="dlCustom" title="Click to download an ArcGIS Geodatabase with the results of the current custom analysis.">Download Custom Results (GIS)</button>
-				<!-- <button class="button button-primary bp_footerButton" id="dlCustomExcel" title="Click to download an Excel spreadsheet with the results of the current custom analysis.">Download Custom Results (Excel)</button> -->
+				<button class="button button-primary bp_footerButton" id="dlCustomCSV" title="Click to download a CSV (Excel) spreadsheet with the results of the current custom analysis.">Download Custom Results (CSV)</button>
 				<button class="button button-primary bp_footerButton" id="dlStats" title="Click to download a CSV file with the summary statistics results for the current custom analysis.">Download Summary Statistics</button>
 				<button class="button button-primary bp_footerButton" id="dlInputs" title="Click to download a CSV file with the input parameters for the current custom analysis.">Download Input Parameters</button>
 			</div>
@@ -426,7 +431,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 <div id="infoAccord" class="flex1">
 	<h3 class="infoDoc">Welcome</h3>
 	<div class="explainWrap" style="display:block;">
-		<h4 style="text-align:center">Welcome to the aquatic barrier prioritization tool</h4>
+		<h4 style="text-align:center">Welcome to the Northeast Aquatic Connectivity project's Aquatic Barrier Prioritization Tool</h4>
 		<figure >
 			<img src="plugins/barrier-prioritization-proto2/images/dam.jpg" ></img>
 			<figcaption style="font-size:10px">Dam on the Presumpscot River, Maine.  &copy; Paul Noble Photography <a href="https://creativecommons.org/licenses/by-nc-nd/2.0/">Flickr Creative Commons</a>.</figcaption>
@@ -436,7 +441,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</p> 
 		<br/>
 		<p>
-			The purpose of this app is to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in thirteen northeastern U.S. states.
+			The purpose of the Northeast Aquatic Connectivity project and this app is to explore the barriers to aquatic connectivity -- dams and road stream crossings -- in thirteen northeastern U.S. states.
 		</p>
 		<figure >
 			<img src="plugins/barrier-prioritization-proto2/images/culverts.png" ></img>
@@ -461,11 +466,15 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 class="severitySelectionInfo">Barrier Severity Options </h3>
 	<div class="explainWrap">
 		<p>
-			The barriers in this analysis have been broken into several classes based on physical attribtues which dictate how severe a barrier they are to fish passage.  These classes are referred to interchangeably as "barrier severity" or "passability." A dam or perched culvert, for example, would be a much more severe barrier to fish passage than a culvert which might slightly constrict flow, but which otherwise poses little obstacle to fish (an insignificant barrier). The barrier classes used are Severe, Significant, Moderate, Minor, and Insignificant.  These come from the UMass <a href="https://streamcontinuity.org/pdf_files/Aquatic_Passability_Scoring.pdf" target="_blank"><strong>NAACC Numeric Scoring System</strong></a>. 
+			The barriers in this analysis have been broken into several classes based on physical attribtues which dictate how severe a barrier they are to fish passage.  These classes are referred to interchangeably as "barrier severity" or "passability." A dam or perched culvert, for example, would be a much more severe barrier to fish passage than a culvert which might slightly constrict flow, but which otherwise poses little obstacle to fish (an insignificant barrier). The barrier classes used are Severe, Significant, Moderate, Minor, and Insignificant.  These come from the <a href="https://streamcontinuity.org/pdf_files/Aquatic_Passability_Scoring.pdf" target="_blank"><strong>NAACC Numeric Scoring System</strong></a>. 
 		</p>
 		<br/>
 		<p>
-			It is important to acknowledge that there is <strong>uncertainty</strong> in the barrier severity values that are assigned to each barrier.  In particular, the values for unsurveyed barriers were calculated from landscape-scale data, including slope and drainage area, using a Random Forest predictive model as part of the <a href="http://www.umasscaps.org/applications/critical-linkages.html" target="_blank"><strong>Critical Linkages</strong></a> analysis.  While this analysis uses the best available to data and processes to predict scores, there are many factors which influence the passabilty of a barrier which can not be obtained from a landscape-scale analysis.  When modeled scores are compared against scores developed from site surveys, <a href="http://jamba.provost.ads.umass.edu/web/lcc/DSL_documentation_connectivity.pdf#page=22" target="_blank">the adjusted r<sup>2</sup>=0.26 </a>.  Thus, it is clear that the modeled passability predictions are noisy.  Attempts are made to compensate for this unceratinty by allowing users to select a degree of passability within the custom analysis tool.  Ultimatly, it is our hope that the survey efforts currently underway under the <a href="" target="_blank">NAACC</a> umbrella will replace the need to model passability scores.  
+			Throughout the analysis, dams are considered Severe barriers due to the lack of consistent data on the effectiveness of fishways at dams.  (Custom analysis can be run excluding dams with fish passage facilities, thus considering them permeable).  The barrier severity scores for field-surveyed road-stream crossings are obtained using the scoring algorithm described in the <a href="https://streamcontinuity.org/pdf_files/Aquatic_Passability_Scoring.pdf" target="_blank"><strong>NAACC Numeric Scoring System</strong></a>. Passability scores for unsurveyed barriers were calculated from landscape-scale data, including slope and drainage area, using a Random Forest predictive model as part of the <a href="http://www.umasscaps.org/applications/critical-linkages.html" target="_blank"><strong>Critical Linkages</strong></a> analysis. When a crossing is clicked the popup and radar plot will indicate if the crossing has been surveyed and provide a link to the NAACC survey page if it has.  If not, its passability score and subsequent severity class are based on modeled passability.  
+		</p>
+		<br/>
+		<p>
+			It is important to acknowledge that there is <strong>uncertainty</strong> in the barrier severity values that are assigned to each barrier.  In particular, while the values for unsurveyed barriers are calculated using the best available data and processes to predict scores, there are many factors which influence the passabilty of a barrier which can not be obtained from a landscape-scale analysis.  When modeled scores are compared against scores developed from site surveys, <a href="http://jamba.provost.ads.umass.edu/web/lcc/DSL_documentation_connectivity.pdf#page=22" target="_blank">the adjusted r<sup>2</sup>=0.26 </a>.  Thus, it is clear that the modeled passability predictions are noisy.  Attempts are made to compensate for this unceratinty by allowing users to select a degree of passability within the custom analysis tool.  Ultimatly, it is our hope that the survey efforts currently underway under the <a href="https://streamcontinuity.org/" target="_blank">NAACC</a> umbrella will replace the need to model passability scores.  
 		</p>
 		<br/>
 		<p>
@@ -480,15 +489,15 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 			The consensus anadromous results can be best summarized by selecting the "Average of all Severities".  This displays the barriers based on the average priorty from all five degrees of barrier severity. See Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>NE Aquatic Connectivity report</strong></a> for more details on this aspect of the analysis. When these results are displayed, the values shown in the radar plot and popup boxes are those calculated from all barriers ("Insignificant").
 		</p>
 	</div>
-	<h3 class="stateStatsInfo">Understanding barrier summaries by state </h3>
+	<h3 class="stateStatsInfo">Understanding Barrier Summaries by State </h3>
 	<div class="explainWrap">
 		<p>The <strong>barrier summary by state</strong> is a quick way to visualize the number of barriers, both dams and road-stream crossings, and the average length of the upsteam functional (connected) network that results from these barriers, in each state.  The number of crossings that are displayed corresponds to the degree of barrier that is selected under the "Select the Severity of Barriers to Assess" dropdown. When a barrier severity value is selected, all barriers that are that are more severe are also included. Thus, if "Moderate" barriers are sleected, the summary value displayed will include moderate, significant and severe road-stream crossings.  Dams are listed separately in the state summary, but are always considered severe barriers.</p>
 		<br/>
 		<p>
-			The values presented in the barrier sumamry by state are based on those calculated in this analysis.  Notably, they are based on the medium resultion (1:100,000) NHDPlus (v2).  Only those barriers that fall on rivers mapped at this scale are included in the analysis.  Thus, dams or crossings that are on smaller stream not mapped at this scale are not included in the barrier summaries by state.
+			The values presented in the barrier sumamry by state are based on those calculated in this analysis.  Notably, they are based on the medium resolution (1:100,000) NHDPlus (v2).  Only those barriers that fall on rivers mapped at this scale are included in the analysis.  Thus, dams or crossings that are on smaller stream not mapped at this scale are not included in the barrier summaries by state.
 		</p>
 	</div>
-	<h3 class="consensusRadarBlockInfo">Interpreting the barrier data &amp; results</h3>
+	<h3 class="consensusRadarBlockInfo">Interpreting the Barrier Data &amp; Results</h3>
 	<div class="explainWrap">
 		<p>
 			When a barrier is clicked, the name of the barrier, its unique identifier, the severity of the barrier (passability), and the result Tier from the consensus anadromous prioritization scenario are displayed.  A Tier 1 barrier is the highest priority -- most potential gained from a passage restoration project -- while a Tier 20 barrier is the lowest priority.

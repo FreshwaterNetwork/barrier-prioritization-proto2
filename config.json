@@ -1,7 +1,7 @@
 {
     "url": "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer",
 	"removeSelectionURL" : "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/7",
-	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP22/GPServer/Prioritize",
+	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP23/GPServer/Prioritize",
 	"includeCustomAnalysis" : true,
 	"includeBarrierSeverity" : true,
 	"additionalLayers":{	
@@ -70,7 +70,7 @@
 	"resultsParamName" : "Result",
 	"summStatsParamName" : "Summary_Stats",
 	"zippedResultParamName" : "ZipResult",
-	"excelResultParamName":"ExcelResult",
+	"csvResultParamName":"CSVResult",
 	"includeZippedConsensusDownload" : true,
 	"zippedConsensusResultURL" : "plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_GIS.zip",
 	"excelConsensusResultURL" : "plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Excel.zip",

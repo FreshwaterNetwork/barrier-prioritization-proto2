@@ -562,7 +562,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                     if (this.config.metricNames.hasOwnProperty(value)){
 	                        //Use the pretty metric name
 	                        this.requestObjectPretty[key] = this.config.metricNames[value];
-	                        console.log(this.config.metricNames[value]);
 	                     } 
 	                     //don't include sort order & log transform in the downloaded inputs
 	                     else if (key.indexOf("Order") == -1 && key.indexOf("Log") == -1){
@@ -579,12 +578,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
 				//download buttons
 	            $('#' + this.id + 'dlCustom').on('click',lang.hitch(this,function(e) {
-	            	//download zipped result
+	            	//download zipped file geodatabase result
 	            	e.preventDefault();
 	            	window.location.href = this.zippedResultURL;             
 	            }));		
-	           $('#' + this.id + 'dlCustomExcel').on('click',lang.hitch(this,function(e) {
-	            	//download Excel result
+	           $('#' + this.id + 'dlCustomCSV').on('click',lang.hitch(this,function(e) {
+	            	//download .csv result
 	            	e.preventDefault();
 	            	window.location.href = this.excelResultURL;             
 	            }));	
@@ -714,14 +713,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
 			//build select severity chosen
 			$("#" + this.id + "selectSeverity").chosen({allow_single_deselect:true, width:"220px"}).change(lang.hitch(this, function(c){
-				
 				var v = c.target.value;
 				// check for a deselect
 				if (v.length == 0){v = "none";}
 				console.log(v);	
 				$("#" + this.id +"stateStatsExpander").show();
-				
-				
 				lang.hitch(this, this.selectBarrSeverity(v));
 			}));
 			
@@ -740,7 +736,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		
 		
 		selectBarrSeverity:function(v){
-			if (this.selectSeverityCounter ==0){
+			if (this.selectSeverityCounter === 0){
 				$("#" + this.id + "stateStatsExpander").trigger("click");
 			}
 			this.visibleLayers = [];
@@ -758,9 +754,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 			console.log(this.visibleLayers);
 			this.refreshBarChart();
-			lang.hitch(this,this.clearConsensusFilterMapService()); 
+			if (this.selectSeverityCounter >0){			
+				lang.hitch(this, this.clearConsensusFilterMapService()); 
+				lang.hitch(this, this.refreshIdentify(this.config.url));
+			}
+			
 			this.selectSeverityCounter++;
-			lang.hitch(this, this.refreshIdentify(this.config.url));
+			
 			
 		},
 		
@@ -867,6 +867,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			setTimeout(lang.hitch(this, function(){
 			    this.map.addLayer(this.dynamicLayer);
 			},500));
+			
   		},	
   		
   		resetFilterSliders: function(){
@@ -1119,9 +1120,9 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     if (parseFloat(v.value) > 0){$('#' + v.id).addClass('bp_weighted');}
                     else{$('#' + v.id).removeClass('bp_weighted');}                                
                 }));
-                console.log(this.gpVals);
+                //console.log(this.gpVals);
                 this.sumWeights = this.metricWeightCalculator(this.gpVals);
-                console.log(this.sumWeights);
+                //console.log(this.sumWeights);
                 $('#'+ this.id + "currWeight").text(this.sumWeights);
                 if (this.sumWeights !=100){
                     $('#'+ this.id +"currWeight").css('color', 'red');
@@ -1186,7 +1187,11 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 else{this.takeAverage = false;}
                 
                 //TODO -- make button
-                this.exportCSV = false;
+                if ($("#" + this.id + "exportCustomCSV").is(":checked")){
+                	this.exportCSV = true;
+                }
+                else{this.exportCSV = false;}
+                
                 
                 this.requestObject["Passability"] = this.passability;
                 this.requestObject["Take_Average_Value"] = this.takeAverage;
@@ -1258,7 +1263,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 if (jobInfo.messages.length > 0){
                     this.messages = jobInfo.messages;
                     this.count = this.messages.length;
-
+					
                     this.index = this.count-1;                  
                     if (this.count>0) {
                         this.message = this.messages[this.index].description;
@@ -1266,6 +1271,9 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     if ((this.message != this.updateMessage) && (typeof this.message != 'undefined')){
                         $("#" + this.id +"gpStatusReport").html(this.message);
                         this.updateMessage = this.message;
+                    }
+                    if (this.message.startsWith("Succeeded at")){
+                    	$("#" + this.id +"gpStatusReport").html("Analysis completed successfully.  One moment, please...");
                     }
                 }
                 this.statusCallbackIterator ++;
@@ -1295,7 +1303,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 	this.gp.getResultData(jobInfo.jobId, this.config.resultsParamName, lang.hitch(this, this.displayResultMapServ));          	
                 }
                 this.gp.getResultData(jobInfo.jobId, this.config.zippedResultParamName, lang.hitch(this, this.getZippedResultURL));  
-                this.gp.getResultData(jobInfo.jobId, this.config.excelResultParamName, lang.hitch(this, this.getExcelResultURL));  
+                this.gp.getResultData(jobInfo.jobId, this.config.csvResultParamName, lang.hitch(this, this.getCSVResultURL));  
                 $( "#" + this.id + "customAnalysisResultsAccord" ).trigger( "click" );
        
                 this.statusCallbackIterator = 0;
@@ -1316,9 +1324,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
 		},
 		
-		getExcelResultURL: function (result, messages){
+		getCSVResultURL: function (result, messages){
 			console.log(result.value.url);
 			this.excelResultURL = result.value.url; //this is accessed when the download button is pressed
+			if (this.requestObject.ExportCSV===true){
+				$('#' + this.id + 'dlCustomCSV').show(); 
+			}
+			else{$('#' + this.id + 'dlCustomCSV').hide(); }
 		},
 
 		//Display GP Result Map Service  
@@ -1735,8 +1747,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		displayIDResult: function(idResult, point){
 			this.idContent="";
     		this.radarData =[];
-			this.radarClickAllData = {}; //build an object to get the all real values.  Used in RadarChart.js to make tooltip labels
+			this.allClickData = {}; //build an object to get the all real values.  Used in RadarChart.js to make tooltip labels
+			//this.allClickData = {}
 			$.each(idResult.attributes, lang.hitch(this, function(k, v){ 
+                this.allClickData[k] = v; 
                 if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
                 	var metricSev = "s"+String(this.currentSeverity);
                 }
@@ -1779,8 +1793,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     	else{
                     		this.idContent = "Individual metric values are not available for the averaged result.  Select a different barrier severity to view individual metric values";
                     	}
+                    	
                     }
                 }	
+        
 				if (this.useRadar === true){
 	            	if (this.config.includeBarrierSeverity === true){
 	            		var PRsev = "PR" + String(this.currentSeverity);
@@ -1788,7 +1804,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	            	else{var PRsev = "PR";}
 	            	basename = k.replace(PRsev, "");
 	            		
-	            	this.radarClickAllData[k] = v; 
+	            	//this.allClickData[k] = v; 
 	            	
 	            	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
 	            	if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
@@ -1818,49 +1834,45 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 			else{var tierName = "AvgTier";}
 			
-            this.identJSON = {
-                title: "${" + this.uniqueID+ "} = Tier ${" + tierName +"}",
-                content: this.idContent
-            };
+
             
-            this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
-            idResult.setInfoTemplate(this.popupInfoTemplate);							
+						
+			var survDate = this.allClickData["SurveyDate"];
+			var survID = this.allClickData["surveyID"];
+			var survLink =this.config.xingSurveyURL + survID;
+	
+			if (this.allClickData[this.config.barrierTypeField]==="Crossing" && survID != ""){
+				//var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
+				var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
+			}
+			if (this.allClickData[this.config.barrierTypeField]==="Crossing" && (survID === "" || survDate === "Null")){
+				var type = 'Crossing (No Survey Available)';
+			}
+			if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] != ""){
+				var type= 'Dam (FERC prj: ' + this.allClickData["FERC"] + ') + <br>NOI Exp Date: ' + this.allClickData["FERC_NOIExpDate"];
+			}
+			if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] ===  ""){
+				var type= 'Dam (No known FERC prj)';
+			}
+			
+			if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
+				var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
+			}
+			if (this.config.includeBarrierSeverity === true && this.currentSeverity ===0){
+				var radarSeverityDisplay = "Insignificant Barrier Iteration";
+			}
+			this.clickHeader = "Name: " + this.allClickData[this.config.barrierNameField] +
+			"<br/>ID: " + this.allClickData[this.config.uniqueID] +
+			"<br/>Type: " + type+
+			"<br/>" + this.allClickData[this.config.severityField] + 
+			"<br/>Anadromous Tier= " + this.allClickData[tierName] +
+			"<br/>All values for " + radarSeverityDisplay;
+			
+			
 			if (this.useRadar === true){
 				console.log(this.radarData);
-				var survDate = this.radarClickAllData["SurveyDate"];
-				var survID = this.radarClickAllData["surveyID"];
-				var survLink =this.config.xingSurveyURL + survID;
-		
-				if (this.radarClickAllData[this.config.barrierTypeField]==="Crossing" && survID != ""){
-					//var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
-					var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
-				}
-				if (this.radarClickAllData[this.config.barrierTypeField]==="Crossing" && (survID === "" || survDate === "Null")){
-					var type = 'Crossing (No Survey Available)';
-				}
-				if (this.radarClickAllData[this.config.barrierTypeField]==="Dam" &&  this.radarClickAllData["FERC"] != ""){
-					var type= 'Dam (FERC prj: ' + this.radarClickAllData["FERC"] + ') + <br>NOI Exp Date: ' + this.radarClickAllData["FERC_NOIExpDate"];
-				}
-				if (this.radarClickAllData[this.config.barrierTypeField]==="Dam" &&  this.radarClickAllData["FERC"] ===  ""){
-					var type= 'Dam (No known FERC prj)';
-				}
-				
-				if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
-					var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
-				}
-				if (this.config.includeBarrierSeverity === true && this.currentSeverity ===0){
-					var radarSeverityDisplay = "Insignificant Barrier Iteration";
-				}
-				$("#" + this.id +"radarHeader").html("Name: " + this.radarClickAllData[this.config.barrierNameField] +
-				"<br/> ID: " + this.radarClickAllData[this.config.uniqueID] +
-				"<br/>Type: " + type+
-				"<br/>" + this.radarClickAllData[this.config.severityField] + 
-				"<br/>Anadromous Result Tier= " + this.radarClickAllData[tierName] +
-				"<br/>Plot Values for " + radarSeverityDisplay);
-				
-				
 				lang.hitch(this, this.radarChart());
-				
+				$("#" + this.id +"radarHeader").html(this.clickHeader);
 				//hide the click instructions and show the "Assess a barrier" div if not visible - on first click
 				$('#' + this.id + 'clickInstructions').hide();  
 				
@@ -1883,6 +1895,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				}
    			}	
 
+			this.idContent = this.clickHeader + "<hr>" + this.idContent;
+			this.identJSON = {
+                title: "${" + this.uniqueID+ "} = Tier ${" + tierName +"}",
+                content: this.idContent
+            };
+            this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
+            idResult.setInfoTemplate(this.popupInfoTemplate);	
 			this.map.infoWindow.show(point);				
 			this.map.infoWindow.setFeatures([idResult]);
            	

@@ -237,7 +237,7 @@ function ( declare, d3, lang) {
 				
 				//Append a set of invisible circles on top for the mouseover pop-up
 				blobCircleWrapper.selectAll(".radarInvisibleCircle")
-					.data(function(d,i) { return d; console.log(that.radarClickAllData)})
+					.data(function(d,i) { return d; console.log(that.allClickData)})
 					.enter().append("circle")
 					.attr("class", "radarInvisibleCircle")
 					.attr("r", cfg.dotRadius*1.5)
@@ -252,22 +252,22 @@ function ( declare, d3, lang) {
                     	}
                     	else{var metricSev = d.coreName;}
 						//if not a number just use the value
-						if (isNaN(Math.round(that.radarClickAllData[metricSev]))){
-							tooltipValue = that.radarClickAllData[metricSev] +  d.unit;
+						if (isNaN(Math.round(that.allClickData[metricSev]))){
+							tooltipValue = that.allClickData[metricSev] +  d.unit;
 						}
 						//if a number, round it
-						else{tooltipValue = that.round(that.radarClickAllData[metricSev],1)+ d.unit;}
+						else{tooltipValue = that.round(that.allClickData[metricSev],1)+ d.unit;}
 						
 						//if yes/no just use "yes" or "no" 
 						if (d.unit==="yes/no" ){
-							if (parseInt(that.radarClickAllData[metricSev])===0 || that.radarClickAllData[metricSev]==="No"){tooltipValue="no";}
-							if (parseInt(that.radarClickAllData[metricSev])===1 || that.radarClickAllData[metricSev]==="Yes"){tooltipValue="yes";}
+							if (parseInt(that.allClickData[metricSev])===0 || that.allClickData[metricSev]==="No"){tooltipValue="no";}
+							if (parseInt(that.allClickData[metricSev])===1 || that.allClickData[metricSev]==="Yes"){tooltipValue="yes";}
 						}
 						//if a count don't use unit label
-						if (d.unit=="#"){tooltipValue = that.radarClickAllData[metricSev];}
+						if (d.unit=="#"){tooltipValue = that.allClickData[metricSev];}
 						//convert meters to miles for those listed in config
 						if (that.config.metricMetersToMiles.indexOf(d.coreName)!=-1){
-							tooltipValue = String(that.round(that.radarClickAllData[metricSev] * 0.000621371, 2)) + " miles";
+							tooltipValue = String(that.round(that.allClickData[metricSev] * 0.000621371, 2)) + " miles";
 						}
 						
 						var newX =  parseFloat(d3.select(this).attr('cx')) - 10;
