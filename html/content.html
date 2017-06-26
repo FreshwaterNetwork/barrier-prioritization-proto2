@@ -85,7 +85,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				</div>
 				<div id="consensusRadarNoUse" class="bp_flexColHCenter">
 					<p>
-						When the consensus anadromous results (Average of all Severities) are displayed in the map, the radar plot and popups are disabled.  While the result Tiers of all severities are averaged to produce this result, the individual metrics are not.  Therefore, to assess the indiviudal metric values for a barrier, select a different barrier severity.
+						When the consensus anadromous results (Average of all Severities) are displayed in the map, the radar plot and popups are disabled.  While the results (tiers) of all severities are averaged to produce this result, the individual metrics are not.  To visualize the indiviudal metric values for a barrier, select a different barrier severity.
 					</p>
 				</div>
 			</div>
@@ -483,7 +483,10 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<h3 class="stateStatsInfo">Understanding barrier summaries by state </h3>
 	<div class="explainWrap">
 		<p>The <strong>barrier summary by state</strong> is a quick way to visualize the number of barriers, both dams and road-stream crossings, and the average length of the upsteam functional (connected) network that results from these barriers, in each state.  The number of crossings that are displayed corresponds to the degree of barrier that is selected under the "Select the Severity of Barriers to Assess" dropdown. When a barrier severity value is selected, all barriers that are that are more severe are also included. Thus, if "Moderate" barriers are sleected, the summary value displayed will include moderate, significant and severe road-stream crossings.  Dams are listed separately in the state summary, but are always considered severe barriers.</p>
-		
+		<br/>
+		<p>
+			The values presented in the barrier sumamry by state are based on those calculated in this analysis.  Notably, they are based on the medium resultion (1:100,000) NHDPlus (v2).  Only those barriers that fall on rivers mapped at this scale are included in the analysis.  Thus, dams or crossings that are on smaller stream not mapped at this scale are not included in the barrier summaries by state.
+		</p>
 	</div>
 	<h3 class="consensusRadarBlockInfo">Interpreting the barrier data &amp; results</h3>
 	<div class="explainWrap">

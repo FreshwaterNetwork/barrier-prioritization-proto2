@@ -751,12 +751,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			if (this.currentSeverity ==='0'){
 				$("#" + this.id + "consensusRadarUse").hide();
 				$("#" + this.id + "consensusRadarNoUse").show();
-				this.activateIdentify = false;
 			}
 			else{
 				$("#" + this.id + "consensusRadarUse").show();
 				$("#" + this.id + "consensusRadarNoUse").hide();
-				this.activateIdentify = true;
 			}
 			console.log(this.visibleLayers);
 			this.refreshBarChart();
@@ -788,7 +786,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			$("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"+String(this.currentSeverity)]*0.000621371, 2));
 			var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"+String(this.currentSeverity)]*0.000621371, 2);	
 			if (this.currentSeverity != "6"){
-				$("#" + this.id + "xingBarChartLabel").text("# " + this.config.severityNumDict[this.currentSeverity] + " Crossings");
+				if (this.currentSeverity ==="0"){
+					$("#" + this.id + "xingBarChartLabel").text("# Total Crossings");
+				}
+				else{
+					$("#" + this.id + "xingBarChartLabel").text("# " + this.config.severityNumDict[this.currentSeverity] + " (+) Crossings");
+				}
 				$("#" + this.id + "barChartCrossings").show();
 				//$("#" + this.id + "xingBarChartLabel").show();
 			}
@@ -910,7 +913,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 
 		displaySliderSelectedValues: function(sliderID, ui){
 			$(sliderID).next().find('span').each(lang.hitch(this,function(i,v){
-				console.log(ui.values[i]);
+				//console.log(ui.values[i]);
 				if (sliderID.indexOf('Severity') !== -1){
 					var textVal = this.severityDict[ui.values[i]];
 				}
@@ -1721,7 +1724,8 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                     .addCallback(lang.hitch(this, function (response) {
                         if (this.identifyIterator ===0 && response[0].feature){
                         	console.log(response[0].feature);
-                        	lang.hitch(this, this.displayIDResult(response[0].feature, this.identifyParams.geometry));
+                    		lang.hitch(this, this.displayIDResult(response[0].feature, this.identifyParams.geometry));
+                        	
                         }
                         this.identifyIterator ++;    
                         this.idContent = "";
@@ -1748,24 +1752,32 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                		console.log(basename);
                		console.log(k + "=" + v);
                     if ($.inArray(k, this.config.idBlacklist) == -1){
-                    	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
-                    	if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
-                    		var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
+        				
+        				//don't show indivudal metric values if consensus (average result)
+			        	if (this.currentSeverity !="0"){
+
+	                    	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
+	                    	if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
+	                    		var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
+	                    	}
+	                    	else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
+	                    	else{vDisplay = v;}
+	                    	if(this.config.metricUnits[basename] === "yes/no"){
+	                    		if(parseInt(v)==0){vDisplay ="no";}
+	                    		if(parseInt(v)==1){vDisplay ="yes";}
+	                    	}
+	                       	
+	                    	//HTML for identify popup -- loop through and include all fields except those in plugin-config blakclist
+	                    	if (this.config.metricNames[basename] != undefined){
+	                    		//console.log(this.config.metricNames[basename]);
+	                    		this.idContent = this.idContent + "<b>" + this.config.metricNames[basename] + "</b> : " + vDisplay + "<hr>";
+	                    	}
+	                    	if (this.config.idWhiteList[basename] != undefined){
+	                    		this.idContent = this.idContent + "<b>" + basename+ "</b> : " + vDisplay + "<hr>";
+	                    	}
                     	}
-                    	else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
-                    	else{vDisplay = v;}
-                    	if(this.config.metricUnits[basename] === "yes/no"){
-                    		if(parseInt(v)==0){vDisplay ="no";}
-                    		if(parseInt(v)==1){vDisplay ="yes";}
-                    	}
-                       	
-                    	//HTML for identify popup -- loop through and include all fields except those in plugin-config blakclist
-                    	if (this.config.metricNames[basename] != undefined){
-                    		//console.log(this.config.metricNames[basename]);
-                    		this.idContent = this.idContent + "<b>" + this.config.metricNames[basename] + "</b> : " + vDisplay + "<hr>";
-                    	}
-                    	if (this.config.idWhiteList[basename] != undefined){
-                    		this.idContent = this.idContent + "<b>" + basename+ "</b> : " + vDisplay + "<hr>";
+                    	else{
+                    		this.idContent = "Individual metric values are not available for the averaged result.  Select a different barrier severity to view individual metric values";
                     	}
                     }
                 }	
@@ -1805,7 +1817,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				var tierName = "Tier" + String(this.currentSeverity);
 			}
 			else{var tierName = "AvgTier";}
-            
+			
             this.identJSON = {
                 title: "${" + this.uniqueID+ "} = Tier ${" + tierName +"}",
                 content: this.idContent
@@ -1870,7 +1882,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
            			$("#" + this.id +"consensusResultFiltersExpander").show();
 				}
    			}	
-   			console.log(point)
+
 			this.map.infoWindow.show(point);				
 			this.map.infoWindow.setFeatures([idResult]);
            	
