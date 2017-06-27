@@ -39,7 +39,8 @@
 		"QDSANAD",
 		"QDSNUMANAD",
 		"onConsLand",
-		"usNumSzCl"
+		"usNumSzCl",
+		"dsPassabilityProduct"
 	],
 	"startingWeights" : {}
 }

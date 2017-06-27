@@ -7,7 +7,7 @@ define([
 	"dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Color",  "dojo/_base/array", "framework/PluginBase", "dijit/layout/ContentPane", "dojo/dom", 
 	"dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
 	'./js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
-	 "esri/layers/ArcGISDynamicMapServiceLayer", "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
+	 "esri/layers/ArcGISDynamicMapServiceLayer",  "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
 	 "esri/renderers/SimpleRenderer", "esri/geometry/Extent","esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask",
 ],
 function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, esriapi, clicks, RadarChart, d3, config, 
@@ -1542,6 +1542,16 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 		setUpAdditionalLayers: function(addlLayers){
 			$.each(addlLayers, lang.hitch(this, function(k, v){
 				console.log("layer Name: " + k + " layerID: " + v[0] +" URL: " + v[1]);
+				var addlLayerVis = ("addlLayerVis" + v[0]);
+				this[addlLayerVis] = [];
+				var addlLayer = ("addlLayer" + v[0]);
+				this[addlLayer] = new ArcGISDynamicMapServiceLayer(v[1]);		
+				this[addlLayer].on("load", lang.hitch(this, function (){
+					this[addlLayer].minscale = this[addlLayer].layerInfos[v[2]].minScale;
+					this[addlLayer].maxscale = this[addlLayer].layerInfos[v[2]].maxScale;
+					console.log(k + " min scale = " + this[addlLayer].minscale);
+					console.log(k + " max scale = " + this[addlLayer].maxscale);
+				}));
 				$("#" + this.id + "toggleBarriers").append(
 					'<div class="layer">' +
 						'<label class="form-component">' +
@@ -1550,28 +1560,36 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 							'<span class="form-text">' + k + '</span>' +
 						'</label>' +
 						'<span class="fa fa-info-circle info" title="' + v[3] + '"></span>' +
-						'<div class="bp_transparency-control" data-layer="' + v[0] + '" id="' + this.id + v[0]+  'transp" data-opacity="100">' +
+						'<div class="bp_transparency-control" data-layer="' + v[0] + '" id="' + this.id + v[0] +  'transp" data-opacity="100">' +
 							'<span class="bp_transparency-header">Transparency</span>' +
 							'<div class="bp_transparency-label"><span class="value">100%</span></div>' +
 							'<div class="bp_transparency-slider">' +
 								'<div class="slider"></div>' +
-							'</div>'+
+							'</div>' +
 						'</div>' +
 					'</div>'
 				);
 				
+				//if the layer is not visible eat this scale (from map service) disbale the checkbox
+				this.map.on("extent-change", lang.hitch(this, function(){
+					var addlLayer = ("addlLayer" + v[0]);
+					if ((this[addlLayer].minscale != 0 && this.map.getScale() >this[addlLayer].minscale) ||( this[addlLayer].maxscale != 0 && this.map.getScale() < this[addlLayer].maxscale)){
+						$("#" + this.id + v[0]).attr("disabled", true);
+					}
+					else{$("#" + this.id + v[0]).attr("disabled", false);}
+					
+				}));
+				
 				//toggle layers on and off
-				var addlLayerVis = ("addlLayerVis" + v[0]);
-				this[addlLayerVis] = [];
 				$("#" + this.id + v[0]).on('click', lang.hitch(this, function(e) {
 					var ischecked = $("#" + e.target.id).is(':checked');
 					if (ischecked) {
 						var addlLayer = ("addlLayer" + v[0]);
-						this[addlLayer] = new ArcGISDynamicMapServiceLayer(v[1]);		
 						this[addlLayerVis].push(v[2]);
 						this[addlLayer].setVisibleLayers(this[addlLayerVis]);
 						this.map.addLayer(this[addlLayer]);
 						$("#" + e.target.id + "transp").show();
+					
 					} 
 					else {
 						var addlLayer = ("addlLayer" + v[0]);
@@ -1584,6 +1602,10 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 						$("#" + e.target.id + "transp").hide();
 					}
 				}));
+				
+
+				
+				
 				//turn on by default if config says to
 				if (v[4] == "on" || this.obj.startingAdditionalLayers[v[0]]=="on"){$("#" + this.id + v[0]).trigger("click");}
     		}));
@@ -1633,8 +1655,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 						});
             		})
 			});
-    		
-    		//
     		$('.bp_transparency-label').on('mousedown', lang.hitch(this, function(e) {
 				var control = $(e.target).parent('.bp_transparency-control').toggleClass('open');
 				var dataLayer = control.attr('data-layer');
@@ -1729,7 +1749,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
         	if (this.activateIdentify === true){
 				this.identifyParams.geometry = evt.mapPoint;
 		        this.identifyParams.mapExtent = this.map.extent;
-	
                 this.identifyIterator = 0;      
                 this.identifyRes       
                     .execute(this.identifyParams)
@@ -1737,13 +1756,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                         if (this.identifyIterator ===0 && response[0].feature){
                         	console.log(response[0].feature);
                     		lang.hitch(this, this.displayIDResult(response[0].feature, this.identifyParams.geometry));
-                        	
                         }
                         this.identifyIterator ++;    
                         this.idContent = "";
 				}));
 		     }        
         },
+        
 		displayIDResult: function(idResult, point){
 			this.idContent="";
     		this.radarData =[];
@@ -1754,7 +1773,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
                 	var metricSev = "s"+String(this.currentSeverity);
                 }
-
                 else{var metricSev = k;}
                 //console.log(metricSev)
                 if (k.startsWith(metricSev)===true){
@@ -1804,8 +1822,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	            	else{var PRsev = "PR";}
 	            	basename = k.replace(PRsev, "");
 	            		
-	            	//this.allClickData[k] = v; 
-	            	
 	            	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
 	            	if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
 	            		var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
@@ -1833,10 +1849,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				var tierName = "Tier" + String(this.currentSeverity);
 			}
 			else{var tierName = "AvgTier";}
-			
-
-            
-						
+	
 			var survDate = this.allClickData["SurveyDate"];
 			var survID = this.allClickData["surveyID"];
 			var survLink =this.config.xingSurveyURL + survID;
@@ -1854,7 +1867,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] ===  ""){
 				var type= 'Dam (No known FERC prj)';
 			}
-			
 			if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
 				var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
 			}
