@@ -10,7 +10,9 @@
 	"startingAdditionalLayers":	{	
 		"rivers":"off",
 		"huc8s":"off",
-		"states":"off"
+		"states":"off",
+		"consLand":"off",
+		"coldWater":"off"
 	},
 	"startingVisibleLayers":[0],
 	"startingMapLayers" : false,
