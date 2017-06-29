@@ -813,7 +813,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					if (this.config.includeBarrierSeverity === true){
 						$("#" + this.id + "xingBarChartLabel").text("# " + this.config.severityNumDict[this.currentSeverity] + " (+) Crossings");
 					}
-					else{$("#" + this.id + "xingBarChartLabel").text("# Crossings")}
+					else{$("#" + this.id + "xingBarChartLabel").text("# Crossings");}
 				}
 				$("#" + this.id + "barChartCrossings").show();
 				//$("#" + this.id + "xingBarChartLabel").show();
@@ -1220,7 +1220,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 if ($("input[name='takeAverage']:checked").val()=="yes"){this.takeAverage = true;}
                 else{this.takeAverage = false;}
                 
-                //TODO -- make button
                 if ($("#" + this.id + "exportCustomCSV").is(":checked")){
                 	this.exportCSV = true;
                 }
@@ -1307,6 +1306,9 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                         this.updateMessage = this.message;
                     }
                     if (this.message.startsWith("Succeeded at")){
+                    	$("#" + this.id +"gpStatusReport").html("Analysis completed successfully.  One moment, please...");
+                    }
+                    if (this.message.startsWith("Result exceeded transfer limit of")){
                     	$("#" + this.id +"gpStatusReport").html("Analysis completed successfully.  One moment, please...");
                     }
                 }
@@ -1510,7 +1512,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			//only show those attributes selected by user - take the text labels, not the values since the radar
 			//axis use the labels
 			var userFilterArray = $("#" + this.id + "selectRadarAttrs").val();
-			console.log(userFilterArray)
+			console.log(userFilterArray);
 			this.userFilterArray=[];
 			for (var i=0; i< userFilterArray.length; i++){
 				this.userFilterArray.push(this.config.metricShortNames[userFilterArray[i]]);
@@ -1825,7 +1827,6 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 	                    	//convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
 	                    	if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
 	                    		var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
-								console.log(vDisplay)
 							}
 	                    	else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
 	                    	else{vDisplay = v;}
@@ -1884,7 +1885,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
            	if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
 				var tierName = "Tier" + String(this.currentSeverity);
 			}
-			else {var tierName = this.config.resultTier}
+			else {var tierName = this.config.resultTier;}
 	
 			if (this.config.includeSurveyPageLink ===true){
 				var survDate = this.allClickData["SurveyDate"];
@@ -1899,7 +1900,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					var type = 'Crossing (No Survey Available)';
 				}
 			}
-			else{var type = "Crossing"}
+			else{var type = "Crossing";}
 			
 			if (this.config.includeFERC === true){
 				if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] != ""){
@@ -1909,7 +1910,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					var type= 'Dam (No known FERC prj)';
 				}
 			}
-			else {var type="Dam"}
+			else {var type="Dam";}
 			
 			if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
 				var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
@@ -1919,12 +1920,19 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			}
 			this.clickHeader = "Name: " + this.allClickData[this.config.barrierNameField] +
 			"<br/>ID: " + this.allClickData[this.config.uniqueID] +
-			"<br/>Type: " + type+
+			"<br/>Type: " + type;
 			"<br/>Anadromous Tier= " + this.allClickData[tierName];
 			
+			//show this barrier's severity - above Anadromous Tier
 			if (this.config.includeBarrierSeverity === true){
-				this.clickHeader = this.clickHeader + "<br/>" + this.allClickData[this.config.severityField] +
-				"<br/>All values for " + radarSeverityDisplay;
+				this.clickHeader = this.clickHeader + "<br/>" + this.allClickData[this.config.severityField];
+			}
+			
+			this.clickHeader = this.clickHeader + "<br/>Anadromous Tier= " + this.allClickData[tierName];
+			
+			//show iteration being used if including barrier severity, it's not the average value, and it's not a GP service result
+			if (this.config.includeBarrierSeverity === true && this.currentSeverity !="0" && this.idLayerURL === this.config.url){	
+				this.clickHeader = this.clickHeader + "<br/>All values for " + radarSeverityDisplay;
 			}
 			
 			if (this.useRadar === true){

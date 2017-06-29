@@ -138,6 +138,8 @@
 	
 } 
 
+
+
 .bp_weighted{
 	background-color: #6CC2C7 !important;	
 	font-weight:800 !important;
@@ -156,10 +158,17 @@
 	font-size:11px;
 	right: 40px !important;
 	float: left;
-	margin-bottom: 8px !important;
+	margin-bottom: 20px ;
 	color:#4286f4;
 	-webkit-box-decoration-break: clone;
 	box-decoration-break: clone;
+}
+
+.bp_metricLabelText{
+	margin-left: 60px;
+	display:block;
+	margin-top: -27px;
+	text-decoration:underline;
 }
 
 .bp_barChartLabel{

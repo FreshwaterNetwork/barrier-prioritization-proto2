@@ -1,7 +1,7 @@
 {
     "url": "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer",
 	"removeSelectionURL" : "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/7",
-	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP23/GPServer/Prioritize",
+	"gpURL":"http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP25/GPServer/Prioritize",
 	"includeCustomAnalysis" : true,
 	"includeBarrierSeverity" : true,
 	"includeSurveyPageLink" : true,

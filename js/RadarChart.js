@@ -251,6 +251,10 @@ function ( declare, d3, lang) {
                     		var metricSev = "s" + String(that.currentSeverity)+d.coreName;
                     	}
                     	else{var metricSev = d.coreName;}
+						
+						//NFHAP cumulative disturbance use text field to display
+						if (metricSev.indexOf("CumDistInd") != -1){metricSev = metricSev.replace("Ind", "TXT");}
+
 						//if not a number just use the value
 						if (isNaN(Math.round(that.allClickData[metricSev]))){
 							tooltipValue = that.allClickData[metricSev] +  d.unit;
