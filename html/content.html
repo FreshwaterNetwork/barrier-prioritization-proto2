@@ -1,4 +1,4 @@
-<!--This HTML is used in the render function to build the elements within the plugin. The render function first creates a
+﻿<!--This HTML is used in the render function to build the elements within the plugin. The render function first creates a
 Dijit ContentPane to hold all the elements. The ContentPane is assigned a dynamic id upon creation. The render function
 takes the ContentPane id and prepends it to every element with a declared id in this HTML before the elements are created.
 The unique ContentPane id makes all the element ids unique and prevents duplicate id errors across other apps.-->
@@ -431,7 +431,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 <div id="infoAccord" class="flex1">
 	<h3 class="infoDoc">Welcome</h3>
 	<div class="explainWrap" style="display:block;">
-		<h4 style="text-align:center">Welcome to the Northeast Aquatic Connectivity project's Aquatic Barrier Prioritization Tool</h4>
+		<h4 style="text-align:center">Welcome to the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><span style="text-decoration: underline">Northeast Aquatic Connectivity </span></a> project's Aquatic Barrier Prioritization Tool</h4>
 		<figure >
 			<img src="plugins/barrier-prioritization-proto2/images/dam.jpg" ></img>
 			<figcaption style="font-size:10px">Dam on the Presumpscot River, Maine.  &copy; Paul Noble Photography <a href="https://creativecommons.org/licenses/by-nc-nd/2.0/">Flickr Creative Commons</a>.</figcaption>
@@ -469,7 +469,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</figure>
 		<br/>
 		<p>
-			For additional details and complete documentation about this project, you can download the project report <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>here</strong></a>.
+			For additional details and complete documentation about this project, you can download the project report <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><strong>here</strong></a>.
 		</p>
 	</div> 
 	<h3 class="severitySelectionInfo">Barrier Severity Options </h3>
@@ -503,7 +503,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</p>
 		<br/>
 		<p>
-			The consensus anadromous results can be best summarized by selecting the "Consensus Anadromous: Average of all Severities" option.  This displays the barriers based on the average priority from all five degrees of barrier severity. See Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>NE Aquatic Connectivity report</strong></a> for more details on this aspect of the analysis. When these results are displayed, the values shown in the radar plot and popup boxes are those calculated from all barriers ("Insignificant").
+			The consensus anadromous results can be best summarized by selecting the "Consensus Anadromous: Average of all Severities" option.  This displays the barriers based on the average priority from all five degrees of barrier severity. See Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><strong>NE Aquatic Connectivity report</strong></a> for more details on this aspect of the analysis. When these results are displayed, the values shown in the radar plot and popup boxes are those calculated from all barriers ("Insignificant").
 		</p>
 	</div>
 	<h3 class="stateStatsInfo">Understanding Barrier Summaries by State </h3>
@@ -545,14 +545,14 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 		</p>
 		<br/>
 		<p>
-			The consensus anadromous results are based on the average result Tier from the five iterations of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>NE Aquatic Connectivity report</strong></a> for more information about how barrier severity was handled in the consensus anadromous analysis. 
+			The consensus anadromous results are based on the average result Tier from the five iterations of barrier severity. Refer to Section 3.3.2 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><strong>NE Aquatic Connectivity report</strong></a> for more information about how barrier severity was handled in the consensus anadromous analysis. 
 		</p>
 	</div>
 	<h3 class="consensusResultFiltersInfo">Filtering Results and Adding Layers</h3>
 	<div class="explainWrap" >
 		<p>Barriers in the map can be filtered based on their result tier and barrier severity using sliders. Customized filters can also be built to filter based on one or more of several attributes including state, watershed, and anadromous fish habitat. These filters are cumulative; if a slider is used to only show the top 5 tiers and a custom filter is added to only show a single state, then the map will only display the top 5 tiers in that state.</p>
 		<br/>
-		<p><strong>Custom filters</strong> can be developed using dropdown menus to build simple expressions.  For example, "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression, see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm"><strong>ArcGIS help pages</strong></a>.  To view a full list of the attributes that are available to use in custom filters see Appendix III of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf"><strong>NE Aquatic Connectivity report</strong></a>.</p>
+		<p><strong>Custom filters</strong> can be developed using dropdown menus to build simple expressions.  For example, "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression, see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm"><strong>ArcGIS help pages</strong></a>.  To view a full list of the attributes that are available to use in custom filters see Appendix III of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><strong>NE Aquatic Connectivity report</strong></a>.</p>
 		<br/>
 		<p><strong>Additional layers</strong> can be toggled on and off from the "Additional Layers" pane under "Explore the Consensus Anadromous Results" by simply checking the layer on or off.  A slider to adjust the layer transparency is exposed when a layer is turned on.</p>
 	</div>
