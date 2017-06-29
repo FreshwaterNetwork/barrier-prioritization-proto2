@@ -9,9 +9,9 @@
 //http://nbremer.blogspot.nl/2013/09/making-d3-radar-chart-look-bit-better.html
 
 define([
-	"dojo/_base/declare", './d3.min',
+	"dojo/_base/declare", './d3.min',"dojo/_base/lang",
 ],
-function ( declare, d3 ) {
+function ( declare, d3, lang) {
         "use strict";
 
         return declare(null, {
@@ -24,7 +24,6 @@ function ( declare, d3 ) {
 			/////////////////////////////////////////////////////////
 	
 			draw: function(id, data, options, that) {
-			
 				var cfg = {
 				// w: 200,				//Width of the circle
 				// h: 200,				//Height of the circle
@@ -153,7 +152,7 @@ function ( declare, d3 ) {
 					.attr("x", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.cos(angleSlice*i - Math.PI/2); })
 					.attr("y", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.sin(angleSlice*i - Math.PI/2); })
 					.text(function(d){return d;})
-					.attr("transform", function(d, i){return "translate(0, -5)";})
+					.attr("transform", function(d, i){return "translate(0, -10)";})
 					.call(wrap, cfg.wrapWidth);
 			
 				/////////////////////////////////////////////////////////
@@ -235,10 +234,10 @@ function ( declare, d3 ) {
 					.data(data)
 					.enter().append("g")
 					.attr("class", "radarCircleWrapper");
-					
+				
 				//Append a set of invisible circles on top for the mouseover pop-up
 				blobCircleWrapper.selectAll(".radarInvisibleCircle")
-					.data(function(d,i) { return d; })
+					.data(function(d,i) { return d; console.log(that.allClickData)})
 					.enter().append("circle")
 					.attr("class", "radarInvisibleCircle")
 					.attr("r", cfg.dotRadius*1.5)
@@ -246,21 +245,34 @@ function ( declare, d3 ) {
 					.attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
 					.style("fill", "none")
 					.style("pointer-events", "all")
-					.on("mouseover", function(d,i) {
-						var tooltipValue;
+					.on("mouseover",  function(d,i){	
+						var tooltipValue ;
+						if (that.currentSeverity != 0){
+                    		var metricSev = "s" + String(that.currentSeverity)+d.coreName;
+                    	}
+                    	else{var metricSev = d.coreName;}
+						
+						//NFHAP cumulative disturbance use text field to display
+						if (metricSev.indexOf("CumDistInd") != -1){metricSev = metricSev.replace("Ind", "TXT");}
+
 						//if not a number just use the value
-						if (isNaN(Math.round(that.radarClickAllData[d.coreName.replace("PR", "")]))){
-							tooltipValue = that.radarClickAllData[d.coreName.replace("PR", "")] +  d.unit;
+						if (isNaN(Math.round(that.allClickData[metricSev]))){
+							tooltipValue = that.allClickData[metricSev] +  d.unit;
 						}
 						//if a number, round it
-						else{tooltipValue = Math.round(that.radarClickAllData[d.coreName.replace("PR", "")],2)+ d.unit;}
-						//if yes/no just use "yes" or "no"
-						if (d.unit=="yes/no"){
-							if (that.radarClickAllData[d.coreName.replace("PR", "")]==0){tooltipValue="no";}
-							if (that.radarClickAllData[d.coreName.replace("PR", "")]==1){tooltipValue="yes";}
+						else{tooltipValue = that.round(that.allClickData[metricSev],1)+ d.unit;}
+						
+						//if yes/no just use "yes" or "no" 
+						if (d.unit==="yes/no" ){
+							if (parseInt(that.allClickData[metricSev])===0 || that.allClickData[metricSev]==="No"){tooltipValue="no";}
+							if (parseInt(that.allClickData[metricSev])===1 || that.allClickData[metricSev]==="Yes"){tooltipValue="yes";}
 						}
-						//if a cound don't use unit label
-						if (d.unit=="#"){tooltipValue = that.radarClickAllData[d.coreName.replace("PR", "")];}
+						//if a count don't use unit label
+						if (d.unit=="#"){tooltipValue = that.allClickData[metricSev];}
+						//convert meters to miles for those listed in config
+						if (that.config.metricMetersToMiles.indexOf(d.coreName)!=-1){
+							tooltipValue = String(that.round(that.allClickData[metricSev] * 0.000621371, 2)) + " miles";
+						}
 						
 						var newX =  parseFloat(d3.select(this).attr('cx')) - 10;
 						var newY =  parseFloat(d3.select(this).attr('cy')) - 10;

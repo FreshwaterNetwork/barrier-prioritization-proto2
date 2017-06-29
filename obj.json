@@ -1,13 +1,21 @@
 {
-	"visibleLayers": [0],
 	"accordVisible": "",
 	"accordHidden": "",
 	"accordActive": 0,
 	"buttonText": "",
 	"extent": "",
 	"stateSet": "no",
-
 	"getStarted" : "open",
+	
+	"startingAdditionalLayers":	{	
+		"rivers":"off",
+		"huc8s":"off",
+		"states":"off",
+		"consLand":"off",
+		"coldWater":"off"
+	},
+	"startingVisibleLayers":[0],
+	"startingMapLayers" : false,
 	"startingFilter" : "",
 	"startingPassability" : "Dams",
 	"startingRemovingBarriers" : false,
@@ -21,6 +29,8 @@
 	"startingConsensusSeverityFilterMin":1,
 	"startingConsensusSeverityFilterMax":5,
 	"startingUseConsensusCustomFilter":false,
+	"startingUseCustomFilter":false,
+	"startingConsensusFilter":"",
 	"startingConsensusCustomFilter":"",
 	"startingRadarMetrics" : [
 		"batFuncUS",
@@ -31,7 +41,8 @@
 		"QDSANAD",
 		"QDSNUMANAD",
 		"onConsLand",
-		"usNumSzCl"
+		"usNumSzCl",
+		"dsPassabilityProduct"
 	],
 	"startingWeights" : {}
 }

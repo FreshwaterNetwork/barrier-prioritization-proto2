@@ -38,6 +38,7 @@
 					{"metricValue" : "&#39;NJ&#39;"},
 					{"metricValue" : "&#39;NY&#39;"},
 					{"metricValue" : "&#39;PA&#39;"},
+					{"metricValue" : "&#39;RI&#39;"},
 					{"metricValue" : "&#39;VA&#39;"},
 					{"metricValue" : "&#39;VT&#39;"},
 					{"metricValue" : "&#39;WV&#39;"}
@@ -726,11 +727,11 @@
 	
 	"resultFilters" :{
 		"resultFilterFields":[
+				
 				{"resultGISName" : "", "resultPrettyName" : "Select a filter..."},
-				{"resultGISName" : "AvgTier", "resultPrettyName" : "Result Tier"},
+				{"resultGISName" : "STATE", "resultPrettyName" : "State"},
 				{"resultGISName" : "Type", "resultPrettyName" : "Barrier Type"},
 				{"resultGISName" : "NESZCL", "resultPrettyName" : "Stream Size"},
-				{"resultGISName" : "STATE", "resultPrettyName" : "State"},
 				{"resultGISName" : "DSALEWIFE", "resultPrettyName" : "Alewife"},
 				{"resultGISName" : "DSBLUEBACK", "resultPrettyName" : "Blueback"},
 				{"resultGISName" : "DSAMSHAD", "resultPrettyName" : "Am Shad"},
@@ -747,30 +748,6 @@
 	
 		        ],
 			
-			
-		    "Result Tier" : 
-		        [
-					{"resultValue" : 1},
-					{"resultValue" : 2},
-					{"resultValue" : 3},
-					{"resultValue" : 4},
-					{"resultValue" : 5},
-					{"resultValue" : 6},
-					{"resultValue" : 7},
-					{"resultValue" : 8},
-					{"resultValue" : 9},
-					{"resultValue" : 10},
-					{"resultValue" : 11},
-					{"resultValue" : 12},
-					{"resultValue" : 13},
-					{"resultValue" : 14},
-					{"resultValue" : 15},
-					{"resultValue" : 16},
-					{"resultValue" : 17},
-					{"resultValue" : 18},
-					{"resultValue" : 19},
-					{"resultValue" : 20}
-		        ],
 		        
 		    "Barrier Type" : 
 		        [
@@ -800,6 +777,7 @@
 					{"resultValue" : "&#39;NJ&#39;"},
 					{"resultValue" : "&#39;NY&#39;"},
 					{"resultValue" : "&#39;PA&#39;"},
+					{"resultValue" : "&#39;RI&#39;"},
 					{"resultValue" : "&#39;VA&#39;"},
 					{"resultValue" : "&#39;VT&#39;"},
 					{"resultValue" : "&#39;WV&#39;"}  
