@@ -558,7 +558,15 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 			
 				//Start custom analysis 
 				$('#' + this.id +"submitButton").on('click',lang.hitch(this,function(e){
-					console.log("clicked gp button");
+					console.log("clicked gp button");			
+					
+					//analytics event tracking
+                	ga('send', 'event', {
+					   eventCategory:this.config.analyticsEventTrackingCategory,		
+					   eventAction: 'submit', 
+					   eventLabel: 'Started a custom analysis '
+					});
+					
 					this.submit();
 				}));
 			
@@ -738,6 +746,15 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 					if (v.length == 0){v = "none";}
 					console.log(v);	
 					$("#" + this.id +"stateStatsExpander").show();
+					
+					//analytics event tracking
+                	ga('send', 'event', {
+					   eventCategory:this.config.analyticsEventTrackingCategory,		
+					   eventAction: 'Select Severity', 
+					   eventLabel: v + ' selected'
+					});
+					
+					
 					lang.hitch(this, this.selectBarrSeverity(v));
 				}));
 			}
@@ -747,6 +764,14 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				var v = c.target.value;
 				// check for a deselect
 				if (v.length == 0){v = "none";}
+				
+				//analytics event tracking
+            	ga('send', 'event', {
+				   eventCategory:this.config.analyticsEventTrackingCategory,		
+				   eventAction: 'Zoom to state', 
+				   eventLabel: v + ' selected'
+				});
+				
 				lang.hitch(this, this.zoomToStates(v, "yes"));
 			}));
 			
@@ -1482,6 +1507,13 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
             $("#"+ this.id + "selectRadarAttrs").on("change", lang.hitch(this, function(){
             	if (this.identifyIterator >0){
             		lang.hitch(this, this.radarChart());
+            		
+            		//analytics event tracking
+                	ga('send', 'event', {
+					   eventCategory:this.config.analyticsEventTrackingCategory,		
+					   eventAction: 'changing radar metrics', 
+					   eventLabel: 'changing radar metrics'
+					});
             	}
             }));
 		},
