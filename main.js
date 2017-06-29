@@ -559,14 +559,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
 				//Start custom analysis 
 				$('#' + this.id +"submitButton").on('click',lang.hitch(this,function(e){
 					console.log("clicked gp button");			
-					
-					//analytics event tracking
-                	ga('send', 'event', {
-					   eventCategory:this.config.analyticsEventTrackingCategory,		
-					   eventAction: 'submit', 
-					   eventLabel: 'Started a custom analysis '
-					});
-					
+										
 					this.submit();
 				}));
 			
@@ -1200,6 +1193,12 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 alert("Metric weights must sum to 100");
             }
             else{
+            	ga('send', 'event', {
+				    eventCategory:this.config.analyticsEventTrackingCategory,		
+				    eventAction: 'submit click', 
+				    eventLabel: "Custom analysis on " + this.passability
+			 	});   
+			 	
                 //clear old map graphics and results table
                 this.map.graphics.clear();
                 if (this.selectedBarriers){this.map.removeLayer(this.selectedBarriers);}
@@ -1294,13 +1293,7 @@ function ( 	declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domS
                 
                 //disable Submit button so a second analyiss can't be run until the first is finished
                 $('#' + this.id +"submitButton").addClass('submitButtonRunning');
-                $('#' + this.id +"submitButton").prop('disabled', true);
-            
-            	ga('send', 'event', {
-				    eventCategory:this.config.analyticsEventTrackingCategory,		
-				    eventAction: 'submit click', 
-				    eventLabel: "Custom analysis on " + this.passability
-			 	});      
+                $('#' + this.id +"submitButton").prop('disabled', true);   
             }
         },
 
