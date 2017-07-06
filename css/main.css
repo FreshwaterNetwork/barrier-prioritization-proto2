@@ -54,6 +54,38 @@
 }
 
 
+ /*css for IE 10 & 11-- don't use align-items: center since IE doesn't deal with it well*/
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+	.bp_flexColHCenter{
+	   
+	    padding: 0;
+	    margin: 0;
+	    display: -webkit-box;
+	    display: -moz-box;
+	    display: -ms-flexbox;
+	    display: -webkit-flex;
+	    display: flex;
+	    flex-direction:column; 
+	    align-items: stretch;
+	}
+}
+
+/*css for IE Edge 12 -- don't use align-items: center since IE doesn't deal with it well*/
+@supports (-ms-accelerator:true) {
+	.bp_flexColHCenter{
+	   
+	    padding: 0;
+	    margin: 0;
+	    display: -webkit-box;
+	    display: -moz-box;
+	    display: -ms-flexbox;
+	    display: -webkit-flex;
+	    display: flex;
+	    flex-direction:column; 
+	    align-items: stretch;
+	}
+}
+
 .bp_flexRowHCenter{
     /*height: 100%;*/
     padding: 0;

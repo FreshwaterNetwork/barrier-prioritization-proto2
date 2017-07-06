@@ -214,7 +214,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				<h4 style="text-align: center;" id="takeAverageExpander" class="bp_expander">2. Do you want to take an average value across multiple iterations?  <span class="bp_expand">+</span></h4>
 				<div id="takeAverageContainer" class="bp_flexColHCenter">
 					<p>The consensus anadromous fish results are calculated based on the average of multiple prioritization runs, with each run using the same metric weights, but including barriers with different degrees of severity. Selecting "Yes" for this option will do the same.  For example, if "Moderate" barriers are selected, the analysis will run 3 times.  First using moderate, significant and severe barriers, second using significant and severe barriers, and finally just using severe barriers.  The average result Tier is then taken across the 3 runs.  Barriers that are not present in a prioritization run are assigned the lowest Tier (20) for that run.  See Section 3.3 of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><strong>project report</strong></a> for more details on this process.  Note: Selecting this option will cause the custom analysis to run more slowly, taking several minutes depending on the other parameters selected.</p>
-					<div class="toggle-btn" style="width:100px;" >
+					<div class="toggle-btn" >
 						<input type="radio" id="takeAverage2" name="takeAverage" value="no" checked/>
 						<label for="takeAverage2">No</label>
 						<input type="radio" id="takeAverage1" name="takeAverage" value="yes" />
@@ -224,7 +224,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				
 				<h4 style="text-align: center;" id="customFilterExpander" class="bp_expander">3. Do you want to limit the analysis to a geography, species, or other subset of the data? <span class="bp_expand">+</span></h4>
 				<div id="customFilterContainer" class="bp_flexColHCenter">
-					<div class="toggle-btn" style="width:100px;" >
+					<div class="toggle-btn"  >
 						<input type="radio" id="filterBarriers2" name="filterBarriers" value="no" checked/>
 						<label for="filterBarriers2">No</label>
 						<input type="radio" id="filterBarriers1" name="filterBarriers" value="yes" />
@@ -258,7 +258,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				</div>
 				<h4 style="text-align: center;" id="customMetricExpander" class="bp_expander">4. Do you want to use the consensus anadromous fish metric weights or customize them? <span class="bp_expand">+</span></h4>
 				<div id="customMetricContainer" class="bp_flexColHCenter">
-					<div class="toggle-btn bp_flexRowHCenter" style="width:100px;" >
+					<div class="toggle-btn bp_flexRowHCenter">
 						<input type="radio" id="useConsensusWeights2" name="useConsensusWeights" value="yes" checked/>
 						<label for="useConsensusWeights2">Consensus</label>
 						<input type="radio" id="useConsensusWeights1" name="useConsensusWeights" value="no"/>
@@ -331,7 +331,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 				<h4 style="text-align: center;" id="barrierRemovalExpander" class="bp_expander">5. Do you want to model the removal of barriers? <span class="bp_expand">+</span></h4>
 				<div id="barrierRemovalContainer" class="bp_flexColHCenter">
 
-					<div class="toggle-btn bp_flexRowHCenter" style="width:100px;">
+					<div class="toggle-btn bp_flexRowHCenter" >
 						<input type="radio" id="removeBarriers2" name="removeBarriers" value="no" checked/>
 						<label for="removeBarriers2">No</label>
 						<input type="radio" id="removeBarriers1" name="removeBarriers" value="yes"/>
@@ -352,7 +352,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 					
 				<h4 style="text-align: center;" id="sumStatsExpander" class="bp_expander">6. Do you want summary stats of the results? <span class="bp_expand">+</span></h4>
 				<div id="sumStatsContainer" class="bp_flexColHCenter">
-					<div class="toggle-btn bp_flexRowHCenter" style="width:100px;">
+					<div class="toggle-btn bp_flexRowHCenter" >
 							<input type="radio" id="runSumStats2" name="runSumStats" value="no" checked/>
 							<label for="runSumStats2">No</label>
 							<input type="radio" id="runSumStats1" name="runSumStats" value="yes"/>
@@ -552,7 +552,7 @@ The unique ContentPane id makes all the element ids unique and prevents duplicat
 	<div class="explainWrap" >
 		<p>Barriers in the map can be filtered based on their result tier and barrier severity using sliders. Customized filters can also be built to filter based on one or more of several attributes including state, watershed, and anadromous fish habitat. These filters are cumulative; if a slider is used to only show the top 5 tiers and a custom filter is added to only show a single state, then the map will only display the top 5 tiers in that state.</p>
 		<br/>
-		<p><strong>Custom filters</strong> can be developed using dropdown menus to build simple expressions.  For example, "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression, see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm"><strong>ArcGIS help pages</strong></a>.  To view a full list of the attributes that are available to use in custom filters see Appendix III of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><strong>NE Aquatic Connectivity report</strong></a>.</p>
+		<p><strong>Custom filters</strong> can be developed using dropdown menus to build simple expressions.  For example, "STATE" = 'MD' would limit the analysis to Maryland.  To include multiple values, be sure to use the "IN" operator ("STATE" IN ('MD', 'VA', 'PA')).  To learn more about building an expression, see the <a href="http://desktop.arcgis.com/en/arcmap/10.3/map/working-with-layers/sql-reference-for-query-expressions-used-in-arcgis.htm" target="_blank"><strong>ArcGIS help pages</strong></a>.  To view a full list of the attributes that are available to use in custom filters see Appendix III of the <a href="plugins/barrier-prioritization-proto2/images/NEAquaticConnectivity_Report_2017.pdf" target="_blank"><strong>NE Aquatic Connectivity report</strong></a>.</p>
 		<br/>
 		<p><strong>Additional layers</strong> can be toggled on and off from the "Additional Layers" pane under "Explore the Consensus Anadromous Results" by simply checking the layer on or off.  A slider to adjust the layer transparency is exposed when a layer is turned on.</p>
 	</div>
