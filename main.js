@@ -93,7 +93,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     }
                 }));
                 
-                
+                //Get starting barrier severity
+                this.obj.startingDisplayBarrierSeverity = $("#" + this.id + "selectSeverity").val();
+
                 //Get the state/region zoomed into
                 this.obj.startingZoomState = $("#" + this.id + "zoomState").val();
                 
@@ -208,9 +210,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.barriers2RemoveCount = 0;       
             this.workingRemoveBarriers = [];
             this.workingRemoveBarriersString = "";
-             this.useRadar = true;
-             this.visibleLayers = this.obj.startingVisibleLayers;
-             this.selectSeverityCounter = 0;
+            this.useRadar = true;
+            this.visibleLayers = this.obj.startingVisibleLayers;
+            this.selectSeverityCounter = 0;
             this.refreshBarChartCounter = 0;
 
             
@@ -606,9 +608,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }    //END custom analysis                 
             
             
+            //apply starting barrier severity
+            if (this.obj.startingDisplayBarrierSeverity !== ""){
+                lang.hitch(this, this.selectBarrSeverity(this.obj.startingDisplayBarrierSeverity));
+
+            }
+            
             
             //apply starting zoom state
-            if (this.obj.startingZoomState != ""){
+            if (this.obj.startingZoomState !== ""){
                 $("#" + this.id + "zoomState").val(this.obj.startingZoomState).trigger("chosen:updated");
                 lang.hitch(this, this.zoomToStates(this.obj.startingZoomState, "no"));
             }
@@ -638,6 +646,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     if (this.config.includeBarrierSeverity == true){
                         $("#" + this.id + "selectSeverity").val(parseInt(this.visibleLayers)).trigger('chosen:updated');
                     }
+                   
+                    //show the state stats expander
+                    $("#" + this.id + "stateStatsExpander").show();
             }
            
             // //clear all metric weights, filters, barriers to remove, uncheck all options
@@ -761,7 +772,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 ga('send', 'event', {
                    eventCategory:this.config.analyticsEventTrackingCategory,        
                    eventAction: 'Zoom to state', 
-                   eventLabel: v + ' selected'
+                   eventLabel: v + ' selected for zoom'
                 });
                 
                 lang.hitch(this, this.zoomToStates(v, "yes"));

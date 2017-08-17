@@ -18,6 +18,7 @@
 	"startingMapLayers" : false,
 	"startingFilter" : "",
 	"startingPassability" : "Dams",
+	"startingDisplayBarrierSeverity": "",
 	"startingRemovingBarriers" : false,
 	"startingBarriers2Remove" : "",
 	"startingUseFilter" : false,
