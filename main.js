@@ -790,7 +790,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.visibleLayers = [];
             this.visibleLayers.push(parseInt(v));
             this.dynamicLayer.setVisibleLayers(this.visibleLayers);    
-            this.currentSeverity = v;
+            if (this.config.includeBarrierSeverity === true){this.currentSeverity = v;}
+            else{this.currentSeverity = "";}
             if (this.currentSeverity ==='0'){
                 $("#" + this.id + "consensusRadarUse").hide();
                 $("#" + this.id + "consensusRadarNoUse").show();
@@ -1922,30 +1923,34 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }
             else {var tierName = this.config.resultTier;}
     
-            if (this.config.includeSurveyPageLink ===true){
-                var survDate = this.allClickData["SurveyDate"];
-                var survID = this.allClickData["surveyID"];
-                var survLink =this.config.xingSurveyURL + survID;
-                
-                if (this.allClickData[this.config.barrierTypeField]==="Crossing" && survID != ""){
-                    //var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
-                    var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
-                }
-                if (this.allClickData[this.config.barrierTypeField]==="Crossing" && (survID === "" || survDate === "Null")){
-                    var type = 'Crossing (No Survey Available)';
-                }
-            }
-            else{var type = "Crossing";}
-            
-            if (this.config.includeFERC === true){
-                if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] != ""){
-                    var type= 'Dam (FERC prj: ' + this.allClickData["FERC"] + ') + <br>NOI Exp Date: ' + this.allClickData["FERC_NOIExpDate"];
-                }
-                if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] ===  ""){
-                    var type= 'Dam (No known FERC prj)';
-                }
-            }
-            else {var type="Dam";}
+			if (this.allClickData[this.config.barrierTypeField] ==="Crossing"){
+				if (this.config.includeSurveyPageLink ===true ){
+					var survDate = this.allClickData["SurveyDate"];
+					var survID = this.allClickData["surveyID"];
+					var survLink =this.config.xingSurveyURL + survID;
+					
+					if (this.allClickData[this.config.barrierTypeField]==="Crossing" && survID != ""){
+						//var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
+						var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
+					}
+					if (this.allClickData[this.config.barrierTypeField]==="Crossing" && (survID === "" || survDate === "Null")){
+						var type = 'Crossing (No Survey Available)';
+					}
+				}
+				else{var type = "Crossing";}
+			}
+			else if(this.allClickData[this.config.barrierTypeField] ==="Dam"){
+				if (this.config.includeFERC === true){
+					if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] != ""){
+						var type= 'Dam (FERC prj: ' + this.allClickData["FERC"] + ') + <br>NOI Exp Date: ' + this.allClickData["FERC_NOIExpDate"];
+					}
+					if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] ===  ""){
+						var type= 'Dam (No known FERC prj)';
+					}
+				}
+				else {var type="Dam";}
+			}
+			else{var type="Natural Barrier";}
             
             if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
                 var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
