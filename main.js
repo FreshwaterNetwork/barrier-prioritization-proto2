@@ -15,7 +15,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
     IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, SpatialReference, Query, QueryTask) {
     return declare(PluginBase, {
         // The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
-        toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: false, rendered: false, resizable: false,
+        toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
         hasCustomPrint: false, size:'small',
         
         // First function called when the user clicks the pluging icon. 
@@ -168,7 +168,6 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         },    
         // Called by activate and builds the plugins elements and functions
         render: function() {        
-            
             //this.oid = -1;
             //$('.basemap-selector').trigger('change', 3);
             this.mapScale  = this.map.getScale();
@@ -893,11 +892,10 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         filterMapService: function(filter, mapServLayer, mapServURL){
             var filterParameters = new ImageParameters();
             var layerDefs = [];
-            
             console.log("in function " +filter);
-            console.log(this.currentSeverity);
-            filterParameters.layerDefinitions = layerDefs;
+
             if (this.config.includeBarrierSeverity === true){
+            	console.log(this.currentSeverity);
                 layerDefs[this.currentSeverity] = filter;
                 filterParameters.layerIds = [this.currentSeverity];
             }
@@ -905,6 +903,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 filterParameters.layerIds = this.obj.startingVisibleLayers;
                 layerDefs[this.obj.startingVisibleLayers] = filter;
             }
+            
+            filterParameters.layerDefinitions = layerDefs;
             filterParameters.layerOption = ImageParameters.LAYER_OPTION_SHOW;
             filterParameters.transparent = true;
             var filteredMapServLayer = new esri.layers.ArcGISDynamicMapServiceLayer(mapServURL, 
@@ -1008,7 +1008,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             if ($("input[name='graphicSelectBarriers2Remove']:checked").val()=="show"){
                 this.removingBarriers = true;
                 this.activateIdentify = false;
-                  lang.hitch(this, this.refreshIdentify());
+                lang.hitch(this, this.refreshIdentify());
                 if (this.removeFeatureLayer === undefined){
                     console.log("removing barriers");
                     var removeBarrierSymbol = new SimpleMarkerSymbol().setSize(5).setColor(new Color([0,0,0]));
@@ -1019,14 +1019,18 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     this.removeFeatureLayer.setRenderer(renderer);
                     this.removeFeatureLayer.MODE_SNAPSHOT;
         
-                    // Set layer definition so barriers to remove layer only shows passability level of barriers being analyzed (e.g. Dams only)
-                    this.severityQueryDict = this.config.severityDict;
-        
-                    this.severityField = this.severityQueryDict[$('#'+ this.id + 'passability').val()];
-                    this.severityQuery = this.severityField +' = 1';
-                    console.log(this.severityQuery);
-                    this.removeFeatureLayer.setDefinitionExpression(this.severityQuery); 
-                    this.removeFeatureLayer.dataAttributes = [this.uniqueID, this.severityField];
+        			if (this.config.includeBarrierSeverity === true){
+	                    // Set layer definition so barriers to remove layer only shows passability level of barriers being analyzed (e.g. Dams only)
+	                    this.severityQueryDict = this.config.severityDict;
+	        
+	                    this.severityField = this.severityQueryDict[$('#'+ this.id + 'passability').val()];
+	                    this.severityQuery = this.severityField +' = 1';
+	                    console.log(this.severityQuery);
+	                    this.removeFeatureLayer.setDefinitionExpression(this.severityQuery); 
+	                    this.removeFeatureLayer.dataAttributes = [this.uniqueID, this.severityField];
+                   }
+                   else{this.removeFeatureLayer.dataAttributes = [this.uniqueID];}
+                    
                     this.selectedBarriers = new GraphicsLayer();
                     
                     //if there's already values in the text box, include the corresponding graphics
@@ -1710,7 +1714,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 else{
                     this.map.removeLayer(this.dynamicLayer);
                     this.activateIdentify = false;
-                    //this.refreshIdentify(undefined, undefined);
+                    this.refreshIdentify();
                     $("#" + this.id + "barrierstransp").hide();
                 }
             }));
@@ -1797,9 +1801,13 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             console.log("identify active = " +this.activateIdentify);
             this.idLayerURL = layerURL;
             if (this.activateIdentify === false){ 
+            	//this is the generic framework identify
+            	this.allowIdentifyWhenActive = true;
                 dojo.disconnect(this.identifyClick);
             }
-            if (this.activateIdentify === true){  
+            if (this.activateIdentify === true){
+            	//this is the generic framework identify
+            	this.allowIdentifyWhenActive = false;
                 //this.map.on("click", lang.hitch(this, this.doIdentify));
                 this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt){this.doIdentify(evt);}));    
                     
@@ -2016,7 +2024,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                        $("#" + this.id +"radarMetricChangerOpenExpander").show();
                        $("#" + this.id +"consensusResultFiltersExpander").show();
                 }
-               }    
+            }    
 
             this.idContent = this.clickHeader + "<hr>" + this.idContent;
             this.identJSON = {
@@ -2025,7 +2033,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             };
             this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
             idResult.setInfoTemplate(this.popupInfoTemplate);    
-            this.map.infoWindow.show(point);                
+            this.map.infoWindow.show(point);            
+            this.map.infoWindow.resize(300,400); //switching to framework identify can cause this popup to resize wrong.  So be explicit    
             this.map.infoWindow.setFeatures([idResult]);
                
         },            
