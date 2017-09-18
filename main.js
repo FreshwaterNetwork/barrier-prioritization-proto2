@@ -312,12 +312,14 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     this.consensusSelectedField = $("#" + this.id + "filterConsensusResultsField option:selected").text();
                     this.updateConsensusResultValues(this.consensusSelectedField);
                     this.consensusResultFilterField = $("#" + this.id + "filterConsensusResultsField").val();
-                    if (this.currentSeverity !=0 && this.consensusResultFilterField.startsWith("DS")){
+                    if (this.currentSeverity !=0 && this.consensusResultFilterField.startsWith("DS") && this.config.includeBarrierSeverity===true){
                         this.consensusResultFilterField= "s" + this.currentSeverity + this.consensusResultFilterField;
                     }
-                    if (this.currentSeverity ==0 && this.consensusResultFilterField.startsWith("DS")){
+                    else if (this.currentSeverity ==0 && this.consensusResultFilterField.startsWith("DS")&& this.config.includeBarrierSeverity===true){
                         this.consensusResultFilterField= "s1" + this.consensusResultFilterField;
                     }
+					else{this.consensusResultFilterField=  this.consensusResultFilterField;}
+                    
                     $("#" + this.id + "resultsConsensusFilter").val( this.consensusResultFilterField + ' ' + this.consensusResultFilterOperator + " (" + this.consensusResultFilterValue + ")");
                 }));
                 
@@ -656,7 +658,10 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 // lang.hitch(this, this.clearAllInputs());
             // }));
             
-
+            //set all metric weights to zero
+            $('#' + this.id +"applyZeroWeight").on('click',lang.hitch(this,function(e){ 
+                lang.hitch(this, this.zeroAllWeights());
+            }));
             
             //Set up the +/- expanders 
             this.expandContainers = ["consensusRadarBlock", "barrierSeverity", "customFilter","consensusResultFilters", "customMetric", 
@@ -897,8 +902,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 filterParameters.layerIds = [this.currentSeverity];
             }
             else{
-                filterParameters.layerIds = this.obj.visibleLayers;
-                layerDefs[this.obj.visibleLayers] = filter;
+                filterParameters.layerIds = this.obj.startingVisibleLayers;
+                layerDefs[this.obj.startingVisibleLayers] = filter;
             }
             filterParameters.layerOption = ImageParameters.LAYER_OPTION_SHOW;
             filterParameters.transparent = true;
@@ -950,6 +955,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.consensusSeverityMinVal = $('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 0);
             this.consensusSeverityMaxVal = $('#' + this.id + 'consensusResultFilterSliderSeverity').slider("values", 1);
             this.consensusSeverityRange = [];
+            
             var i=1;
             while (i<=this.consensusSeverityMaxVal){
                 if (i>=this.consensusSeverityMinVal){
@@ -966,7 +972,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.map.removeLayer(this.dynamicLayer);
             if (this.consensusCustomFilter !="" && this.consensusCustomFilter  != undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
             else{this.consensusFilter = this.consensusSliderFilter;}
+                   
             this.dynamicLayer = this.filterMapService(this.consensusFilter, this.dynamicLayer, this.config.url);
+
             this.dynamicLayer.setVisibleLayers(this.visibleLayers);
             setTimeout(lang.hitch(this, function(){
                 this.map.addLayer(this.dynamicLayer);
@@ -1114,13 +1122,19 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }
         },
         
+        zeroAllWeights: function(){
+            $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
+                 v.value = 0;
+                 $('#' + v.id).removeClass('bp_weighted');            
+            }));
+            lang.hitch(this, this.getCurrentWeights());
+            lang.hitch(this, this.metricWeightCalculator(this.gpVals));
+        },
+        
         clearAllInputs: function(){
             // $("#" + this.id +"gpStatusReport").html("");
             // $("#" + this.id +"gpStatusReportHead").css('display', 'none');
-            // $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
-                 // v.value = 0;
-                 // $('#' + v.id).removeClass('bp_weighted');            
-            // }));
+			// lang.hitch(this, this.zeroAllWeights());
             // $('#'+ this.id +"bp_currWeight").html('0');
             // $('#'+ this.id +"bp_currWeight").css('color', 'red');
             // $('#'+ this.id +"barriers2Remove").val('');
@@ -1237,6 +1251,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 //if passability option is an input get it
                 if (this.config.includePassabilityOption == true){
                     this.passability = $("#" + this.id + "passability").val();
+	                if ($("input[name='takeAverage']:checked").val()=="yes"){this.takeAverage = true;}
+	                else{this.takeAverage = false;}
                 }
 
                 if ($("#" + this.id + "userFilter").val() != ""){
@@ -1252,17 +1268,18 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.summarizeBy = $("#" + this.id + "summarizeBy").val();
                 this.sumStatField = $("#" + this.id + "summaryStatField").val();
                 
-                if ($("input[name='takeAverage']:checked").val()=="yes"){this.takeAverage = true;}
-                else{this.takeAverage = false;}
+                
+
                 
                 if ($("#" + this.id + "exportCustomCSV").is(":checked")){
                     this.exportCSV = true;
                 }
                 else{this.exportCSV = false;}
                 
-                
-                this.requestObject["Passability"] = this.passability;
-                this.requestObject["Take_Average_Value"] = this.takeAverage;
+                if (this.config.includePassabilityOption === true){
+	                this.requestObject["Passability"] = this.passability;
+	                this.requestObject["Take_Average_Value"] = this.takeAverage;
+                }
                 this.requestObject["FilterBarriers"] = this.filterBarr;
                 this.requestObject["UserFilter"] = this.filter;
                 this.requestObject["ModelRemoval"] = this.removeBarr;
@@ -1852,8 +1869,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                            var basename = k.replace(metricSev, "");
                        }
                        else{var basename = k;}
-                       console.log(k);
-                       console.log(basename);
+                       // console.log(k);
+                       // console.log(basename);
                        console.log(k + "=" + v);
                     if ($.inArray(k, this.config.idBlacklist) == -1){
                         
