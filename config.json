@@ -6,6 +6,9 @@
 	"includeBarrierSeverity" : true,
 	"includeSurveyPageLink" : true,
 	"includeFERC": true,
+	"includeFactSheets" : false,
+	"residentTierName" : "",
+	"bktTierName" : "",
 	"additionalLayers":{	
 		"Rivers" : ["rivers", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "8", "Zoom in to the scale of a city or town to view the rivers in the region.", "off"],
 		"Subbasins (HUC 8)" :["huc8s", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "9", "View the USGS 8-digit Hydrologic Units", "off"],

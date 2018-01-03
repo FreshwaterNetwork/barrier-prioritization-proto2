@@ -8,11 +8,11 @@ define([
     "dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
     './js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
      "esri/layers/ArcGISDynamicMapServiceLayer",  "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
-     "esri/renderers/SimpleRenderer", "esri/geometry/Extent","esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask"
+     "esri/renderers/SimpleRenderer", "esri/geometry/Extent", "esri/geometry/webMercatorUtils", "esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask"
 ],
 function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, Esriapi, Clicks, RadarChart, d3, config, 
     filters, ImageParameters, FeatureLayer, GraphicsLayer, ArcGISDynamicMapServiceLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, 
-    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, SpatialReference, Query, QueryTask) {
+    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, webMercatorUtils, SpatialReference, Query, QueryTask) {
     return declare(PluginBase, {
         // The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
         toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
@@ -674,12 +674,14 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     if (this.expandContainers[i] == "severitySelection"){
                         $("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-severitySelectionInfo").show();
+                        
                     }
                 }
                 else{
                     if (this.expandContainers[i] == "stateStats"){
                         $("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-stateStatsInfo").show();
+                        
                     }
                 }
             }
@@ -694,6 +696,18 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         lang.hitch(this, this.selectorTextReplace(e.currentTarget, "+", "-"));
                         $("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-" +  this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);
+                    	console.log(e.currentTarget.id);
+                    	if (e.currentTarget.id ===  this.id + "consensusRadarBlockExpander" || e.currentTarget.id ===  this.id + "stateStatsExpander"){
+                    		//use custom popup and radar if radar block pane is active
+                    		this.activateIdentify = true;
+                    		lang.hitch(this, this.refreshIdentify(this.config.url));
+                    	}
+                    	else{  
+                    		//use framework popup if radar block is not active                 	                    	
+                    		this.activateIdentify = false;
+                    		lang.hitch(this, this.refreshIdentify(this.config.url));               	
+                    	}
+                    	
                     }
                     else if ($("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===true){
                         $("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
@@ -718,7 +732,19 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 for (var i=0; i<this.expandContainersOpen.length; i++){
                     if (this.id + this.expandContainersOpen[i]+"Expander" == expander){
                         if ($("#" + this.id + this.expandContainersOpen[i]+"Container").is(":visible")===false){
+                        	
                             lang.hitch(this, this.selectorTextReplace(e.currentTarget, "+", "-"));
+                            if (e.currentTarget.id === "#" + this.id + "consensusRadarBlockExpander"){
+	                    		console.log("true");
+	                    		this.activateIdentify = true;
+	                    		lang.hitch(this, this.refreshIdentify(this.config.url));
+	                    	}
+	                    	else{                   
+	                    		console.log("false");	                    	
+	                    		this.activateIdentify = false;
+	                    		lang.hitch(this, this.refreshIdentify(this.config.url));               	
+	                    	}
+                    	
                         }
                         if ($("#" + this.id + this.expandContainersOpen[i]+"Container").is(":visible")===true){
                             lang.hitch(this, this.selectorTextReplace(e.currentTarget, "-", "+"));
@@ -766,6 +792,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }));
             }
             
+            
+
             //build zoom-to chosen
             $("#" + this.id + "zoomState").chosen({allow_single_deselect:true, width:"155px"}).change(lang.hitch(this, function(c){
                 var v = c.target.value;
@@ -779,8 +807,12 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                    eventLabel: v + ' selected for zoom'
                 });
                 
-                lang.hitch(this, this.zoomToStates(v, "yes"));
+            	lang.hitch(this, this.zoomToStates(v, "yes"));
+                
+                
             }));
+            
+            this.map.on("mouse-move", lang.hitch(this, function(evt){this.getCursorLatLong(evt);}));
             
             this.rendered = true;    
 
@@ -1635,7 +1667,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
         setUpAdditionalLayers: function(addlLayers){
             $.each(addlLayers, lang.hitch(this, function(k, v){
-                console.log("layer Name: " + k + " layerID: " + v[0] +" URL: " + v[1]);
+                // console.log("layer Name: " + k + " layerID: " + v[0] +" URL: " + v[1]);
                 var addlLayerVis = ("addlLayerVis" + v[0]);
                 this[addlLayerVis] = [];
                 var addlLayer = ("addlLayer" + v[0]);
@@ -1696,8 +1728,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }));
                 
 
-                
-                
+				
+				
                 //turn on by default if config says to
                 if (v[4] == "on" || this.obj.startingAdditionalLayers[v[0]]=="on"){$("#" + this.id + v[0]).trigger("click");}
             }));
@@ -1707,14 +1739,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 var ischecked = $("#"+ this.id + "barriers").is(':checked');
                 if (ischecked) {
                     this.map.addLayer(this.dynamicLayer);
-                    this.activateIdentify = true;
-                    lang.hitch(this, this.refreshIdentify(this.url));
+                    //Commented out so that don't turn on custom popup and radar every time primary layer is turned on
+                    //this.activateIdentify = true;
+                    //lang.hitch(this, this.refreshIdentify(this.url));
                     $("#" + this.id + "barrierstransp").show();
                 }
                 else{
                     this.map.removeLayer(this.dynamicLayer);
-                    this.activateIdentify = false;
-                    this.refreshIdentify();
+                    //this.activateIdentify = false; 
+                    //this.refreshIdentify();
                     $("#" + this.id + "barrierstransp").hide();
                 }
             }));
@@ -1763,6 +1796,11 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }));
         },
         
+        getCursorLatLong: function(evt){
+        	var mp = webMercatorUtils.webMercatorToGeographic(evt.mapPoint);
+        	$("#" + this.id + "latLongText").text("Cursor Lat= " + mp.y.toFixed(4) + " Long=" + mp.x.toFixed(4));
+        },
+        
         JSONToCSVConvertor: function(JSONData, ReportTitle, ShowLabel) {
             //taken from http://jsfiddle.net/hybrid13i/JXrwM/
             //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
@@ -1806,7 +1844,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 dojo.disconnect(this.identifyClick);
             }
             if (this.activateIdentify === true){
-            	//this is the generic framework identify
+            	//this is the custom identify w/ radar
             	this.allowIdentifyWhenActive = false;
                 //this.map.on("click", lang.hitch(this, this.doIdentify));
                 this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt){this.doIdentify(evt);}));    
@@ -1863,7 +1901,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.idContent="";
             this.radarData =[];
             this.allClickData = {}; //build an object to get the all real values.  Used in RadarChart.js to make tooltip labels
-            //this.allClickData = {}
+
             $.each(idResult.attributes, lang.hitch(this, function(k, v){ 
                 this.allClickData[k] = v; 
                 if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
@@ -1879,7 +1917,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                        else{var basename = k;}
                        // console.log(k);
                        // console.log(basename);
-                       console.log(k + "=" + v);
+                       // console.log(k + "=" + v);
                     if ($.inArray(k, this.config.idBlacklist) == -1){
                         
                         //don't show indivudal metric values if consensus (average result)
@@ -1943,7 +1981,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }));
                 
             
-               if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
+           if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
                 var tierName = "Tier" + String(this.currentSeverity);
             }
             else {var tierName = this.config.resultTier;}
@@ -1985,16 +2023,26 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }
             this.clickHeader = "Name: " + this.allClickData[this.config.barrierNameField] +
             "<br/>ID: " + this.allClickData[this.config.uniqueID] +
-            "<br/>Type: " + type;
+            "<br/>Type: " + type +
             "<br/>Anadromous Tier= " + this.allClickData[tierName];
             
-            //show this barrier's severity - above Anadromous Tier
+            //show this barrier's severity
             if (this.config.includeBarrierSeverity === true){
-                this.clickHeader = this.clickHeader + "<br/>" + this.allClickData[this.config.severityField];
+                this.clickHeader += "<br/>" + this.allClickData[this.config.severityField];
+            }           
+            
+            //if included, show the resident & BKT tiers in the radar plot header
+            if (this.config.residentTierName != "" && this.config.residentTierName != false){
+                this.clickHeader += "<br/>Resident Tier= " + this.allClickData[this.config.residentTierName];
+            }       
+            if (this.config.bktTierName != "" && this.config.bktTierName != false){
+                this.clickHeader += "<br/>Brook Trout Tier= " + this.allClickData[this.config.bktTierName];
+            }                   
+            
+            if (this.config.includeFactSheets === true){
+            	this.clickHeader += "<br/><a target='_blank' href='plugins/barrier-prioritization-proto2/factSheets/" + this.allClickData[this.config.uniqueID] + ".pdf'>Fact Sheet</a>";
             }
-            
-            this.clickHeader = this.clickHeader + "<br/>Anadromous Tier= " + this.allClickData[tierName];
-            
+                        
             //show iteration being used if including barrier severity, it's not the average value, and it's not a GP service result
             if (this.config.includeBarrierSeverity === true && this.currentSeverity !="0" && this.idLayerURL === this.config.url){    
                 this.clickHeader = this.clickHeader + "<br/>All values for " + radarSeverityDisplay;
