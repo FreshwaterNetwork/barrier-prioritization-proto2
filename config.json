@@ -7,8 +7,15 @@
 	"includeSurveyPageLink" : true,
 	"includeFERC": true,
 	"includeFactSheets" : false,
+	"includeStratifiedRegions" : false,
+	"includeMultipleScenarios" : false,
 	"residentTierName" : "",
 	"bktTierName" : "",
+	"anadTierName" : "",
+    "startWithBarriersVisible": false,
+    "stratifiedLayers":{
+
+    },
 	"additionalLayers":{	
 		"Rivers" : ["rivers", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "8", "Zoom in to the scale of a city or town to view the rivers in the region.", "off"],
 		"Subbasins (HUC 8)" :["huc8s", "http://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "9", "View the USGS 8-digit Hydrologic Units", "off"],
@@ -47,14 +54,14 @@
 		"Minor":"Use_Minor",
 		"Insignificant":"Use_Insignificant"
      },
-     "severitySliderDict":{
+    "severitySliderDict" : {
 		5:"Severe", 
 		4:"Significant", 
 		3:"Moderate", 
 		2:"Minor", 
 		1:"Insignificant"
 	},
-	"severityNumDict":{
+    "severityNumDict":{
 		6:"Dams", 
 		5:"Severe", 
 		4:"Significant", 
