@@ -883,7 +883,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             lang.hitch(this,this.refreshBarChart());
             lang.hitch(this, this.selectStratification());
             
-            lang.hitch(this, this.radarChart());
+            if (this.identifyIterator >0){
+               lang.hitch(this, this.radarChart());
+            }
             lang.hitch(this, this.refreshIdentify(this.config.url));
         },
 
