@@ -86,7 +86,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.obj.stateSet = "yes";    
                 
                 //get the current map layers
-                if (this.dynamicLayer.visible === true){this.obj.startingMapLayers =true;}
+//                if (this.dynamicLayer.visible === true){this.obj.startingMapLayers =true;}
+                this.obj.startingMapLayers =true;
                 $.each(this.obj.startingAdditionalLayers, lang.hitch(this, function(key,value ) {
                     if ($("#" + this.id + key).is(':checked')){
                         this.obj.startingAdditionalLayers[key]="on";
@@ -96,8 +97,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 //Get starting barrier severity
                 this.obj.startingDisplayBarrierSeverity = $("#" + this.id + "selectSeverity").val();
 
-                //Get the state/region zoomed into
+                //Get the state/region zoomed into & sceanrio
                 this.obj.startingZoomState = $("#" + this.id + "zoomState").val();
+                this.obj.startingScenario = $("#" + this.id + "scenario").val();
                 
                 if (this.config.includeCustomAnalysis ===true){
                     //Get filter
@@ -204,7 +206,6 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             //set varaibles
             this.severityDict = this.config.severitySliderDict;
             this.activateIdentify = true;
-            lang.hitch(this, this.refreshIdentify(this.url));
             this.uniqueID = this.config.uniqueID;
             this.barriers2RemoveCount = 0;       
             this.workingRemoveBarriers = [];
@@ -213,6 +214,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.visibleLayers = this.obj.startingVisibleLayers;
             this.selectSeverityCounter = 0;
             this.refreshBarChartCounter = 0;
+            this.activateIdentify = true;
+            lang.hitch(this, this.refreshIdentify(this.url));
 
             
                
@@ -614,15 +617,21 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 lang.hitch(this, this.selectBarrSeverity(this.obj.startingDisplayBarrierSeverity))
             }
                     
-            //apply starting zoom state
+            //apply starting zoom state 
             if (this.obj.startingZoomState !== ""){
                 $("#" + this.id + "zoomState").val(this.obj.startingZoomState).trigger("chosen:updated");
                 lang.hitch(this, this.zoomToStates(this.obj.startingZoomState, "no"));
             }
             else{lang.hitch(this, this.zoomToStates("Region", "no"));}
-           
+            
+            //apply starting sceanrio
+            if (this.stateSet === "yes" && this.config.includeMultipleScenarios === true){
+                $("#" + this.id + "scenario").val(this.obj.startingScenario).trigger("chosen:updated");
+                lang.hitch(this, this.scenarioSelection(this.obj.startingScenario, "no"));
+            }
+                      
             //add barriers & apply filter if from saved state
-            if (this.stateSet== "yes"){
+            if (this.stateSet === "yes"){
                     $('#' + this.id + 'resultsConsensusFilter').val(this.obj.startingConsensusCustomFilter);
                     $("#" + this.id + "clickInstructions").show();
                     lang.hitch(this, this.filterConsensusMapServiceSlider());
@@ -677,7 +686,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     }
                 }
                 else{
-                    if (this.expandContainers[i] == "stateStats"){
+                    if (this.expandContainers[i] === "stateStats"){
                         $("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-stateStatsInfo").show();
                         
@@ -687,21 +696,42 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             //on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
             $('.bp_expander').on("click", lang.hitch(this, function(e){
                 //show the assess a barrier expander if it's hidden, which it is by default
-                if ($("#" + this.id +"severitySelectionExpander").is(":visible") == false){$("#" + this.id +"severitySelectionExpander").animate({height:"toggle"}, 500);}
+                if ($("#" + this.id +"severitySelectionExpander").is(":visible") === false){$("#" + this.id +"severitySelectionExpander").animate({height:"toggle"}, 500);}
                 var expander = e.currentTarget.id;
                 var container = e.currentTarget.id.replace("Expander", "Container");
                 for (var i=0; i<this.expandContainers.length; i++){
-                    if (this.id + this.expandContainers[i]+"Expander" == expander && $("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===false){
+                                                            
+                    if (this.id + this.expandContainers[i]+"Expander" === expander && $("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===false){
+                        if (this.expandContainers[i]+"Container" === "additionalLayersContainer"){
+                            this.activateIdentify = false;
+                            lang.hitch(this, this.refreshIdentify(this.config.url)); 
+                        }
                         lang.hitch(this, this.selectorTextReplace(e.currentTarget, "+", "-"));
                         $("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-" +  this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);                    	
                     }
                     else if ($("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===true){
+                        if (this.expandContainers[i]+"Container" === "additionalLayersContainer"){
+                            this.activateIdentify = true;
+                            lang.hitch(this, this.refreshIdentify(this.config.url)); 
+                        }
                         $("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-" + this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);
                         lang.hitch(this, this.selectorTextReplace("#" + this.id + this.expandContainers[i]+"Expander", "-", "+"));
-                    }
+                    }                  
                 }
+//                //use framework identify if the "Layers" section is open, otherwise use app identify      
+//                if ($("#" + this.id +"additionalLayersContainer").is(":visible")===false){
+//                    console.log("true");
+//                    this.activateIdentify = true;
+//                    lang.hitch(this, this.refreshIdentify(this.config.url));
+//                }
+//                else{                   
+//                    console.log("false");	                    	
+//                    this.activateIdentify = false;
+//                    lang.hitch(this, this.refreshIdentify(this.config.url));               	
+//                }
+               
             }));
 
             //handle exapnder separately for those div to keep open if another div is clicked
@@ -714,25 +744,14 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
             //on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
             $('.bp_expanderOpen').on("click", lang.hitch(this, function(e){
+                console.log("expander")
                 var expander = e.currentTarget.id;
                 var container = e.currentTarget.id.replace("Expander", "Container");
                 for (var i=0; i<this.expandContainersOpen.length; i++){
-                    if (this.id + this.expandContainersOpen[i]+"Expander" == expander){
+                    if (this.id + this.expandContainersOpen[i]+"Expander" === expander){
                         if ($("#" + this.id + this.expandContainersOpen[i]+"Container").is(":visible")===false){
                         	
                             lang.hitch(this, this.selectorTextReplace(e.currentTarget, "+", "-"));
-                            //use framework identify if the "Layers" section is open, otherwise use app identify
-                            //if (e.currentTarget.id === "#" + this.id + "consensusRadarBlockExpander"){
-                            if ($("#" + this.id + this.id +"additionalLayersContainer").is(":visible")===false){
-                                console.log("true");
-                                this.activateIdentify = true;
-                                lang.hitch(this, this.refreshIdentify(this.config.url));
-                            }
-                            else{                   
-                                console.log("false");	                    	
-                                this.activateIdentify = false;
-                                lang.hitch(this, this.refreshIdentify(this.config.url));               	
-                            }
                     	
                         }
                         if ($("#" + this.id + this.expandContainersOpen[i]+"Container").is(":visible")===true){
@@ -1953,6 +1972,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.identifyRes        
                     .execute(this.identifyParams)
                     .addCallback(lang.hitch(this, function (response) {
+                        console.log(response);
                         if (this.identifyIterator ===0 && response[0].feature){
                             console.log(response[0].feature);
                             lang.hitch(this, this.displayIDResult(response[0].feature, this.identifyParams.geometry));
