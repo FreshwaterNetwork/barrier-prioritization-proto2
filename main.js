@@ -8,14 +8,14 @@ define([
     "dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
     './js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
      "esri/layers/ArcGISDynamicMapServiceLayer",  "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
-     "esri/renderers/SimpleRenderer", "esri/geometry/Extent","esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask"
+     "esri/renderers/SimpleRenderer", "esri/geometry/Extent", "esri/geometry/webMercatorUtils", "esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask"
 ],
 function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, Esriapi, Clicks, RadarChart, d3, config, 
     filters, ImageParameters, FeatureLayer, GraphicsLayer, ArcGISDynamicMapServiceLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, 
-    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, SpatialReference, Query, QueryTask) {
+    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, webMercatorUtils, SpatialReference, Query, QueryTask) {
     return declare(PluginBase, {
         // The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
-        toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: false, rendered: false, resizable: false,
+        toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
         hasCustomPrint: false, size:'small',
         
         // First function called when the user clicks the pluging icon. 
@@ -86,7 +86,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.obj.stateSet = "yes";    
                 
                 //get the current map layers
-                if (this.dynamicLayer.visible === true){this.obj.startingMapLayers =true;}
+//                if (this.dynamicLayer.visible === true){this.obj.startingMapLayers =true;}
+                this.obj.startingMapLayers =true;
                 $.each(this.obj.startingAdditionalLayers, lang.hitch(this, function(key,value ) {
                     if ($("#" + this.id + key).is(':checked')){
                         this.obj.startingAdditionalLayers[key]="on";
@@ -96,8 +97,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 //Get starting barrier severity
                 this.obj.startingDisplayBarrierSeverity = $("#" + this.id + "selectSeverity").val();
 
-                //Get the state/region zoomed into
+                //Get the state/region zoomed into & sceanrio
                 this.obj.startingZoomState = $("#" + this.id + "zoomState").val();
+                this.obj.startingScenario = $("#" + this.id + "scenario").val();
                 
                 if (this.config.includeCustomAnalysis ===true){
                     //Get filter
@@ -168,7 +170,6 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         },    
         // Called by activate and builds the plugins elements and functions
         render: function() {        
-            
             //this.oid = -1;
             //$('.basemap-selector').trigger('change', 3);
             this.mapScale  = this.map.getScale();
@@ -205,7 +206,6 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             //set varaibles
             this.severityDict = this.config.severitySliderDict;
             this.activateIdentify = true;
-            lang.hitch(this, this.refreshIdentify(this.url));
             this.uniqueID = this.config.uniqueID;
             this.barriers2RemoveCount = 0;       
             this.workingRemoveBarriers = [];
@@ -214,6 +214,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.visibleLayers = this.obj.startingVisibleLayers;
             this.selectSeverityCounter = 0;
             this.refreshBarChartCounter = 0;
+            this.activateIdentify = true;
+            lang.hitch(this, this.refreshIdentify(this.url));
 
             
                
@@ -231,6 +233,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             //$("#" + this.id +"additionalLayersExpander").hide();
             $('#' + this.id + 'clickInstructions').hide();  
             $("#" + this.id + "consensusRadarNoUse").hide();
+            
+            $(".scalebar_bottom-left").append('<div id="latLongText" class="bp_grayText" style="z-index: 35; bottom: 5px; left: 10px; width:400px "></div>')
             
             if (this.config.includeBarrierSeverity === false){this.currentSeverity = "";}
 
@@ -612,20 +616,24 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             
             //apply starting barrier severity
             if (this.obj.startingDisplayBarrierSeverity !== ""){
-                lang.hitch(this, this.selectBarrSeverity(this.obj.startingDisplayBarrierSeverity));
-
+                lang.hitch(this, this.selectBarrSeverity(this.obj.startingDisplayBarrierSeverity))
             }
-            
-            
-            //apply starting zoom state
+                    
+            //apply starting zoom state 
             if (this.obj.startingZoomState !== ""){
                 $("#" + this.id + "zoomState").val(this.obj.startingZoomState).trigger("chosen:updated");
                 lang.hitch(this, this.zoomToStates(this.obj.startingZoomState, "no"));
             }
             else{lang.hitch(this, this.zoomToStates("Region", "no"));}
-           
+            
+            //apply starting sceanrio
+            if (this.stateSet === "yes" && this.config.includeMultipleScenarios === true){
+                $("#" + this.id + "scenario").val(this.obj.startingScenario).trigger("chosen:updated");
+                lang.hitch(this, this.scenarioSelection(this.obj.startingScenario, "no"));
+            }
+                      
             //add barriers & apply filter if from saved state
-            if (this.stateSet== "yes"){
+            if (this.stateSet === "yes"){
                     $('#' + this.id + 'resultsConsensusFilter').val(this.obj.startingConsensusCustomFilter);
                     $("#" + this.id + "clickInstructions").show();
                     lang.hitch(this, this.filterConsensusMapServiceSlider());
@@ -648,6 +656,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     if (this.config.includeBarrierSeverity == true){
                         $("#" + this.id + "selectSeverity").val(parseInt(this.visibleLayers)).trigger('chosen:updated');
                     }
+                   
                    
                     //show the state stats expander
                     $("#" + this.id + "stateStatsExpander").show();
@@ -675,33 +684,56 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     if (this.expandContainers[i] == "severitySelection"){
                         $("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-severitySelectionInfo").show();
+                        
                     }
                 }
                 else{
-                    if (this.expandContainers[i] == "stateStats"){
+                    if (this.expandContainers[i] === "stateStats"){
                         $("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-stateStatsInfo").show();
+                        
                     }
                 }
             }
             //on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
             $('.bp_expander').on("click", lang.hitch(this, function(e){
                 //show the assess a barrier expander if it's hidden, which it is by default
-                if ($("#" + this.id +"severitySelectionExpander").is(":visible") == false){$("#" + this.id +"severitySelectionExpander").animate({height:"toggle"}, 500);}
+                if ($("#" + this.id +"severitySelectionExpander").is(":visible") === false){$("#" + this.id +"severitySelectionExpander").animate({height:"toggle"}, 500);}
                 var expander = e.currentTarget.id;
                 var container = e.currentTarget.id.replace("Expander", "Container");
                 for (var i=0; i<this.expandContainers.length; i++){
-                    if (this.id + this.expandContainers[i]+"Expander" == expander && $("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===false){
+                                                            
+                    if (this.id + this.expandContainers[i]+"Expander" === expander && $("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===false){
+                        if (this.expandContainers[i]+"Container" === "additionalLayersContainer"){
+                            this.activateIdentify = false;
+                            lang.hitch(this, this.refreshIdentify(this.config.url)); 
+                        }
                         lang.hitch(this, this.selectorTextReplace(e.currentTarget, "+", "-"));
                         $("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
-                        $("#" + this.id + "-" +  this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);
+                        $("#" + this.id + "-" +  this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);                    	
                     }
                     else if ($("#" + this.id + this.expandContainers[i]+"Container").is(":visible")===true){
+                        if (this.expandContainers[i]+"Container" === "additionalLayersContainer"){
+                            this.activateIdentify = true;
+                            lang.hitch(this, this.refreshIdentify(this.config.url)); 
+                        }
                         $("#" + this.id + this.expandContainers[i]+"Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-" + this.expandContainers[i] + "Info").animate({height:"toggle"}, 500);
                         lang.hitch(this, this.selectorTextReplace("#" + this.id + this.expandContainers[i]+"Expander", "-", "+"));
-                    }
+                    }                  
                 }
+//                //use framework identify if the "Layers" section is open, otherwise use app identify      
+//                if ($("#" + this.id +"additionalLayersContainer").is(":visible")===false){
+//                    console.log("true");
+//                    this.activateIdentify = true;
+//                    lang.hitch(this, this.refreshIdentify(this.config.url));
+//                }
+//                else{                   
+//                    console.log("false");	                    	
+//                    this.activateIdentify = false;
+//                    lang.hitch(this, this.refreshIdentify(this.config.url));               	
+//                }
+               
             }));
 
             //handle exapnder separately for those div to keep open if another div is clicked
@@ -714,12 +746,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
             //on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
             $('.bp_expanderOpen').on("click", lang.hitch(this, function(e){
+                console.log("expander")
                 var expander = e.currentTarget.id;
                 var container = e.currentTarget.id.replace("Expander", "Container");
                 for (var i=0; i<this.expandContainersOpen.length; i++){
-                    if (this.id + this.expandContainersOpen[i]+"Expander" == expander){
+                    if (this.id + this.expandContainersOpen[i]+"Expander" === expander){
                         if ($("#" + this.id + this.expandContainersOpen[i]+"Container").is(":visible")===false){
+                        	
                             lang.hitch(this, this.selectorTextReplace(e.currentTarget, "+", "-"));
+                    	
                         }
                         if ($("#" + this.id + this.expandContainersOpen[i]+"Container").is(":visible")===true){
                             lang.hitch(this, this.selectorTextReplace(e.currentTarget, "-", "+"));
@@ -767,21 +802,41 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }));
             }
             
+            
+
             //build zoom-to chosen
-            $("#" + this.id + "zoomState").chosen({allow_single_deselect:true, width:"155px"}).change(lang.hitch(this, function(c){
+            $("#" + this.id + "zoomState").chosen({allow_single_deselect:true, width:"130px"}).change(lang.hitch(this, function(c){
                 var v = c.target.value;
                 // check for a deselect
-                if (v.length == 0){v = "none";}
+                if (v.length === 0){v = "none";}
                 
                 //analytics event tracking
                 ga('send', 'event', {
                    eventCategory:this.config.analyticsEventTrackingCategory,        
                    eventAction: 'Zoom to state', 
                    eventLabel: v + ' selected for zoom'
-                });
-                
-                lang.hitch(this, this.zoomToStates(v, "yes"));
+                });   
+            	lang.hitch(this, this.zoomToStates(v, "yes"));
             }));
+            
+            //build scenario selection
+            if (this.config.includeMultipleScenarios === true){
+                $("#" + this.id + "scenario").chosen({allow_single_deselect:true, width:"130px"}).change(lang.hitch(this, function(c){
+                    var v = c.target.value;
+                    // check for a deselect
+                    if (v.length === 0){v = "none";}
+
+                    //analytics event tracking
+                    ga('send', 'event', {
+                       eventCategory:this.config.analyticsEventTrackingCategory,        
+                       eventAction: 'Consensus scenario selection', 
+                       eventLabel: v + ' consensus selected'
+                    });   
+                    lang.hitch(this, this.scenarioSelection(v, "yes"));
+                }));
+            }
+            
+            this.map.on("mouse-move", lang.hitch(this, function(evt){this.getCursorLatLong(evt);}));
             
             this.rendered = true;    
 
@@ -811,7 +866,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 lang.hitch(this, this.clearConsensusFilterMapService()); 
                 lang.hitch(this, this.refreshIdentify(this.config.url));
             }
-            
+
             this.selectSeverityCounter++;
             
             
@@ -824,12 +879,48 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                   new SpatialReference({ wkid:3857 }));
             this.map.setExtent(zoomExt);
             lang.hitch(this,this.refreshBarChart()); 
-            if (bool === "yes" && this.toggleBarriers !=false){
+            if (bool === "yes" && this.toggleBarriers !== false){
                 $("#" + this.id +"barriers").trigger("click");
                 $('#' + this.id + 'clickInstructions').show(); 
                 $("#" + this.id +"consensusResultFiltersExpander").show();
                 this.toggleBarriers = false;
             }
+            
+            
+            lang.hitch(this, this.refreshIdentify(this.config.url));
+            
+            
+            if (this.config.includeStratifiedRegions === true){
+                lang.hitch(this, this.selectStratification());
+            }
+        },
+        
+        scenarioSelection: function(v, bool){
+            //change the radar metrics displayed when sceanrio is changed
+            if (v === "diad"){var scenarioRadarMetrics = this.config.diadromousRadarMetrics;}
+            if (v === "res"){var scenarioRadarMetrics = this.config.residentRadarMetrics;}
+            if (v === "bkt"){var scenarioRadarMetrics = this.config.brookTroutRadarMetrics;}
+            lang.hitch(this, this.updateDefaultRadarMetrics(scenarioRadarMetrics));
+            lang.hitch(this,this.refreshBarChart());
+            lang.hitch(this, this.selectStratification());
+            
+            if (this.identifyIterator >0){
+               lang.hitch(this, this.radarChart());
+            }
+            lang.hitch(this, this.refreshIdentify(this.config.url));
+        },
+
+        selectStratification: function(){
+            var stratExtent = $("#" + this.id + "zoomState").val();
+            var scenario = $("#" + this.id + "scenario").val();
+            var primaryLayerKey = stratExtent + "_" + scenario;
+            var primaryLayer = this.config.stratifiedLayers[primaryLayerKey];
+            console.log("primary layer key = " + primaryLayerKey);
+            
+            this.visibleLayers = [primaryLayer]
+            this.refreshBarChart();
+            lang.hitch(this, this.clearConsensusFilterMapService());
+            lang.hitch(this, this.refreshIdentify(this.config.url));
         },
 
         refreshBarChart: function(v){
@@ -893,18 +984,22 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         filterMapService: function(filter, mapServLayer, mapServURL){
             var filterParameters = new ImageParameters();
             var layerDefs = [];
-            
             console.log("in function " +filter);
-            console.log(this.currentSeverity);
-            filterParameters.layerDefinitions = layerDefs;
+
             if (this.config.includeBarrierSeverity === true){
+            	console.log(this.currentSeverity);
                 layerDefs[this.currentSeverity] = filter;
                 filterParameters.layerIds = [this.currentSeverity];
             }
             else{
-                filterParameters.layerIds = this.obj.startingVisibleLayers;
-                layerDefs[this.obj.startingVisibleLayers] = filter;
+                //filterParameters.layerIds = this.obj.startingVisibleLayers;
+                //layerDefs[this.obj.startingVisibleLayers] = filter;
+                filterParameters.layerIds = this.visibleLayers;
+                layerDefs[this.visibleLayers] = filter;
+                
             }
+            
+            filterParameters.layerDefinitions = layerDefs;
             filterParameters.layerOption = ImageParameters.LAYER_OPTION_SHOW;
             filterParameters.transparent = true;
             var filteredMapServLayer = new esri.layers.ArcGISDynamicMapServiceLayer(mapServURL, 
@@ -1008,7 +1103,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             if ($("input[name='graphicSelectBarriers2Remove']:checked").val()=="show"){
                 this.removingBarriers = true;
                 this.activateIdentify = false;
-                  lang.hitch(this, this.refreshIdentify());
+                lang.hitch(this, this.refreshIdentify());
                 if (this.removeFeatureLayer === undefined){
                     console.log("removing barriers");
                     var removeBarrierSymbol = new SimpleMarkerSymbol().setSize(5).setColor(new Color([0,0,0]));
@@ -1019,14 +1114,18 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     this.removeFeatureLayer.setRenderer(renderer);
                     this.removeFeatureLayer.MODE_SNAPSHOT;
         
-                    // Set layer definition so barriers to remove layer only shows passability level of barriers being analyzed (e.g. Dams only)
-                    this.severityQueryDict = this.config.severityDict;
-        
-                    this.severityField = this.severityQueryDict[$('#'+ this.id + 'passability').val()];
-                    this.severityQuery = this.severityField +' = 1';
-                    console.log(this.severityQuery);
-                    this.removeFeatureLayer.setDefinitionExpression(this.severityQuery); 
-                    this.removeFeatureLayer.dataAttributes = [this.uniqueID, this.severityField];
+        			if (this.config.includeBarrierSeverity === true){
+	                    // Set layer definition so barriers to remove layer only shows passability level of barriers being analyzed (e.g. Dams only)
+	                    this.severityQueryDict = this.config.severityDict;
+	        
+	                    this.severityField = this.severityQueryDict[$('#'+ this.id + 'passability').val()];
+	                    this.severityQuery = this.severityField +' = 1';
+	                    console.log(this.severityQuery);
+	                    this.removeFeatureLayer.setDefinitionExpression(this.severityQuery); 
+	                    this.removeFeatureLayer.dataAttributes = [this.uniqueID, this.severityField];
+                   }
+                   else{this.removeFeatureLayer.dataAttributes = [this.uniqueID];}
+                    
                     this.selectedBarriers = new GraphicsLayer();
                     
                     //if there's already values in the text box, include the corresponding graphics
@@ -1511,19 +1610,22 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             $("#" + this.id + "selectRadarAttrs").html(this.radarAttrs);
             
             //this sets the starting radar metrics to be shown via config array
-            this.startingRadarMetrics = []; //array from obj 
-            for (var i=0; i<this.obj.startingRadarMetrics.length; i++){ 
-                this.startingRadarMetrics.push(this.obj.startingRadarMetrics[i]);
-            };
+            lang.hitch(this, this.updateDefaultRadarMetrics(this.obj.startingRadarMetrics));
             
-            //This set the weighted anadromous metrics to show in the radar by default 
-            // $.each(this.config.diadromous, lang.hitch(this, function(k, v){
-                // if (v >0){
-                    // this.startingRadarMetrics.push("PR" + k);
-                // }
-             // }));
+//            this.startingRadarMetrics = []; //array from obj 
+//            for (var i=0; i<this.obj.startingRadarMetrics.length; i++){ 
+//                this.startingRadarMetrics.push(this.obj.startingRadarMetrics[i]);
+//            };
+            
+//            //This set the weighted anadromous metrics to show in the radar by default 
+//            $.each(this.config.diadromous, lang.hitch(this, function(k, v){
+//                console
+//                if (v >0){
+//                    this.startingRadarMetrics.push("PR" + k);
+//                }
+//             }));
                          
-            $("#" + this.id + "selectRadarAttrs").val(this.startingRadarMetrics).trigger('chosen:updated');
+            $("#" + this.id + "selectRadarAttrs").val(this.currentRadarMetrics).trigger('chosen:updated');
             //listen for changes to selected radar metrics
             $("#"+ this.id + "selectRadarAttrs").on("change", lang.hitch(this, function(){
                 if (this.identifyIterator >0){
@@ -1537,6 +1639,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     });
                 }
             }));
+        },
+
+        updateDefaultRadarMetrics: function(defaultRadarMetrics) {
+            console.log(defaultRadarMetrics);
+            this.currentRadarMetrics = []; //array from config 
+            for (var i=0; i< defaultRadarMetrics.length; i++){ 
+                this.currentRadarMetrics.push(defaultRadarMetrics[i]);
+            };
+            $("#" + this.id + "selectRadarAttrs").val(this.currentRadarMetrics).trigger('chosen:updated');
         },
         
         radarChart: function(){
@@ -1565,7 +1676,6 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             //only show those attributes selected by user - take the text labels, not the values since the radar
             //axis use the labels
             var userFilterArray = $("#" + this.id + "selectRadarAttrs").val();
-            console.log(userFilterArray);
             this.userFilterArray=[];
             for (var i=0; i< userFilterArray.length; i++){
                 this.userFilterArray.push(this.config.metricShortNames[userFilterArray[i]]);
@@ -1631,7 +1741,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
         setUpAdditionalLayers: function(addlLayers){
             $.each(addlLayers, lang.hitch(this, function(k, v){
-                console.log("layer Name: " + k + " layerID: " + v[0] +" URL: " + v[1]);
+                // console.log("layer Name: " + k + " layerID: " + v[0] +" URL: " + v[1]);
                 var addlLayerVis = ("addlLayerVis" + v[0]);
                 this[addlLayerVis] = [];
                 var addlLayer = ("addlLayer" + v[0]);
@@ -1692,8 +1802,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }));
                 
 
-                
-                
+				
+				
                 //turn on by default if config says to
                 if (v[4] == "on" || this.obj.startingAdditionalLayers[v[0]]=="on"){$("#" + this.id + v[0]).trigger("click");}
             }));
@@ -1703,14 +1813,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 var ischecked = $("#"+ this.id + "barriers").is(':checked');
                 if (ischecked) {
                     this.map.addLayer(this.dynamicLayer);
-                    this.activateIdentify = true;
-                    lang.hitch(this, this.refreshIdentify(this.url));
+                    //Commented out so that don't turn on custom popup and radar every time primary layer is turned on
+                    //this.activateIdentify = true;
+                    //lang.hitch(this, this.refreshIdentify(this.url));
                     $("#" + this.id + "barrierstransp").show();
                 }
                 else{
                     this.map.removeLayer(this.dynamicLayer);
-                    this.activateIdentify = false;
-                    //this.refreshIdentify(undefined, undefined);
+                    //this.activateIdentify = false; 
+                    //this.refreshIdentify();
                     $("#" + this.id + "barrierstransp").hide();
                 }
             }));
@@ -1759,6 +1870,11 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }));
         },
         
+        getCursorLatLong: function(evt){
+        	var mp = webMercatorUtils.webMercatorToGeographic(evt.mapPoint);
+        	$("#latLongText").text("Cursor Lat= " + mp.y.toFixed(4) + " Long=" + mp.x.toFixed(4));
+        },
+        
         JSONToCSVConvertor: function(JSONData, ReportTitle, ShowLabel) {
             //taken from http://jsfiddle.net/hybrid13i/JXrwM/
             //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
@@ -1795,13 +1911,18 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         
         refreshIdentify: function(layerURL, layerDef) { 
             console.log("identify active = " +this.activateIdentify);
+            
             this.idLayerURL = layerURL;
             if (this.activateIdentify === false){ 
+            	//this is the generic framework identify
+            	this.allowIdentifyWhenActive = true;
                 dojo.disconnect(this.identifyClick);
             }
-            if (this.activateIdentify === true){  
-                //this.map.on("click", lang.hitch(this, this.doIdentify));
-                this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt){this.doIdentify(evt);}));    
+            if (this.activateIdentify === true){
+                console.log("visible layers = " + this.visibleLayers)
+            	//this is the custom identify w/ radar
+            	this.allowIdentifyWhenActive = false;
+                dojo.disconnect(this.identifyClick);
                     
                 //Identify functionality...     
                 this.identifyRes = new IdentifyTask(layerURL);
@@ -1810,37 +1931,50 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.identifyParams.returnGeometry = true;
                 if (layerURL === this.config.url){
                     var visLayer = this.visibleLayers;
+                    console.log("querying layer # " + visLayer);
                 }
                 else{var visLayer = 0;}
           
                 this.identifyParams.layerIds = visLayer;
                 this.identifyParams.layerDefinitions=[];
-                if (layerURL === this.config.url){
+                if (layerURL === this.config.url && this.config.includeBarrierSeverity === true){
                     var idLayer = parseInt(this.currentSeverity);
                 }
                 else{var idLayer = 0;}
                 console.log(idLayer);
                 console.log(visLayer);
-                if (layerDef != undefined){
+                if (layerDef !== undefined){
                     this.identifyParams.layerDefinitions[idLayer] = layerDef;
                     console.log("layer def= " + this.identifyParams.layerDefinitions);
+                }
+                else if (this.consensusFilter !== []){
+                    this.identifyParams.layerDefinitions[idLayer] = this.consensusFilter;
                 }
                 else{this.identifyParams.layerDefinitions = [];}
                 this.identifyParams.layerOption = IdentifyParameters.LAYER_OPTION_VISIBLE;
                 this.identifyParams.width = this.map.width;
                 this.identifyParams.height = this.map.height;
-
+                
+                this.identifyClick = dojo.connect(this.map, "onClick", lang.hitch(this, function(evt){this.doIdentify(evt);}));    
             }    
         },
             
         doIdentify: function(evt){
+            console.log(evt)
             if (this.activateIdentify === true){
+                console.log("LayerDefs = " + this.identifyParams.layerDefinitions);
+                console.log("Layer IDs = " + this.identifyParams.layerIds);
+                this.identifyRes = new IdentifyTask(this.idLayerURL);
                 this.identifyParams.geometry = evt.mapPoint;
                 this.identifyParams.mapExtent = this.map.extent;
-                this.identifyIterator = 0;      
-                this.identifyRes       
+                this.identifyIterator = 0; 
+                
+//                this.identifyRes.execute(this.identifyParams, function(idResults){console.log(idResults)})
+                
+                this.identifyRes        
                     .execute(this.identifyParams)
                     .addCallback(lang.hitch(this, function (response) {
+                        console.log(response);
                         if (this.identifyIterator ===0 && response[0].feature){
                             console.log(response[0].feature);
                             lang.hitch(this, this.displayIDResult(response[0].feature, this.identifyParams.geometry));
@@ -1849,13 +1983,14 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         this.idContent = "";
                 }));
              }        
+             
         },
         
         displayIDResult: function(idResult, point){
             this.idContent="";
             this.radarData =[];
             this.allClickData = {}; //build an object to get the all real values.  Used in RadarChart.js to make tooltip labels
-            //this.allClickData = {}
+
             $.each(idResult.attributes, lang.hitch(this, function(k, v){ 
                 this.allClickData[k] = v; 
                 if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
@@ -1871,7 +2006,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                        else{var basename = k;}
                        // console.log(k);
                        // console.log(basename);
-                       console.log(k + "=" + v);
+                       // console.log(k + "=" + v);
                     if ($.inArray(k, this.config.idBlacklist) == -1){
                         
                         //don't show indivudal metric values if consensus (average result)
@@ -1935,39 +2070,39 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }));
                 
             
-               if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
+            if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
                 var tierName = "Tier" + String(this.currentSeverity);
             }
             else {var tierName = this.config.resultTier;}
     
-			if (this.allClickData[this.config.barrierTypeField] ==="Crossing"){
-				if (this.config.includeSurveyPageLink ===true ){
-					var survDate = this.allClickData["SurveyDate"];
-					var survID = this.allClickData["surveyID"];
-					var survLink =this.config.xingSurveyURL + survID;
-					
-					if (this.allClickData[this.config.barrierTypeField]==="Crossing" && survID != ""){
-						//var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
-						var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
-					}
-					if (this.allClickData[this.config.barrierTypeField]==="Crossing" && (survID === "" || survDate === "Null")){
-						var type = 'Crossing (No Survey Available)';
-					}
-				}
-				else{var type = "Crossing";}
-			}
-			else if(this.allClickData[this.config.barrierTypeField] ==="Dam"){
-				if (this.config.includeFERC === true){
-					if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] != ""){
-						var type= 'Dam (FERC prj: ' + this.allClickData["FERC"] + ') + <br>NOI Exp Date: ' + this.allClickData["FERC_NOIExpDate"];
-					}
-					if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] ===  ""){
-						var type= 'Dam (No known FERC prj)';
-					}
-				}
-				else {var type="Dam";}
-			}
-			else{var type="Natural Barrier";}
+            if (this.allClickData[this.config.barrierTypeField] ==="Crossing"){
+                if (this.config.includeSurveyPageLink ===true ){
+                    var survDate = this.allClickData["SurveyDate"];
+                    var survID = this.allClickData["surveyID"];
+                    var survLink =this.config.xingSurveyURL + survID;
+
+                    if (this.allClickData[this.config.barrierTypeField]==="Crossing" && survID != ""){
+                            //var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
+                            var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
+                    }
+                    if (this.allClickData[this.config.barrierTypeField]==="Crossing" && (survID === "" || survDate === "Null")){
+                            var type = 'Crossing (No Survey Available)';
+                    }
+                }
+                else{var type = "Crossing";}
+            }
+            else if(this.allClickData[this.config.barrierTypeField] ==="Dam"){
+                if (this.config.includeFERC === true){
+                    if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] != ""){
+                            var type= 'Dam (FERC prj: ' + this.allClickData["FERC"] + ') + <br>NOI Exp Date: ' + this.allClickData["FERC_NOIExpDate"];
+                    }
+                    if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] ===  ""){
+                            var type= 'Dam (No known FERC prj)';
+                    }
+                }
+                else {var type="Dam";}
+            }
+            else{var type="Natural Barrier";}
             
             if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
                 var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
@@ -1978,15 +2113,35 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.clickHeader = "Name: " + this.allClickData[this.config.barrierNameField] +
             "<br/>ID: " + this.allClickData[this.config.uniqueID] +
             "<br/>Type: " + type;
-            "<br/>Anadromous Tier= " + this.allClickData[tierName];
             
-            //show this barrier's severity - above Anadromous Tier
+            
+            //show this barrier's severity
             if (this.config.includeBarrierSeverity === true){
-                this.clickHeader = this.clickHeader + "<br/>" + this.allClickData[this.config.severityField];
+                this.clickHeader += "<br/>" + this.allClickData[this.config.severityField];
+            }           
+            
+            //if included show the stratification region
+            if (this.config.includeStratifiedRegions === true){
+                var stratRegion = $("#" + this.id + "zoomState").val()
             }
+            else{var stratRegion = ""}
             
-            this.clickHeader = this.clickHeader + "<br/>Anadromous Tier= " + this.allClickData[tierName];
-            
+            //if included & not custom analysis, show the resident & BKT tiers in the radar plot header
+            if (this.idLayerURL === this.config.url){  //only include if consensus 
+                if (this.config.anadTierName != "" && this.config.anadTierName != false){
+                    this.clickHeader += "<br/>" + stratRegion + " Diadromous Tier= " + this.allClickData[this.config.anadTierName];
+                } 
+                if (this.config.residentTierName != "" && this.config.residentTierName != false){
+                    this.clickHeader += "<br/>" + stratRegion + " Resident Tier= " + this.allClickData[this.config.residentTierName];
+                }       
+                if (this.config.bktTierName != "" && this.config.bktTierName != false){
+                    this.clickHeader += "<br/>" + stratRegion + " Brook Trout Tier= " + this.allClickData[this.config.bktTierName];
+                }                   
+
+                if (this.config.includeFactSheets === true){
+                    this.clickHeader += "<br/><a target='_blank' href='plugins/barrier-prioritization-proto2/factSheets/" + this.allClickData[this.config.uniqueID] + ".pdf'>Fact Sheet</a>";
+                }
+            }
             //show iteration being used if including barrier severity, it's not the average value, and it's not a GP service result
             if (this.config.includeBarrierSeverity === true && this.currentSeverity !="0" && this.idLayerURL === this.config.url){    
                 this.clickHeader = this.clickHeader + "<br/>All values for " + radarSeverityDisplay;
@@ -1994,6 +2149,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             
             if (this.useRadar === true){
                 console.log(this.radarData);
+                console.log(this.identifyParams.layerDefinitions)
                 lang.hitch(this, this.radarChart());
                 $("#" + this.id +"radarHeader").html(this.clickHeader);
                 //hide the click instructions and show the "Assess a barrier" div if not visible - on first click
@@ -2004,7 +2160,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     if ($("#" + this.id + "exploreConsensusSection").is("visible")===false){
                         $("#" + this.id + "exploreConsensusAccord").trigger("click");
                     }
-                    if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
+                    if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") === false){
                         $("#" + this.id +"consensusRadarBlockExpander").show();
                         $("#" + this.id +"consensusRadarBlockExpander").trigger("click");
                     }
@@ -2016,19 +2172,25 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                        $("#" + this.id +"radarMetricChangerOpenExpander").show();
                        $("#" + this.id +"consensusResultFiltersExpander").show();
                 }
-               }    
+            }    
 
-            this.idContent = this.clickHeader + "<hr>" + this.idContent;
+            //if using radar plot, don't show metric values in popup
+            if (this.useRadar === true){
+                this.idContent = this.clickHeader;
+            }
+            else{this.idContent = this.clickHeader + "<hr>" + this.idContent;}
+            
             this.identJSON = {
                 title: "${" + this.uniqueID+ "} = Tier ${" + tierName +"}",
                 content: this.idContent
             };
             this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
             idResult.setInfoTemplate(this.popupInfoTemplate);    
-            this.map.infoWindow.show(point);                
+            this.map.infoWindow.show(point);            
+            this.map.infoWindow.resize(300,400); //switching to framework identify can cause this popup to resize wrong.  So be explicit    
             this.map.infoWindow.setFeatures([idResult]);
                
-        },            
+        }     
 //End of functions...
     });
 });
