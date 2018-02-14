@@ -2123,21 +2123,23 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 var stratRegion = $("#" + this.id + "zoomState").val()
             }
             else{var stratRegion = ""}
-            //if included, show the resident & BKT tiers in the radar plot header
-            if (this.config.anadTierName != "" && this.config.anadTierName != false){
-                this.clickHeader += "<br/>" + stratRegion + " Diadromous Tier= " + this.allClickData[this.config.anadTierName];
-            } 
-            if (this.config.residentTierName != "" && this.config.residentTierName != false){
-                this.clickHeader += "<br/>" + stratRegion + " Resident Tier= " + this.allClickData[this.config.residentTierName];
-            }       
-            if (this.config.bktTierName != "" && this.config.bktTierName != false){
-                this.clickHeader += "<br/>" + stratRegion + " Brook Trout Tier= " + this.allClickData[this.config.bktTierName];
-            }                   
             
-            if (this.config.includeFactSheets === true){
-            	this.clickHeader += "<br/><a target='_blank' href='plugins/barrier-prioritization-proto2/factSheets/" + this.allClickData[this.config.uniqueID] + ".pdf'>Fact Sheet</a>";
+            //if included & not custom analysis, show the resident & BKT tiers in the radar plot header
+            if (this.idLayerURL === this.config.url){  //only include if consensus 
+                if (this.config.anadTierName != "" && this.config.anadTierName != false){
+                    this.clickHeader += "<br/>" + stratRegion + " Diadromous Tier= " + this.allClickData[this.config.anadTierName];
+                } 
+                if (this.config.residentTierName != "" && this.config.residentTierName != false){
+                    this.clickHeader += "<br/>" + stratRegion + " Resident Tier= " + this.allClickData[this.config.residentTierName];
+                }       
+                if (this.config.bktTierName != "" && this.config.bktTierName != false){
+                    this.clickHeader += "<br/>" + stratRegion + " Brook Trout Tier= " + this.allClickData[this.config.bktTierName];
+                }                   
+
+                if (this.config.includeFactSheets === true){
+                    this.clickHeader += "<br/><a target='_blank' href='plugins/barrier-prioritization-proto2/factSheets/" + this.allClickData[this.config.uniqueID] + ".pdf'>Fact Sheet</a>";
+                }
             }
-                        
             //show iteration being used if including barrier severity, it's not the average value, and it's not a GP service result
             if (this.config.includeBarrierSeverity === true && this.currentSeverity !="0" && this.idLayerURL === this.config.url){    
                 this.clickHeader = this.clickHeader + "<br/>All values for " + radarSeverityDisplay;
@@ -2156,7 +2158,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     if ($("#" + this.id + "exploreConsensusSection").is("visible")===false){
                         $("#" + this.id + "exploreConsensusAccord").trigger("click");
                     }
-                    if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") == false){
+                    if ($("#" + this.id +"consensusRadarBlockExpander").is(":visible") === false){
                         $("#" + this.id +"consensusRadarBlockExpander").show();
                         $("#" + this.id +"consensusRadarBlockExpander").trigger("click");
                     }
@@ -2172,7 +2174,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
             //if using radar plot, don't show metric values in popup
             if (this.useRadar === true){
-                this.idContent = this.clickHeader
+                this.idContent = this.clickHeader;
             }
             else{this.idContent = this.clickHeader + "<hr>" + this.idContent;}
             
@@ -2186,7 +2188,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.map.infoWindow.resize(300,400); //switching to framework identify can cause this popup to resize wrong.  So be explicit    
             this.map.infoWindow.setFeatures([idResult]);
                
-        },            
+        }     
 //End of functions...
     });
 });
