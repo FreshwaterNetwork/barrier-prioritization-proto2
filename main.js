@@ -234,6 +234,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             $('#' + this.id + 'clickInstructions').hide();  
             $("#" + this.id + "consensusRadarNoUse").hide();
             
+            $(".scalebar_bottom-left").append('<div id="latLongText" class="bp_grayText" style="z-index: 35; bottom: 5px; left: 10px; width:400px "></div>')
+            
             if (this.config.includeBarrierSeverity === false){this.currentSeverity = "";}
 
             if (this.config.includeExploreConsensus === true){
@@ -1870,7 +1872,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         
         getCursorLatLong: function(evt){
         	var mp = webMercatorUtils.webMercatorToGeographic(evt.mapPoint);
-        	$("#" + this.id + "latLongText").text("Cursor Lat= " + mp.y.toFixed(4) + " Long=" + mp.x.toFixed(4));
+        	$("#latLongText").text("Cursor Lat= " + mp.y.toFixed(4) + " Long=" + mp.x.toFixed(4));
         },
         
         JSONToCSVConvertor: function(JSONData, ReportTitle, ShowLabel) {
