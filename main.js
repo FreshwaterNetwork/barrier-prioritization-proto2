@@ -316,10 +316,10 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     this.consensusSelectedField = $("#" + this.id + "filterConsensusResultsField option:selected").text();
                     this.updateConsensusResultValues(this.consensusSelectedField);
                     this.consensusResultFilterField = $("#" + this.id + "filterConsensusResultsField").val();
-                    if (this.currentSeverity !=0 && this.consensusResultFilterField.startsWith("DS") && this.config.includeBarrierSeverity===true){
+                    if (this.currentSeverity !=0 && this.consensusResultFilterField.indexOf("DS")===0 && this.config.includeBarrierSeverity===true){
                         this.consensusResultFilterField= "s" + this.currentSeverity + this.consensusResultFilterField;
                     }
-                    else if (this.currentSeverity ==0 && this.consensusResultFilterField.startsWith("DS")&& this.config.includeBarrierSeverity===true){
+                    else if (this.currentSeverity ==0 && this.consensusResultFilterField.indexOf("DS") === 0&& this.config.includeBarrierSeverity===true){
                         this.consensusResultFilterField= "s1" + this.consensusResultFilterField;
                     }
 					else{this.consensusResultFilterField=  this.consensusResultFilterField;}
@@ -1450,10 +1450,10 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         $("#" + this.id +"gpStatusReport").html(this.message);
                         this.updateMessage = this.message;
                     }
-                    if (this.message.startsWith("Succeeded at")){
+                    if (this.message.indexOf("Succeeded at") === 0){
                         $("#" + this.id +"gpStatusReport").html("Analysis completed successfully.  One moment, please...");
                     }
-                    if (this.message.startsWith("Result exceeded transfer limit of")){
+                    if (this.message.indexOf("Result exceeded transfer limit of") === 0){
                         $("#" + this.id +"gpStatusReport").html("Analysis completed successfully.  One moment, please...");
                     }
                 }
@@ -1999,7 +1999,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
                 else{var metricSev = k;}
                 //console.log(metricSev)
-                if (k.startsWith(metricSev)===true){
+                if (k.indexOf(metricSev)===0){
                     if (this.idLayerURL === this.config.url && this.config.includeBarrierSeverity === true){
                            var basename = k.replace(metricSev, "");
                        }
@@ -2056,7 +2056,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         if(parseInt(v)==0){vDisplay ="no";}
                         if(parseInt(v)==1){vDisplay ="yes";}
                     }
-                    if (k.startsWith(PRsev) === true && this.config.metricNames[basename] != undefined){
+                    if (k.indexOf(PRsev) === 0 && this.config.metricNames[basename] != undefined){
                         this.radarItem = {};
                         this.radarItem["axis"] = this.config.metricShortNames[basename];
                         this.radarItem["coreName"] = basename;
