@@ -97,7 +97,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 //Get starting barrier severity
                 this.obj.startingDisplayBarrierSeverity = $("#" + this.id + "selectSeverity").val();
 
-                //Get the state/region zoomed into & sceanrio
+                //Get the state/region zoomed into & scenario
                 this.obj.startingZoomState = $("#" + this.id + "zoomState").val();
                 this.obj.startingScenario = $("#" + this.id + "scenario").val();
                 
@@ -602,7 +602,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                $('#' + this.id + 'dlCustomCSV').on('click',lang.hitch(this,function(e) {
                     //download .csv result
                     e.preventDefault();
-                    window.location.href = this.excelResultURL;             
+                    window.location.href = this.csvResultURL;             
                 }));    
                 
                  $('#' + this.id + 'dlStats').on('click',lang.hitch(this,function(e) {
@@ -1491,9 +1491,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         },
 
         getZippedResultURL: function (result, messages){
-            console.log(result.value.url);
-            this.zippedResultURL = result.value.url; //this is accessed when the download button is pressed
-        
+            this.zippedResultURL = result.value.url; //this is accessed when the download button is pressed 
             this.customResultBaseName = (result.value.url.substr(result.value.url.lastIndexOf('/') + 1)).replace(".zip", "");
             console.log(this.customResultBaseName);
             
@@ -1506,8 +1504,9 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         },
         
         getCSVResultURL: function (result, messages){
-            console.log(result.value.url);
-            this.excelResultURL = result.value.url; //this is accessed when the download button is pressed
+            var path = result.value.url.substring(0, result.value.url.lastIndexOf('/') + 1);
+            this.csvResultURL = path + this.customResultBaseName + ".csv"; //this is accessed when the download button is pressed
+            console.log(this.csvResultURL);
             if (this.requestObject.ExportCSV===true){
                 $('#' + this.id + 'dlCustomCSV').show(); 
             }
