@@ -1483,6 +1483,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 if (this.config.tableResults === false){
                     this.gp.getResultData(jobInfo.jobId, this.config.resultsParamName, lang.hitch(this, this.displayResultMapServ));              
                 }
+                
                 this.gp.getResultData(jobInfo.jobId, this.config.zippedResultParamName, lang.hitch(this, this.getZippedResultURL));  
                 this.gp.getResultData(jobInfo.jobId, this.config.csvResultParamName, lang.hitch(this, this.getCSVResultURL));  
                 $( "#" + this.id + "customAnalysisResultsAccord" ).trigger( "click" );
@@ -1493,20 +1494,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         getZippedResultURL: function (result, messages){
             this.zippedResultURL = result.value.url; //this is accessed when the download button is pressed 
             this.customResultBaseName = (result.value.url.substr(result.value.url.lastIndexOf('/') + 1)).replace(".zip", "");
-            console.log(this.customResultBaseName);
-            
             $('#' + this.id + 'downloadCustomContainer').show();
             if (this.requestObject.Run_Watershed_Summary_Stats===true){
                 $('#' + this.id + 'dlStats').show(); 
             }
             else{$('#' + this.id + 'dlStats').hide(); }
-            
         },
         
         getCSVResultURL: function (result, messages){
-            var path = result.value.url.substring(0, result.value.url.lastIndexOf('/') + 1);
-            this.csvResultURL = path + this.customResultBaseName + ".csv"; //this is accessed when the download button is pressed
-            console.log(this.csvResultURL);
+            this.csvResultURL = result.value.url;
             if (this.requestObject.ExportCSV===true){
                 $('#' + this.id + 'dlCustomCSV').show(); 
             }
