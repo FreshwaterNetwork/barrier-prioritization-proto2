@@ -1,3 +1,5 @@
+/* global this */
+
 // Pull in your favorite version of jquery 
 require({ 
     packages: [{ name: "jquery", location: "http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/", main: "jquery.min" }] 
@@ -8,11 +10,11 @@ define([
     "dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
     './js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
      "esri/layers/ArcGISDynamicMapServiceLayer",  "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
-     "esri/renderers/SimpleRenderer", "esri/geometry/Extent", "esri/geometry/webMercatorUtils", "esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask"
+     "esri/renderers/SimpleRenderer", "esri/geometry/Extent", "esri/geometry/webMercatorUtils", "esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask", "esri/toolbars/draw", "esri/geometry/Point"
 ],
 function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, Esriapi, Clicks, RadarChart, d3, config, 
     filters, ImageParameters, FeatureLayer, GraphicsLayer, ArcGISDynamicMapServiceLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, 
-    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, webMercatorUtils, SpatialReference, Query, QueryTask) {
+    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, webMercatorUtils, SpatialReference, Query, QueryTask, Draw, Point) {
     return declare(PluginBase, {
         // The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
         toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
@@ -33,6 +35,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.layerDefs = [0];
             this.gp = new esri.tasks.Geoprocessor(this.config.gpURL);
             this.gp.setUpdateDelay(200); //status check in milliseconds;
+            this.usNetGP = new esri.tasks.Geoprocessor(this.config.usNetGPURL);
+            this.usNetGP.setUpdateDelay(200);
             
         },
         // Called after initialize at plugin startup (why the tests for undefined). Also called after deactivate when user closes app by clicking X. 
@@ -540,14 +544,14 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 
                
                 //apply starting filter for custom analysis
-                if (this.obj.startingFilter != ""){
+                if (this.obj.startingFilter !== ""){
                     $("input[name='filterBarriers']").filter('[value=yes]').prop('checked', true);
                     $("#" + this.id + "filterBuilderContainer").show();
                     $("#" + this.id + "userFilter").val(this.obj.startingFilter);
                 }
                 
                 //apply starting barriers to remove
-                if (this.obj.startingBarriers2Remove != ""){
+                if (this.obj.startingBarriers2Remove !== ""){
                     this.removingBarriers = true;
                     $("input[name='removeBarriers']").filter('[value=yes]').prop('checked', true);
                     $("#" + this.id + 'barriers2RemoveContainer').show();
@@ -837,6 +841,17 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }
             
             this.map.on("mouse-move", lang.hitch(this, function(evt){this.getCursorLatLong(evt);}));
+            
+       
+
+            lang.hitch(this, this.initUpstreamNetwork()); 
+            $("#" + this.id + "clickPointNetwork").on("click", lang.hitch(this, function(e){
+                console.log("draw active");
+                this.activateIdentify = false;
+                lang.hitch(this, this.refreshIdentify());
+                this.toolbar.activate(esri.toolbars.Draw.POINT);
+                
+            }));
             
             this.rendered = true;    
 
@@ -2134,11 +2149,11 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }                   
 
                 if (this.config.includeFactSheets === true){
-                    this.clickHeader += "<br/><a target='_blank' href='plugins/barrier-prioritization-proto2/factSheets/" + this.allClickData[this.config.uniqueID] + ".pdf'>Fact Sheet</a>";
+                    this.clickHeader += "<br/><p><a target='_blank' href='" + this.config.factSheetRoot + this.allClickData[this.config.uniqueID] + ".html'>Fact Sheet</a></p>";
                 }
             }
             //show iteration being used if including barrier severity, it's not the average value, and it's not a GP service result
-            if (this.config.includeBarrierSeverity === true && this.currentSeverity !="0" && this.idLayerURL === this.config.url){    
+            if (this.config.includeBarrierSeverity === true && this.currentSeverity != "0" && this.idLayerURL === this.config.url){    
                 this.clickHeader = this.clickHeader + "<br/>All values for " + radarSeverityDisplay;
             }
             
@@ -2179,13 +2194,73 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 title: "${" + this.uniqueID+ "} = Tier ${" + tierName +"}",
                 content: this.idContent
             };
-            this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
+            this.popupInfoTemplate = new InfoTemplate(this.identJSON);
             idResult.setInfoTemplate(this.popupInfoTemplate);    
             this.map.infoWindow.show(point);            
             this.map.infoWindow.resize(300,400); //switching to framework identify can cause this popup to resize wrong.  So be explicit    
             this.map.infoWindow.setFeatures([idResult]);
-               
-        }     
-//End of functions...
+        },
+        
+        initUpstreamNetwork: function(){
+            console.log("initializing upstream network draw tool");
+            this.toolbar = new Draw(this.map);
+            console.log(this.toolbar);
+            dojo.connect(this.toolbar, "onDrawEnd", lang.hitch(this, function(evt){this.addClickPointGraphic(evt);}));  
+
+        },
+
+        
+        addClickPointGraphic: function(pointGraphic){
+            console.log(pointGraphic);
+            this.toolbar.deactivate();
+            console.log("Draw inactive");
+            this.activateIdentify = true;
+            lang.hitch(this, this.refreshIdentify(this.url));
+            this.clickPointMarkerSymbol = new SimpleMarkerSymbol();
+            this.clickPointMarkerSymbol.setColor(new Color("#00FFFF"));
+            var pt = new Point(pointGraphic.x,pointGraphic.y, this.map.spatialReference);
+            this.clickPointGr = new Graphic(pt, this.clickPointMarkerSymbol);
+            
+            this.clickPointLayer = new GraphicsLayer();
+            this.clickPointLayer.add(this.clickPointGr);
+            console.log(this.clickPointLayer);
+            this.map.addLayer(this.clickPointLayer);
+         
+            
+            console.log(pt)   
+            var usNetworkRequestObject = {};
+            var clickPoint = {
+                    "geometryType" : "esriGeometryPoint",
+                    "features":[{"geometry":{"x":pointGraphic.x,"y":pointGraphic.y,"spatialReference":{"wkid":102100}}}],
+                    "sr":{"wkid":102100}
+                    }
+            usNetworkRequestObject["clickPoint"] =JSON.stringify(clickPoint)
+             
+                    
+            
+            
+            
+            console.log("calculating upstream network");
+            console.log(usNetworkRequestObject)
+            this.usNetGP.submitJob(usNetworkRequestObject, lang.hitch(this, this.usNetCompleteCallback), lang.hitch(this, this.statusCallback), lang.hitch(this, function(error){
+                        alert(error);
+            }));
+        },
+        
+        usNetCompleteCallback: function(jobInfo){
+            // Get result as map service -- needed for larger datasets and easy way to get legend
+            this.usNetMapServURLRoot = this.config.usNetGPURL.replace("GPServer/getUSNetwork", "MapServer/jobs/");
+            this.usNetMapServ =  (this.usNetMapServURLRoot + jobInfo.jobId );
+            console.log(this.usNetMapServ);
+            this.usNetGPResLayer = new ArcGISDynamicMapServiceLayer(this.usNetMapServ);
+            
+            console.log(this.usNetGPResLayer)
+            this.map.addLayer(this.usNetGPResLayer);
+            
+        },
+        usNetStatusCallback: function(jobInfo){
+            var status = jobInfo.jobInfo.jobStatus;
+            console.log(status)
+        }
     });
 });
