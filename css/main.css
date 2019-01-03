@@ -53,6 +53,11 @@
     align-items: center;
 }
 
+/*make the accordian panes thinner*/
+.accord .ui-accordion .ui-accordion-header {
+    padding-top: .4em !important;
+    padding-bottom: .4em !important;
+}
 
  /*css for IE 10 & 11-- don't use align-items: center since IE doesn't deal with it well*/
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
@@ -331,6 +336,10 @@
 	margin-top: -2px;
 	background: none;
 	background-color: #767676;
+}
+
+bp_buttonActive{
+    background-color: #0084bd !important;
 }
 
 /*#########################################*/
