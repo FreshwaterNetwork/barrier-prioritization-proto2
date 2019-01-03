@@ -8,6 +8,8 @@
     "includeSurveyPageLink" : false,
     "includeFERC": false,
     "includeFactSheets" : true,
+    "includeClickUSNetwork": true,
+    "includeMilesOverTime" : true,
     "factSheetRoot" : "http://maps.tnc.org/EROF_ChesapeakeFPP/FactSheets/",
     "includeStratifiedRegions" : true,
     "includeMultipleScenarios" : true,

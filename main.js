@@ -378,16 +378,17 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
             //On consensus accordion click add consensus map serv, on custom add GP results
             $('#' + this.id +'customAnalysisResultsAccord').on('click', lang.hitch(this,function(e){
                 console.log("accord click");
+                if (this.config.includeMilesOverTime === true){
+                    if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
+                }
+                if (this.config.includeClickUSNetwork === true){
+                    if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
+                    if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+                    }
                 if (this.gpResLayer){
                     this.map.removeLayer(this.dynamicLayer);
                     this.map.addLayer(this.gpResLayer);
-                    if (this.config.includeMilesOverTime === true){
-                        if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
-                    }
-                    if (this.config.includeClickUSNetwork === true){
-                        if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
-                        if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
-                    }
+    
                     this.useRadar = false;
                     this.activateIdentify=true;
                     lang.hitch(this, this.refreshIdentify(this.resMapServ));
@@ -415,6 +416,19 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 }
                 if (this.map.infoWindow){this.map.infoWindow.hide();}
             }));
+            
+            //add us network click result back in if it exists
+            if (this.config.includeClickUSNetwork === true){
+                $('#' + this.id +'getUSFuncNetAccord').on('click', lang.hitch(this,function(e){
+                    if (this.clickPointLayer){this.map.addLayer(this.clickPointLayer);}
+                    if (this.usNetGPResLayer){this.map.addLayer(this.usNetGPResLayer);}
+                
+                    if (this.config.includeMilesOverTime === true){
+                        if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
+                    }
+                
+                }));
+            }
             
             
             //set up metric weight tabs
@@ -2358,8 +2372,15 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
         },
         
         clearUsFuncNetResults: function(){
-            if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
-            if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+            if (this.clickPointLayer){
+                this.map.removeLayer(this.clickPointLayer);
+                this.clickPointLayer = "";
+            }
+            if (this.usNetGPResLayer){
+                this.map.removeLayer(this.usNetGPResLayer);
+                this.usNetGPResLayer = "";
+            }
+            
             if (this.hydrography){this.map.removeLayer(this.hydrography);}
             $("#" + this.id +"usNetworkStatusReport").html("");
         },
