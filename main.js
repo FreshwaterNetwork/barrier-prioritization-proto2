@@ -381,10 +381,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 if (this.gpResLayer){
                     this.map.removeLayer(this.dynamicLayer);
                     this.map.addLayer(this.gpResLayer);
-                    if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
-                    if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
-                    if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
-                    
+                    if (this.config.includeMilesOverTime === true){
+                        if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
+                    }
+                    if (this.config.includeClickUSNetwork === true){
+                        if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
+                        if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+                    }
                     this.useRadar = false;
                     this.activateIdentify=true;
                     lang.hitch(this, this.refreshIdentify(this.resMapServ));
@@ -393,9 +396,14 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
             }));
             $('#' + this.id +'exploreConsensusAccord').on('click', lang.hitch(this,function(e){
                 if (this.gpResLayer){this.map.removeLayer(this.gpResLayer);}
-                if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
-                if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
-                if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+                
+                    if (this.config.includeMilesOverTime === true){
+                        if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
+                    }
+                    if (this.config.includeClickUSNetwork === true){
+                        if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
+                        if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+                    }
                 
                 if (this.dynamicLayer.visible === true){this.map.removeLayer(this.dynamicLayer);}
                 this.map.addLayer(this.dynamicLayer);
@@ -852,49 +860,49 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
             }
             
             this.map.on("mouse-move", lang.hitch(this, function(evt){this.getCursorLatLong(evt);}));
-            
-       
 
-            lang.hitch(this, this.initUpstreamNetwork()); 
-            $("#" + this.id + "clickPointNetwork").on("click", lang.hitch(this, function(e){
-                console.log("draw active");
-                lang.hitch(this, this.clearUsFuncNetResults());
-                this.activateIdentify = false;
-                lang.hitch(this, this.refreshIdentify());
-                this.toolbar.activate(esri.toolbars.Draw.POINT);
-                $("#" + this.id + "clickPointNetwork").addClass("hover"); 
-                
-                //add the hydrography so the user can see it & get close
-                this.hydrography = new ArcGISDynamicMapServiceLayer(this.url);
-                this.hydrography.setVisibleLayers([6]);
-                this.map.addLayer(this.hydrography);
-                if (this.calculatingUsNet === false){
-                    $("#" + this.id +"usNetworkStatusReport").html("Be sure to click within 100m of the river line.");
-                }
-            }));
-            
-            //initialize clear us network clear results button
-            $("#" + this.id + "clearUsNetResults").on("click", lang.hitch(this, function(e){
-                    lang.hitch(this,this.clearUsFuncNetResults());      
-            }));
-            
-            lang.hitch(this, this.initTimeSlider());
-            
-            $("#map-0").append('<img id="loadingImg" src="plugins/barrier-prioritization-proto2/images/spinner2.gif" style="position:absolute; right:45%; top:45%; z-index:100;" />');
+            if (this.config.includeClickUSNetwork === true){
+                lang.hitch(this, this.initUpstreamNetwork()); 
+                $("#" + this.id + "clickPointNetwork").on("click", lang.hitch(this, function(e){
+                    console.log("draw active");
+                    lang.hitch(this, this.clearUsFuncNetResults());
+                    this.activateIdentify = false;
+                    lang.hitch(this, this.refreshIdentify());
+                    this.toolbar.activate(esri.toolbars.Draw.POINT);
+                    $("#" + this.id + "clickPointNetwork").addClass("hover"); 
 
-            this.loading = dom.byId("loadingImg");
-            hideLoading();
-            on(this.map, "update-start", showLoading);
-            on(this.map, "update-end", hideLoading);
-
-            function showLoading() {
-                console.log("loading")
-                $("#loadingImg").show();
+                    //add the hydrography so the user can see it & get close
+                    this.hydrography = new ArcGISDynamicMapServiceLayer(this.url);
+                    this.hydrography.setVisibleLayers([6]);
+                    this.map.addLayer(this.hydrography);
+                    if (this.calculatingUsNet === false){
+                        $("#" + this.id +"usNetworkStatusReport").html("Be sure to click within 100m of the river line.");
+                    }
+                }));
+                //initialize clear us network clear results button
+                $("#" + this.id + "clearUsNetResults").on("click", lang.hitch(this, function(e){
+                        lang.hitch(this,this.clearUsFuncNetResults());      
+                }));
             }
+            
+            if (this.config.includeMilesOverTime === true){
+                lang.hitch(this, this.initTimeSlider());
+                $("#map-0").append('<img id="loadingImg" src="plugins/barrier-prioritization-proto2/images/spinner2.gif" style="position:absolute; right:45%; top:45%; z-index:100;" />');
 
-            function hideLoading(error) {
-                console.log("done loading")
-                $("#loadingImg").hide();
+                this.loading = dom.byId("loadingImg");
+                hideLoading();
+                on(this.map, "update-start", showLoading);
+                on(this.map, "update-end", hideLoading);
+
+                function showLoading() {
+                    console.log("loading")
+                    $("#loadingImg").show();
+                }
+
+                function hideLoading(error) {
+                    console.log("done loading")
+                    $("#loadingImg").hide();
+                }
             }
             this.rendered = true;    
 
