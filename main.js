@@ -1,18 +1,21 @@
+/* global this */
+
 // Pull in your favorite version of jquery 
 require({ 
     packages: [{ name: "jquery", location: "http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/", main: "jquery.min" }] 
 });
 // Bring in dojo and javascript api classes as well as varObject.json, js files, and content.html
 define([
-    "dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Color",  "dojo/_base/array", "framework/PluginBase", "dijit/layout/ContentPane", "dojo/dom", 
+    "dojo/_base/declare", "dojo/_base/lang", "dojo/_base/Color",  "dojo/_base/array", "dojo/on", "framework/PluginBase", "dijit/layout/ContentPane", "dojo/dom", 
     "dojo/dom-style", "dojo/dom-geometry", "dojo/text!./obj.json", "dojo/text!./html/content.html", './js/esriapi', './js/clicks', './js/RadarChart',
     './js/d3.min', 'dojo/text!./config.json', 'dojo/text!./filters.json', "esri/layers/ImageParameters", "esri/layers/FeatureLayer", "esri/layers/GraphicsLayer",
      "esri/layers/ArcGISDynamicMapServiceLayer",  "esri/graphic", "esri/symbols/SimpleMarkerSymbol", "esri/tasks/Geoprocessor", "esri/tasks/IdentifyTask", "esri/tasks/IdentifyParameters", "esri/InfoTemplate",
-     "esri/renderers/SimpleRenderer", "esri/geometry/Extent", "esri/geometry/webMercatorUtils", "esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask"
+     "esri/renderers/SimpleRenderer", "esri/geometry/Extent", "esri/geometry/webMercatorUtils", "esri/SpatialReference","esri/tasks/query", "esri/tasks/QueryTask", 
+     "esri/toolbars/draw", "esri/geometry/Point", "esri/TimeExtent", "esri/dijit/TimeSlider"
 ],
-function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, Esriapi, Clicks, RadarChart, d3, config, 
+function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, dom, domStyle, domGeom, obj, content, Esriapi, Clicks, RadarChart, d3, config, 
     filters, ImageParameters, FeatureLayer, GraphicsLayer, ArcGISDynamicMapServiceLayer, Graphic, SimpleMarkerSymbol, Geoprocessor, IdentifyTask, 
-    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, webMercatorUtils, SpatialReference, Query, QueryTask) {
+    IdentifyParameters, InfoTemplate, SimpleRenderer, Extent, webMercatorUtils, SpatialReference, Query, QueryTask, Draw, Point, TimeExtent, TimeSlider) {
     return declare(PluginBase, {
         // The height and width are set here when an infographic is defined. When the user click Continue it rebuilds the app window with whatever you put in.
         toolbarName: "Aquatic Barrier Prioritization", showServiceLayersInLegend: true, allowIdentifyWhenActive: true, rendered: false, resizable: false,
@@ -33,6 +36,8 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.layerDefs = [0];
             this.gp = new esri.tasks.Geoprocessor(this.config.gpURL);
             this.gp.setUpdateDelay(200); //status check in milliseconds;
+            this.usNetGP = new esri.tasks.Geoprocessor(this.config.usNetGPURL);
+            this.usNetGP.setUpdateDelay(200);
             
         },
         // Called after initialize at plugin startup (why the tests for undefined). Also called after deactivate when user closes app by clicking X. 
@@ -51,6 +56,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.rendered = true;                            
                 this.render();
                 $(this.printButton).hide();
+                
             }else{
                 
                 $('#' + this.id).parent().parent().css('display', 'flex');
@@ -216,15 +222,18 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             this.refreshBarChartCounter = 0;
             this.activateIdentify = true;
             lang.hitch(this, this.refreshIdentify(this.url));
+            this.calculatingUsNet = false;
+            this.timeSliderInit = false;
 
             
                
             //hide elements until they're needed 
             $('#' + this.id + 'gpSumStatsTableDivContainer').hide(); 
             $('#' + this.id + 'downloadCustomContainer').hide();                 
-            $("#" + this.id +"consensusRadarBlockExpander").hide();
-            $("#" + this.id +"radarMetricChangerOpenExpander").hide();
-            $("#" + this.id +"consensusResultFiltersExpander").hide();
+            $("#" + this.id + "consensusRadarBlockExpander").hide();
+            $("#" + this.id + "radarMetricChangerOpenExpander").hide();
+            $("#" + this.id + "consensusResultFiltersExpander").hide();
+            $("#" + this.id + "clearUsNetResults").hide();
             if (this.config.includeBarrierSeverity === false){
                 $("#" + this.id +"stateStatsExpander").show();
             }
@@ -234,7 +243,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             $('#' + this.id + 'clickInstructions').hide();  
             $("#" + this.id + "consensusRadarNoUse").hide();
             
-            $(".scalebar_bottom-left").append('<div id="latLongText" class="bp_grayText" style="z-index: 35; bottom: 5px; left: 10px; width:400px "></div>')
+            $(".scalebar_bottom-left").append('<div id="latLongText" class="bp_grayText" style="z-index: 35; bottom: 5px; left: 10px; width:400px "></div>');
             
             if (this.config.includeBarrierSeverity === false){this.currentSeverity = "";}
 
@@ -292,7 +301,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.updateConsensusResultValues = (lang.hitch(this,function (field){    
                     this.fieldValsList = "";
                     for (var i=0; i < this.filters.resultFilters.resultValuesTable[field].length; i++){
-                        if (this.filters.resultFilters.resultValuesTable[field][i].resultValuePrettyName != undefined){
+                        if (this.filters.resultFilters.resultValuesTable[field][i].resultValuePrettyName !== undefined){
                             this.fieldValsList += "<option value='" + this.filters.resultFilters.resultValuesTable[field][i].resultValue + "'>" + this.filters.resultFilters.resultValuesTable[field][i].resultValuePrettyName + "</option>";
                         }
                         else{
@@ -303,7 +312,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         $(".chosen").trigger("chosen:updated");
                         this.consensusResultFilterValue = $("#" + this.id + "filterConsensusResultsValue").val();
                         //set operator to = as a default
-                        if (this.consensusResultFilterOperator == ""){
+                        if (this.consensusResultFilterOperator === ""){
                             $('#'+ this.id +"filterConsensusResultsOperator").val($('#'+ this.id +"filterConsensusResultsOperator option:eq(1)").val());
                              $(".chosen").trigger("chosen:updated");
                             this.consensusResultFilterOperator = $("#" + this.id + "filterConsensusResultsOperator").val();
@@ -316,13 +325,13 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     this.consensusSelectedField = $("#" + this.id + "filterConsensusResultsField option:selected").text();
                     this.updateConsensusResultValues(this.consensusSelectedField);
                     this.consensusResultFilterField = $("#" + this.id + "filterConsensusResultsField").val();
-                    if (this.currentSeverity !=0 && this.consensusResultFilterField.indexOf("DS")===0 && this.config.includeBarrierSeverity===true){
+                    if (this.currentSeverity !== 0 && this.consensusResultFilterField.indexOf("DS")===0 && this.config.includeBarrierSeverity===true){
                         this.consensusResultFilterField= "s" + this.currentSeverity + this.consensusResultFilterField;
                     }
-                    else if (this.currentSeverity ==0 && this.consensusResultFilterField.indexOf("DS") === 0&& this.config.includeBarrierSeverity===true){
+                    else if (this.currentSeverity === 0 && this.consensusResultFilterField.indexOf("DS") === 0&& this.config.includeBarrierSeverity===true){
                         this.consensusResultFilterField= "s1" + this.consensusResultFilterField;
                     }
-					else{this.consensusResultFilterField=  this.consensusResultFilterField;}
+                    else{this.consensusResultFilterField =  this.consensusResultFilterField;}
                     
                     $("#" + this.id + "resultsConsensusFilter").val( this.consensusResultFilterField + ' ' + this.consensusResultFilterOperator + " (" + this.consensusResultFilterValue + ")");
                 }));
@@ -346,7 +355,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 $("#" + this.id +"applyResultConsensusFilterButton").on('click',lang.hitch(this,function(e){
                     this.consensusCustomFilter = $("#" + this.id + "resultsConsensusFilter").val();         
                     this.map.removeLayer(this.dynamicLayer);
-                    if (this.consensusSliderFilter != "" && this.consensusSliderFilter != undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
+                    if (this.consensusSliderFilter !== "" && this.consensusSliderFilter !== undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
                     else{this.consensusFilter = this.consensusCustomFilter;}
                     console.log(this.consensusFilter);
                     this.dynamicLayer = this.filterMapService(this.consensusFilter, this.dynamicLayer, this.config.url); 
@@ -369,9 +378,17 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             //On consensus accordion click add consensus map serv, on custom add GP results
             $('#' + this.id +'customAnalysisResultsAccord').on('click', lang.hitch(this,function(e){
                 console.log("accord click");
+                if (this.config.includeMilesOverTime === true){
+                    if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
+                }
+                if (this.config.includeClickUSNetwork === true){
+                    if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
+                    if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+                    }
                 if (this.gpResLayer){
                     this.map.removeLayer(this.dynamicLayer);
                     this.map.addLayer(this.gpResLayer);
+    
                     this.useRadar = false;
                     this.activateIdentify=true;
                     lang.hitch(this, this.refreshIdentify(this.resMapServ));
@@ -379,9 +396,16 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }
             }));
             $('#' + this.id +'exploreConsensusAccord').on('click', lang.hitch(this,function(e){
-                if (this.gpResLayer){
-                    this.map.removeLayer(this.gpResLayer);
-                }
+                if (this.gpResLayer){this.map.removeLayer(this.gpResLayer);}
+                
+                    if (this.config.includeMilesOverTime === true){
+                        if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
+                    }
+                    if (this.config.includeClickUSNetwork === true){
+                        if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
+                        if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+                    }
+                
                 if (this.dynamicLayer.visible === true){this.map.removeLayer(this.dynamicLayer);}
                 this.map.addLayer(this.dynamicLayer);
                 this.useRadar = true;
@@ -392,6 +416,19 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }
                 if (this.map.infoWindow){this.map.infoWindow.hide();}
             }));
+            
+            //add us network click result back in if it exists
+            if (this.config.includeClickUSNetwork === true){
+                $('#' + this.id +'getUSFuncNetAccord').on('click', lang.hitch(this,function(e){
+                    if (this.clickPointLayer){this.map.addLayer(this.clickPointLayer);}
+                    if (this.usNetGPResLayer){this.map.addLayer(this.usNetGPResLayer);}
+                
+                    if (this.config.includeMilesOverTime === true){
+                        if (this.mileageLayer){this.map.removeLayer(this.mileageLayer);}
+                    }
+                
+                }));
+            }
             
             
             //set up metric weight tabs
@@ -412,11 +449,11 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             $("input[name='useConsensusWeights']").on('change',lang.hitch(this,function(){
                 $('#'+ this.id +"customWeightsDiv").animate({height:"toggle"}, 500);
                 //if "consensus" is checked, fill in consensus values
-                if ($("input[name='useConsensusWeights']:checked").val()=="yes"){
+                if ($("input[name='useConsensusWeights']:checked").val()=== "yes"){
                     lang.hitch(this, this.applyWeights(this.obj.startingWeights));
                     lang.hitch(this, this.getCurrentWeights());
                 }
-                if ($("input[name='useConsensusWeights']:checked").val()=="no"){
+                if ($("input[name='useConsensusWeights']:checked").val()=== "no"){
                     lang.hitch(this, this.applyWeights(this.config.diadromous));
                 }
             }));
@@ -424,11 +461,11 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             //set up listener for change to metric weight inputs
             $("input[id^=" +  this.id + 'weightIn]').on('input', lang.hitch(this, function(e){             
                 e.currentTarget.value = parseInt(e.currentTarget.value);           
-                if (isNaN(parseFloat(e.currentTarget.value)) == true){e.currentTarget.value = 0;}
+                if (isNaN(parseFloat(e.currentTarget.value)) === true){e.currentTarget.value = 0;}
                 lang.hitch(this, this.getCurrentWeights());
             }));
             
-            if (this.config.includeCustomAnalysis == true){
+            if (this.config.includeCustomAnalysis === true){
                 //FILTER BUILDER listener to fill in filter as drop downs are used
                 //Only show the filter build inputs if yes is selected
                 $('#'+ this.id +"filterBuilderContainer").hide();
@@ -436,7 +473,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     $('#'+ this.id +"filterBuilderContainer").animate({height:"toggle"}, 500);
                     
                     //if "No" is selected reset the values
-                    if ($("input[name='filterBarriers']:checked").val()=="no"){
+                    if ($("input[name='filterBarriers']:checked").val() === "no"){
                          $("#" + this.id + "userFilter").val("");
                          $("#" + this.id + "filterBuildField").val('').trigger('chosen:updated');
                          $("#" + this.id + "filterBuildOperator").val('').trigger('chosen:updated');
@@ -455,7 +492,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.updateMetricValues = (lang.hitch(this,function (metric){    
                     this.metricValsList = "";
                     for (var i=0; i < this.filters.inputFilters.metricValuesTable[metric].length; i++){
-                        if (this.filters.inputFilters.metricValuesTable[metric][i].metricValuePrettyName !=undefined){
+                        if (this.filters.inputFilters.metricValuesTable[metric][i].metricValuePrettyName !== undefined){
                             this.metricValsList += "<option value='" + this.filters.inputFilters.metricValuesTable[metric][i].metricValue + "'>" + this.filters.inputFilters.metricValuesTable[metric][i].metricValuePrettyName + "</option>";
                         }
                         else{
@@ -467,7 +504,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     $(".chosen").trigger("chosen:updated");
                 
                     //set operator to = as a default
-                    if (this.filterOperator == ""){
+                    if (this.filterOperator === ""){
                         //$("#" + this.id + "filterBuildOperator").val("=");
                         $('#'+ this.id +"filterBuildOperator").val($('#'+ this.id +"filterBuildOperator option:eq(1)").val());
                         $(".chosen").trigger("chosen:updated");
@@ -501,7 +538,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 $('#'+ this.id +"barriers2RemoveContainer").hide();
                 $("input[name='removeBarriers']").on('change',lang.hitch(this,function(){
                     $('#'+ this.id +"barriers2RemoveContainer").animate({height:"toggle"}, 500);
-                    if ($("input[name='removeBarriers']:checked").val()=="no"){
+                    if ($("input[name='removeBarriers']:checked").val()==="no"){
                         if (this.removeFeatureLayer){this.map.removeLayer(this.removeFeatureLayer);}
                         if (this.selectedBarriers){this.map.removeLayer(this.selectedBarriers);}
                         $("#" + this.id + "barriers2Remove").val("");
@@ -540,14 +577,14 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 
                
                 //apply starting filter for custom analysis
-                if (this.obj.startingFilter != ""){
+                if (this.obj.startingFilter !== ""){
                     $("input[name='filterBarriers']").filter('[value=yes]').prop('checked', true);
                     $("#" + this.id + "filterBuilderContainer").show();
                     $("#" + this.id + "userFilter").val(this.obj.startingFilter);
                 }
                 
                 //apply starting barriers to remove
-                if (this.obj.startingBarriers2Remove != ""){
+                if (this.obj.startingBarriers2Remove !== ""){
                     this.removingBarriers = true;
                     $("input[name='removeBarriers']").filter('[value=yes]').prop('checked', true);
                     $("#" + this.id + 'barriers2RemoveContainer').show();
@@ -556,7 +593,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }
     
                 //apply starting summary stats inputs
-                if (this.obj.startingSummarizeBy != "" ||this.obj.startingSummaryStatField != ""){
+                if (this.obj.startingSummarizeBy !== "" ||this.obj.startingSummaryStatField !== ""){
                     $("input[name='runSumStats']").filter('[value=yes]').prop('checked', true);
                     $("#" + this.id + "sumStatsInputContainer").show();
                     $("#" + this.id + "summarizeBy").val(this.obj.startingSummarizeBy).trigger("chosen:updated");    
@@ -581,7 +618,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                             this.requestObjectPretty[key] = this.config.metricNames[value];
                          } 
                          //don't include sort order & log transform in the downloaded inputs
-                         else if (key.indexOf("Order") == -1 && key.indexOf("Log") == -1){
+                         else if (key.indexOf("Order") === -1 && key.indexOf("Log") === -1){
                              this.requestObjectPretty[key] = this.requestObject[key];
                          }
                      }
@@ -616,7 +653,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             
             //apply starting barrier severity
             if (this.obj.startingDisplayBarrierSeverity !== ""){
-                lang.hitch(this, this.selectBarrSeverity(this.obj.startingDisplayBarrierSeverity))
+                lang.hitch(this, this.selectBarrSeverity(this.obj.startingDisplayBarrierSeverity));
             }
                     
             //apply starting zoom state 
@@ -653,7 +690,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     this.filterMapService(this.obj.startingConsensusFilter, this.dynamicLayer, this.config.url); 
                     
                     //set the severity dropdown
-                    if (this.config.includeBarrierSeverity == true){
+                    if (this.config.includeBarrierSeverity === true){
                         $("#" + this.id + "selectSeverity").val(parseInt(this.visibleLayers)).trigger('chosen:updated');
                     }
                    
@@ -681,7 +718,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 $("#" + this.id + "-" +  this.expandContainers[i] + "Info").hide();
                 $("#" + this.id + this.expandContainers[i] + "Expander").css( 'cursor', 'pointer' );
                 if (this.config.includeBarrierSeverity === true){
-                    if (this.expandContainers[i] == "severitySelection"){
+                    if (this.expandContainers[i] === "severitySelection"){
                         $("#" + this.id + this.expandContainers[i] + "Container").animate({height:"toggle"}, 500);
                         $("#" + this.id + "-severitySelectionInfo").show();
                         
@@ -738,7 +775,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
             //handle exapnder separately for those div to keep open if another div is clicked
             this.expandContainersOpen = ["radarMetricChangerOpen", "consensusResultFilterSliderTierOpen", 
-            "consensusResultFilterSliderSeverityOpen", "consensusResultCustomFilterOpen", ];
+            "consensusResultFilterSliderSeverityOpen", "consensusResultCustomFilterOpen"];
             for (var i=0; i<this.expandContainersOpen.length; i++){
                 $("#" + this.id + this.expandContainersOpen[i] + "Container").hide();
                 $("#" + this.id + this.expandContainersOpen[i] + "Expander").css( 'cursor', 'pointer' );
@@ -746,7 +783,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
             //on expander click loop through all expanders -- open this one and close all the others.  Also switch +/- 
             $('.bp_expanderOpen').on("click", lang.hitch(this, function(e){
-                console.log("expander")
+                console.log("expander");
                 var expander = e.currentTarget.id;
                 var container = e.currentTarget.id.replace("Expander", "Container");
                 for (var i=0; i<this.expandContainersOpen.length; i++){
@@ -786,7 +823,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 $("#" + this.id + "selectSeverity").chosen({allow_single_deselect:true, width:"220px"}).change(lang.hitch(this, function(c){
                     var v = c.target.value;
                     // check for a deselect
-                    if (v.length == 0){v = "none";}
+                    if (v.length === 0){v = "none";}
                     console.log(v);    
                     $("#" + this.id +"stateStatsExpander").show();
                     
@@ -837,7 +874,50 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }
             
             this.map.on("mouse-move", lang.hitch(this, function(evt){this.getCursorLatLong(evt);}));
+
+            if (this.config.includeClickUSNetwork === true){
+                lang.hitch(this, this.initUpstreamNetwork()); 
+                $("#" + this.id + "clickPointNetwork").on("click", lang.hitch(this, function(e){
+                    console.log("draw active");
+                    lang.hitch(this, this.clearUsFuncNetResults());
+                    this.activateIdentify = false;
+                    lang.hitch(this, this.refreshIdentify());
+                    this.toolbar.activate(esri.toolbars.Draw.POINT);
+                    $("#" + this.id + "clickPointNetwork").addClass("hover"); 
+
+                    //add the hydrography so the user can see it & get close
+                    this.hydrography = new ArcGISDynamicMapServiceLayer(this.url);
+                    this.hydrography.setVisibleLayers([6]);
+                    this.map.addLayer(this.hydrography);
+                    if (this.calculatingUsNet === false){
+                        $("#" + this.id +"usNetworkStatusReport").html("Be sure to click within 100m of the river line.");
+                    }
+                }));
+                //initialize clear us network clear results button
+                $("#" + this.id + "clearUsNetResults").on("click", lang.hitch(this, function(e){
+                        lang.hitch(this,this.clearUsFuncNetResults());      
+                }));
+            }
             
+            if (this.config.includeMilesOverTime === true){
+                lang.hitch(this, this.initTimeSlider());
+                $("#map-0").append('<img id="loadingImg" src="plugins/barrier-prioritization-proto2/images/spinner2.gif" style="position:absolute; right:45%; top:45%; z-index:100;" />');
+
+                this.loading = dom.byId("loadingImg");
+                hideLoading();
+                on(this.map, "update-start", showLoading);
+                on(this.map, "update-end", hideLoading);
+
+                function showLoading() {
+                    console.log("loading")
+                    $("#loadingImg").show();
+                }
+
+                function hideLoading(error) {
+                    console.log("done loading")
+                    $("#loadingImg").hide();
+                }
+            }
             this.rendered = true;    
 
         },    
@@ -917,7 +997,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             var primaryLayer = this.config.stratifiedLayers[primaryLayerKey];
             console.log("primary layer key = " + primaryLayerKey);
             
-            this.visibleLayers = [primaryLayer]
+            this.visibleLayers = [primaryLayer];
             this.refreshBarChart();
             lang.hitch(this, this.clearConsensusFilterMapService());
             lang.hitch(this, this.refreshIdentify(this.config.url));
@@ -930,7 +1010,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             $("#" + this.id + "avgNetSpan").text(this.round(this.config.zoomTo[v][1]["avgNetwork"+String(this.currentSeverity)]*0.000621371, 2));
             var avgNetRound = this.round(this.config.zoomTo[v][1]["avgNetwork"+String(this.currentSeverity)]*0.000621371, 2);    
 
-            if (this.currentSeverity != "6"){
+            if (this.currentSeverity !== "6"){
                 if (this.currentSeverity ==="0"){
                     $("#" + this.id + "xingBarChartLabel").text("# Total Crossings");
                 }
@@ -947,13 +1027,13 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 $("#" + this.id + "barChartCrossings").hide();
                 //$("#" + this.id + "xingBarChartLabel").hide();
             }
-            if (v != "Region"){
+            if (v !== "Region"){
                 lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo[v][1]["dams"], this.config.zoomToMax.MaxSubRegion.dams, '#0000b4'));
                 lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo[v][1]["crossings"+String(this.currentSeverity)], this.config.zoomToMax.MaxSubRegion.crossings, '#0082ca'));
                 lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, this.config.zoomToMax.MaxSubRegion.avgNetwork*0.000621371, '#0094ff'));    
             }
             //use different max values for the whole region
-            if (v == "Region"){
+            if (v === "Region"){
                 lang.hitch(this, this.barChart("Dams", this.id + "barChartDams",  this.config.zoomTo["Region"][1]["dams"], this.config.zoomToMax.MaxRegion.dams, '#0000b4'));
                 lang.hitch(this, this.barChart("Crossings", this.id + "barChartCrossings", this.config.zoomTo["Region"][1]["crossings"+String(this.currentSeverity)], this.config.zoomToMax.MaxRegion.crossings, '#0082ca'));
                 lang.hitch(this, this.barChart("Avg Network (miles)", this.id + "barChartAvgNetwork", avgNetRound, this.config.zoomToMax.MaxRegion.avgNetwork*0.000621371, '#0094ff'));    
@@ -978,8 +1058,13 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         },
         
         round: function (value, decimals) {
-          return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+            return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
         },
+        
+        roundWithCommas: function (value, decimals) {
+            x = Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	},
         
         filterMapService: function(filter, mapServLayer, mapServURL){
             var filterParameters = new ImageParameters();
@@ -1065,7 +1150,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.consensusSliderFilter +=  " AND " + this.config.severityField + " IN (" + this.consensusSeverityRangeStr + ")";
             }
             this.map.removeLayer(this.dynamicLayer);
-            if (this.consensusCustomFilter !="" && this.consensusCustomFilter  != undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
+            if (this.consensusCustomFilter !=="" && this.consensusCustomFilter  !== undefined){this.consensusFilter = this.consensusSliderFilter + " AND " + this.consensusCustomFilter;}
             else{this.consensusFilter = this.consensusSliderFilter;}
                    
             this.dynamicLayer = this.filterMapService(this.consensusFilter, this.dynamicLayer, this.config.url);
@@ -1092,15 +1177,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 
 
         selectRemovalBarriers: function() {  
-            if($("input[name='graphicSelectBarriers2Remove']:checked").val()=="yes"){this.filterBarr = true;}
+            if($("input[name='graphicSelectBarriers2Remove']:checked").val()==="yes"){this.filterBarr = true;}
                
-            if ($("input[name='graphicSelectBarriers2Remove']:checked").val()=="hide"){
+            if ($("input[name='graphicSelectBarriers2Remove']:checked").val()==="hide"){
                 if (this.removeFeatureLayer){
                     this.map.removeLayer(this.removeFeatureLayer);
                     this.map.removeLayer(this.selectedBarriers);
                 }
              }
-            if ($("input[name='graphicSelectBarriers2Remove']:checked").val()=="show"){
+            if ($("input[name='graphicSelectBarriers2Remove']:checked").val()==="show"){
                 this.removingBarriers = true;
                 this.activateIdentify = false;
                 lang.hitch(this, this.refreshIdentify());
@@ -1129,7 +1214,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     this.selectedBarriers = new GraphicsLayer();
                     
                     //if there's already values in the text box, include the corresponding graphics
-                    if ($("#" + this.id + 'barriers2Remove').val() != ''){
+                    if ($("#" + this.id + 'barriers2Remove').val() !== ''){
                         lang.hitch(this, this.addSavedBarriersToRemove());
                     }
                     
@@ -1137,11 +1222,11 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         this.currID = e.graphic.attributes[this.uniqueID];
                         console.log(this.currID);
                         for (i = 0; i< this.removeFeatureLayer.graphics.length; i++){  
-                            if (this.alreadySelBarr2Remove != undefined && this.alreadySelBarr2Remove.indexOf(this.currID)>=0){
+                            if (this.alreadySelBarr2Remove !== undefined && this.alreadySelBarr2Remove.indexOf(this.currID)>=0){
                                 console.log(this.currID + "is already selected");
                             }               
                             //the following statement check if each graphic is either the one clicked on or in the list of previously selected 
-                            if (this.removeFeatureLayer.graphics[i].attributes[this.uniqueID] == this.currID ){
+                            if (this.removeFeatureLayer.graphics[i].attributes[this.uniqueID] === this.currID ){
                                 this.barriers2RemoveCount ++;  
                     
                                 if (this.barriers2RemoveCount <= 10) {
@@ -1160,7 +1245,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                                             this.barriers2RemoveCount --;
                                         }
                                         this.workingRemoveBarriersString = "'" + this.workingRemoveBarriers.join("', '") + "'";
-                                        if (this.workingRemoveBarriersString == "''"){this.workingRemoveBarriersString = "";}
+                                        if (this.workingRemoveBarriersString === "''"){this.workingRemoveBarriersString = "";}
                                         $("#" + this.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
                                         this.selectedBarriers.remove(e.graphic);
                                     }));    
@@ -1214,7 +1299,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         this.barriers2RemoveCount --;
                     }
                     this.workingRemoveBarriersString = "'" + this.workingRemoveBarriers.join("', '") + "'";
-                    if (this.workingRemoveBarriersString == "''"){this.workingRemoveBarriersString = "";}
+                    if (this.workingRemoveBarriersString === "''"){this.workingRemoveBarriersString = "";}
                     $("#" + this.id + 'barriers2Remove').val(this.workingRemoveBarriersString);
                     this.selectedBarriers.remove(e.graphic);
                 })); 
@@ -1282,15 +1367,15 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 }));
                 this.sumWeights = this.metricWeightCalculator(this.gpVals);      
                 $('#'+ this.id + "bp_currWeight").text(this.sumWeights);
-                if (this.sumWeights !=100){$('#'+ this.id +"bp_currWeight").css('color', 'red');}
-                if (this.sumWeights ==100){$('#'+ this.id +"bp_currWeight").css('color', 'green');} 
+                if (this.sumWeights !==100){$('#'+ this.id +"bp_currWeight").css('color', 'red');}
+                if (this.sumWeights ===100){$('#'+ this.id +"bp_currWeight").css('color', 'green');} 
             }
         },
         getCurrentWeights: function(){
                 this.gpVals = {};
                 this.weights = $("input[id^=" + this.id + "weightIn]").each(lang.hitch(this, function(i, v){
-                    if (isNaN(parseFloat(v.value)) == true){v.id = 0;} 
-                    if (v.value ==""){v.id = 0;}
+                    if (isNaN(parseFloat(v.value)) === true){v.id = 0;} 
+                    if (v.value ===""){v.id = 0;}
                     else{this.gpVals[v.id] = v.value;}      
                     this.gpVals[v.id] = v.value;
                     if (parseFloat(v.value) > 0){$('#' + v.id).addClass('bp_weighted');}
@@ -1300,10 +1385,10 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 this.sumWeights = this.metricWeightCalculator(this.gpVals);
                 //console.log(this.sumWeights);
                 $('#'+ this.id + "currWeight").text(this.sumWeights);
-                if (this.sumWeights !=100){
+                if (this.sumWeights !==100){
                     $('#'+ this.id +"currWeight").css('color', 'red');
                 }
-                if (this.sumWeights ==100){
+                if (this.sumWeights ===100){
                     $('#'+ this.id +"currWeight").css('color', 'green');
                 } 
         },
@@ -1313,7 +1398,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 //prepare and pass the GP request object to gpURL
         submit: function(){
             this.getCurrentWeights();
-            if (this.sumWeights != 100){
+            if (this.sumWeights !== 100){
                 alert("Metric weights must sum to 100");
             }
             else{
@@ -1344,25 +1429,25 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                
                
                 this.requestObject = {};                
-                if($("input[name='filterBarriers']:checked").val()=="yes"){this.filterBarr = true;}
+                if($("input[name='filterBarriers']:checked").val()==="yes"){this.filterBarr = true;}
                 else{this.filterBarr = false;}
             
                 //if passability option is an input get it
-                if (this.config.includePassabilityOption == true){
+                if (this.config.includePassabilityOption === true){
                     this.passability = $("#" + this.id + "passability").val();
-	                if ($("input[name='takeAverage']:checked").val()=="yes"){this.takeAverage = true;}
+	                if ($("input[name='takeAverage']:checked").val()==="yes"){this.takeAverage = true;}
 	                else{this.takeAverage = false;}
                 }
 
-                if ($("#" + this.id + "userFilter").val() != ""){
+                if ($("#" + this.id + "userFilter").val() !== ""){
                   this.filter = $("#" + this.id + "userFilter").val();
                 }
                 else{this.filter = "";}
-                if ($("input[name='removeBarriers']:checked").val()=="yes"){this.removeBarr = true;}
+                if ($("input[name='removeBarriers']:checked").val()==="yes"){this.removeBarr = true;}
                 else{this.removeBarr = false;}
                 this.removeIDs = $("#" + this.id + "barriers2Remove").val();
                 
-                if ($("input[name='runSumStats']:checked").val()=="yes"){this.runSumStats = true;}
+                if ($("input[name='runSumStats']:checked").val()==="yes"){this.runSumStats = true;}
                 else{this.runSumStats = false;} 
                 this.summarizeBy = $("#" + this.id + "summarizeBy").val();
                 this.sumStatField = $("#" + this.id + "summaryStatField").val();
@@ -1393,7 +1478,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         var mNum = "Metric_" + this.weightIterator;
                         var mWeight = mNum + "_Weight";
                         var mOrder = mNum + "_Order";
-                        if (this.config.gpServIncludesLogTransform == true){
+                        if (this.config.gpServIncludesLogTransform === true){
                             var mLogTrans = mNum + "_Log_Transform";
                         }
                         var m = metric.replace(this.id + "weightIn-", "");
@@ -1401,11 +1486,11 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                         this.requestObject[mNum] = m;
                         this.requestObject[mWeight] = weight;
                         this.requestObject[mOrder] = this.config.metricOrder[m];
-                        if (this.config.gpServIncludesLogTransform == true){
+                        if (this.config.gpServIncludesLogTransform === true){
                             this.requestObject[mLogTrans] = "No";
                         }
                         this.weightIterator ++; 
-                        if (this.config.tableResults == true){$("#" + this.id + "gpResultTable tr:first").append("<th>" + prettyM +"</th>");}
+                        if (this.config.tableResults === true){$("#" + this.id + "gpResultTable tr:first").append("<th>" + prettyM +"</th>");}
                     }
                 }));
 
@@ -1446,7 +1531,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     if (this.count>0) {
                         this.message = this.messages[this.index].description;
                     }
-                    if ((this.message != this.updateMessage) && (typeof this.message != 'undefined')){
+                    if ((this.message !== this.updateMessage) && (typeof this.message !== 'undefined')){
                         $("#" + this.id +"gpStatusReport").html(this.message);
                         this.updateMessage = this.message;
                     }
@@ -1474,7 +1559,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 console.log("callback complete");
                  this.jobInfo = jobInfo;
                 // Get result JSON for graphics and linked table
-                if (this.runSumStats == true){
+                if (this.runSumStats === true){
                     console.log("stats");
                     this.gp.getResultData(jobInfo.jobId, this.config.summStatsParamName, lang.hitch(this,this.displayStats));
                     console.log("finished stats");
@@ -1763,14 +1848,27 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     '</div>'
                 );
                 
-                //if the layer is not visible eat this scale (from map service) disbale the checkbox
+                //scale dependant functionality
                 this.map.on("extent-change", lang.hitch(this, function(){
+                    //if the layer is not visible eat this scale (from map service) disbale the checkbox
                     var addlLayer = ("addlLayer" + v[0]);
-                    if ((this[addlLayer].minscale != 0 && this.map.getScale() >this[addlLayer].minscale) ||( this[addlLayer].maxscale != 0 && this.map.getScale() < this[addlLayer].maxscale)){
+                    if ((this[addlLayer].minscale !== 0 && this.map.getScale() >this[addlLayer].minscale) ||( this[addlLayer].maxscale !== 0 && this.map.getScale() < this[addlLayer].maxscale)){
                         $("#" + this.id + v[0]).attr("disabled", true);
                     }
                     else{$("#" + this.id + v[0]).attr("disabled", false);}
                     
+                    
+                    //disbale us functional network button if zoomed out too far
+                    if (this.map.getScale() > 100000 && this.displayLength === undefined){
+                        $("#" + this.id +"usNetworkStatusReport").html("<strong>Zoom in further to generate a functional network for a clicked point.</strong>");
+                        $("#" + this.id + "clickPointNetwork").prop('disabled', true);
+                    }
+                    if (this.map.getScale() < 100000 && this.calculatingUsNet === false){
+                        $("#" + this.id + "clickPointNetwork").prop('disabled', false);
+                        if ($("#" + this.id +"usNetworkStatusReport").html()==="<strong>Zoom in further to generate a functional network for a clicked point.</strong>"){
+                            $("#" + this.id +"usNetworkStatusReport").html("");
+                        }
+                    }
                 }));
                 
                 //toggle layers on and off
@@ -1800,7 +1898,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
 				
 				
                 //turn on by default if config says to
-                if (v[4] == "on" || this.obj.startingAdditionalLayers[v[0]]=="on"){$("#" + this.id + v[0]).trigger("click");}
+                if (v[4] === "on" || this.obj.startingAdditionalLayers[v[0]]==="on"){$("#" + this.id + v[0]).trigger("click");}
             }));
             
             //set up barrier default toggle.  This is done separately, since it is not listed in the additional layers of the config file
@@ -1836,7 +1934,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     slide: lang.hitch(this, function(e, ui) { 
                         var control = $(e.target).parents('.bp_transparency-control');
                         console.log(control[0].id);
-                        if (control[0].id.indexOf("barriers") != -1){
+                        if (control[0].id.indexOf("barriers") !== -1){
                             this.dynamicLayer.setOpacity(ui.value / 100);
                         }
                         else{
@@ -1873,7 +1971,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         JSONToCSVConvertor: function(JSONData, ReportTitle, ShowLabel) {
             //taken from http://jsfiddle.net/hybrid13i/JXrwM/
             //If JSONData is not an object then JSON.parse will parse the JSON string in an Object
-            var arrData = typeof JSONData != 'object' ? JSON.parse(JSONData) : JSONData;
+            var arrData = typeof JSONData !== 'object' ? JSON.parse(JSONData) : JSONData;
             var CSV = '';    
             //Set Report title in first row or line         
             CSV += ReportTitle + '\r\n' + JSONData;    
@@ -1914,7 +2012,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 dojo.disconnect(this.identifyClick);
             }
             if (this.activateIdentify === true){
-                console.log("visible layers = " + this.visibleLayers)
+                console.log("visible layers = " + this.visibleLayers);
             	//this is the custom identify w/ radar
             	this.allowIdentifyWhenActive = false;
                 dojo.disconnect(this.identifyClick);
@@ -1955,7 +2053,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
         },
             
         doIdentify: function(evt){
-            console.log(evt)
+            console.log(evt);
             if (this.activateIdentify === true){
                 console.log("LayerDefs = " + this.identifyParams.layerDefinitions);
                 console.log("Layer IDs = " + this.identifyParams.layerIds);
@@ -2002,28 +2100,28 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                        // console.log(k);
                        // console.log(basename);
                        // console.log(k + "=" + v);
-                    if ($.inArray(k, this.config.idBlacklist) == -1){
+                    if ($.inArray(k, this.config.idBlacklist) === -1){
                         
                         //don't show indivudal metric values if consensus (average result)
-                        if (this.currentSeverity !="0"){
+                        if (this.currentSeverity !=="0"){
 
                             //convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
-                            if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
+                            if (this.config.metricMetersToMiles.indexOf(basename)!==-1){
                                 var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
                             }
-                            else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
+                            else if(isNaN(v)===false){vDisplay = this.round(v, 2);}
                             else{vDisplay = v;}
                             if(this.config.metricUnits[basename] === "yes/no"){
-                                if(parseInt(v)==0){vDisplay ="no";}
-                                if(parseInt(v)==1){vDisplay ="yes";}
+                                if(parseInt(v)===0){vDisplay ="no";}
+                                if(parseInt(v)===1){vDisplay ="yes";}
                             }
                                
                             //HTML for identify popup -- loop through and include all fields except those in plugin-config blakclist
-                            if (this.config.metricNames[basename] != undefined){
+                            if (this.config.metricNames[basename] !== undefined){
                                 //console.log(this.config.metricNames[basename]);
                                 this.idContent = this.idContent + "<b>" + this.config.metricNames[basename] + "</b> : " + vDisplay + "<hr>";
                             }
-                            if (this.config.idWhiteList[basename] != undefined){
+                            if (this.config.idWhiteList[basename] !== undefined){
                                 this.idContent = this.idContent + "<b>" + basename+ "</b> : " + vDisplay + "<hr>";
                             }
                         }
@@ -2042,16 +2140,16 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     basename = k.replace(PRsev, "");
                         
                     //convert meter results to miles, round if a number, take value as is if not a number, use yes or no if unit is yes/no
-                    if (this.config.metricMetersToMiles.indexOf(basename)!=-1){
+                    if (this.config.metricMetersToMiles.indexOf(basename)!==-1){
                         var vDisplay = String(this.round(v * 0.000621371, 2)) + " miles";
                     }
-                    else if(isNaN(v)==false){vDisplay = this.round(v, 2);}
+                    else if(isNaN(v)===false){vDisplay = this.round(v, 2);}
                     else{vDisplay = v;}
                     if(this.config.metricUnits[basename] === "yes/no"){
-                        if(parseInt(v)==0){vDisplay ="no";}
-                        if(parseInt(v)==1){vDisplay ="yes";}
+                        if(parseInt(v)===0){vDisplay ="no";}
+                        if(parseInt(v)===1){vDisplay ="yes";}
                     }
-                    if (k.indexOf(PRsev) === 0 && this.config.metricNames[basename] != undefined){
+                    if (k.indexOf(PRsev) === 0 && this.config.metricNames[basename] !== undefined){
                         this.radarItem = {};
                         this.radarItem["axis"] = this.config.metricShortNames[basename];
                         this.radarItem["coreName"] = basename;
@@ -2076,7 +2174,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                     var survID = this.allClickData["surveyID"];
                     var survLink =this.config.xingSurveyURL + survID;
 
-                    if (this.allClickData[this.config.barrierTypeField]==="Crossing" && survID != ""){
+                    if (this.allClickData[this.config.barrierTypeField]==="Crossing" && survID !== ""){
                             //var type = 'Crossing (Surveyed <a href="' +survLink +'" target="_blank"><strong>' + survDate + '</strong>)</a>';
                             var type = 'Crossing (<a href="' +survLink +'" target="_blank"><strong>'+"View Survey Data"+'</strong>)</a>';
                     }
@@ -2088,7 +2186,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }
             else if(this.allClickData[this.config.barrierTypeField] ==="Dam"){
                 if (this.config.includeFERC === true){
-                    if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] != ""){
+                    if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] !== ""){
                             var type= 'Dam (FERC prj: ' + this.allClickData["FERC"] + ') + <br>NOI Exp Date: ' + this.allClickData["FERC_NOIExpDate"];
                     }
                     if (this.allClickData[this.config.barrierTypeField]==="Dam" &&  this.allClickData["FERC"] ===  ""){
@@ -2099,7 +2197,7 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             }
             else{var type="Natural Barrier";}
             
-            if (this.config.includeBarrierSeverity === true && this.currentSeverity !=0){
+            if (this.config.includeBarrierSeverity === true && this.currentSeverity !== 0){
                 var radarSeverityDisplay = this.config.severityNumDict[this.currentSeverity] + " Iteration";
             }
             if (this.config.includeBarrierSeverity === true && this.currentSeverity ===0){
@@ -2117,34 +2215,34 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
             
             //if included show the stratification region
             if (this.config.includeStratifiedRegions === true){
-                var stratRegion = $("#" + this.id + "zoomState").val()
+                var stratRegion = $("#" + this.id + "zoomState").val();
             }
-            else{var stratRegion = ""}
+            else{var stratRegion = "";}
             
             //if included & not custom analysis, show the resident & BKT tiers in the radar plot header
             if (this.idLayerURL === this.config.url){  //only include if consensus 
-                if (this.config.anadTierName != "" && this.config.anadTierName != false){
+                if (this.config.anadTierName !== "" && this.config.anadTierName !== false){
                     this.clickHeader += "<br/>" + stratRegion + " Diadromous Tier= " + this.allClickData[this.config.anadTierName];
                 } 
-                if (this.config.residentTierName != "" && this.config.residentTierName != false){
+                if (this.config.residentTierName !== "" && this.config.residentTierName !== false){
                     this.clickHeader += "<br/>" + stratRegion + " Resident Tier= " + this.allClickData[this.config.residentTierName];
                 }       
-                if (this.config.bktTierName != "" && this.config.bktTierName != false){
+                if (this.config.bktTierName !== "" && this.config.bktTierName !== false){
                     this.clickHeader += "<br/>" + stratRegion + " Brook Trout Tier= " + this.allClickData[this.config.bktTierName];
                 }                   
 
                 if (this.config.includeFactSheets === true){
-                    this.clickHeader += "<br/><a target='_blank' href='plugins/barrier-prioritization-proto2/factSheets/" + this.allClickData[this.config.uniqueID] + ".pdf'>Fact Sheet</a>";
+                    this.clickHeader += "<br/><p><a target='_blank' href='" + this.config.factSheetRoot + this.allClickData[this.config.uniqueID] + ".html'>Fact Sheet</a></p>";
                 }
             }
             //show iteration being used if including barrier severity, it's not the average value, and it's not a GP service result
-            if (this.config.includeBarrierSeverity === true && this.currentSeverity !="0" && this.idLayerURL === this.config.url){    
+            if (this.config.includeBarrierSeverity === true && this.currentSeverity != "0" && this.idLayerURL === this.config.url){    
                 this.clickHeader = this.clickHeader + "<br/>All values for " + radarSeverityDisplay;
             }
             
             if (this.useRadar === true){
                 console.log(this.radarData);
-                console.log(this.identifyParams.layerDefinitions)
+                console.log(this.identifyParams.layerDefinitions);
                 lang.hitch(this, this.radarChart());
                 $("#" + this.id +"radarHeader").html(this.clickHeader);
                 //hide the click instructions and show the "Assess a barrier" div if not visible - on first click
@@ -2179,13 +2277,208 @@ function (     declare, lang, Color, arrayUtils, PluginBase, ContentPane, dom, d
                 title: "${" + this.uniqueID+ "} = Tier ${" + tierName +"}",
                 content: this.idContent
             };
-            this.popupInfoTemplate = new esri.InfoTemplate(this.identJSON);
+            this.popupInfoTemplate = new InfoTemplate(this.identJSON);
             idResult.setInfoTemplate(this.popupInfoTemplate);    
             this.map.infoWindow.show(point);            
             this.map.infoWindow.resize(300,400); //switching to framework identify can cause this popup to resize wrong.  So be explicit    
             this.map.infoWindow.setFeatures([idResult]);
-               
-        }     
-//End of functions...
+        },
+        
+        initUpstreamNetwork: function(){
+            console.log("initializing upstream network draw tool");
+            this.toolbar = new Draw(this.map);
+            console.log(this.toolbar);
+            dojo.connect(this.toolbar, "onDrawEnd", lang.hitch(this, function(evt){this.addClickPointGraphic(evt);}));  
+        },
+
+        
+        addClickPointGraphic: function(pointGraphic){
+
+            console.log(pointGraphic);
+            this.toolbar.deactivate();
+            console.log("Draw inactive");
+            this.activateIdentify = true;
+            lang.hitch(this, this.refreshIdentify(this.url));
+            this.clickPointMarkerSymbol = new SimpleMarkerSymbol();
+            this.clickPointMarkerSymbol.setColor(new Color("#00FFFF"));
+            var pt = new Point(pointGraphic.x,pointGraphic.y, this.map.spatialReference);
+            this.clickPointGr = new Graphic(pt, this.clickPointMarkerSymbol);
+            
+            this.clickPointLayer = new GraphicsLayer();
+            this.clickPointLayer.add(this.clickPointGr);
+            this.map.addLayer(this.clickPointLayer);
+            $("#" + this.id + "clickPointNetwork").removeClass("hover");   
+            $("#" + this.id + "clickPointNetwork").prop('disabled', true);  
+
+            var usNetworkRequestObject = {};
+            var clickPoint = {
+                    "geometryType" : "esriGeometryPoint",
+                    "features":[{"geometry":{"x":pointGraphic.x,"y":pointGraphic.y,"spatialReference":{"wkid":102100}}}],
+                    "sr":{"wkid":102100}
+            };
+            usNetworkRequestObject["clickPoint"] =JSON.stringify(clickPoint);
+            $("#" + this.id + "clearUsNetResults").hide();
+            this.usNetGP.submitJob(usNetworkRequestObject, lang.hitch(this, this.usNetCompleteCallback), lang.hitch(this, this.usNetStatusCallback), lang.hitch(this, function(error){
+                        alert(error);
+            }));
+        },
+        
+        usNetCompleteCallback: function(jobInfo){
+            // Get result as map service -- needed for larger datasets and easy way to get legend
+            this.usNetMapServURLRoot = this.config.usNetGPURL.replace("GPServer/getUSNetwork", "MapServer/jobs/");
+            this.usNetMapServ =  (this.usNetMapServURLRoot + jobInfo.jobId );
+            console.log(this.usNetMapServ);
+            this.usNetGPResLayer = new ArcGISDynamicMapServiceLayer(this.usNetMapServ);
+            
+            this.map.addLayer(this.usNetGPResLayer);
+            
+            this.usNetGP.getResultData(jobInfo.jobId, "usFuncNetLength", lang.hitch(this,this.displayUsNetLength));
+            this.map.removeLayer(this.hydrography);
+            $("#" + this.id + "clickPointNetwork").prop('disabled', false);  
+            this.calculatingUsNet = false;
+            $("#" + this.id + "clearUsNetResults").show();
+
+        },
+        
+        displayUsNetLength: function(result, messages){
+            this.displayLength = this.roundWithCommas(result.value, 1);
+            $("#" + this.id +"usNetworkStatusReport").html("Upstream functional network length: " + String(this.displayLength) + " Miles");
+        },
+        
+        usNetStatusCallback: function(jobInfo){
+            this.calculatingUsNet = true;
+            var status = jobInfo.jobStatus;
+            if (jobInfo.messages.length > 0){
+                    this.messages = jobInfo.messages;
+                    this.count = this.messages.length;
+                    
+                    this.index = this.count-1;                  
+                    if (this.count>0) {
+                        this.message = this.messages[this.index].description;
+                    }
+                    if ((this.message !== this.updateMessage) && (typeof this.message !== 'undefined') && (isNaN(this.message) === true)){
+                        $("#" + this.id +"usNetworkStatusReport").html(this.message);
+                        this.updateMessage = this.message;
+                    }
+                    if (this.message.indexOf("Succeeded at") === 0){
+                        $("#" + this.id +"usNetworkStatusReport").html("Analysis completed successfully.");
+                    }
+                    if (this.message.indexOf("usFuncNet exceeded transfer limit of") === 0){
+                        $("#" + this.id +"usNetworkStatusReport").html("Analysis completed successfully.");
+                    }
+                }
+                this.map.removeLayer(this.hydrography);
+                this.calculatingUsNet = false;
+        },
+        
+        clearUsFuncNetResults: function(){
+            if (this.clickPointLayer){
+                this.map.removeLayer(this.clickPointLayer);
+                this.clickPointLayer = "";
+            }
+            if (this.usNetGPResLayer){
+                this.map.removeLayer(this.usNetGPResLayer);
+                this.usNetGPResLayer = "";
+            }
+            
+            if (this.hydrography){this.map.removeLayer(this.hydrography);}
+            $("#" + this.id +"usNetworkStatusReport").html("");
+        },
+        
+        getThisYear: function(){	
+            return (new Date()).getFullYear();	
+        },
+        
+        initTimeSlider: function(){
+            //Time slider 
+            
+            this.mileageLayer = new ArcGISDynamicMapServiceLayer(this.config.mileageCalcURL);
+            this.mileageLayer.setVisibleLayers([0, 1, 2, 3, 4, 5]);
+            $("#" + this.id+ "milesOpened").on("click", lang.hitch(this, function(e) {
+                if (this.gpResLayer){this.map.removeLayer(this.gpResLayer);}
+                if (this.dynamicLayer){this.map.removeLayer(this.dynamicLayer);}
+                if (this.clickPointLayer){this.map.removeLayer(this.clickPointLayer);}
+                if (this.usNetGPResLayer){this.map.removeLayer(this.usNetGPResLayer);}
+                
+                this.map.addLayer(this.mileageLayer);
+                
+            }));
+
+            $('#' + this.id + 'timeSlider').slider({
+                range:true, 
+                min:1988, 
+                max:2019, 
+                values: [1988, 1988],
+                // called at end of slide. use change to ask server for data
+                change:lang.hitch(this,function(event,ui){
+                    lang.hitch(this, this.timeSlideChange(ui));
+                })
+            });  
+            if (this.timeSliderInit === false){
+                $('#' + this.id + 'timeSlider').slider("values", [1988, 1988]);
+            }
+            this.timeSliderInit = true;
+        },
+        
+        timeSlideChange: function(ui){
+            sliderID = '#' + this.id + 'timeSlider';
+            var startValString = ui.values[0];
+            var endValString = ui.values[1];
+            $("#" + this.id +"timeSliderMin").text(startValString);
+            $("#" + this.id +"timeSliderMax").text(endValString);
+            
+            var filterTimeExtent = new TimeExtent();
+            filterTimeExtent.startTime = new Date(String(startValString) + " UTC" );
+            filterTimeExtent.endTime = new Date(String(endValString) + " UTC");
+            console.log(filterTimeExtent);
+
+            var mileageLayerDefinitions = [];
+            mileageLayerDefinitions[0] = "DamRemovalPassYear <= " +endValString  + " AND DamRemovalPassYear > " + startValString;
+            mileageLayerDefinitions[3] = "DamRemovalPassYear <= " +endValString + " AND DamRemovalPassYear > " + startValString;
+            mileageLayerDefinitions[1] = "OtherPassYear <= " + endValString  + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString;
+            mileageLayerDefinitions[4] = "OtherPassYear <= " + endValString + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString;
+            this.mileageLayer.setLayerDefinitions(mileageLayerDefinitions);
+
+            lang.hitch(this, this.sumMiles(filterTimeExtent));
+        },
+                
+        sumMiles: function(timeExtent){			
+            var damRemovalQueryTask = new QueryTask(this.config.mileageCalcURL + "/3");
+            var damRemovalQuery = new Query();
+            damRemovalQuery.returnGeometry = false;
+            damRemovalQuery.outFields = ["LENGTH_MI"];
+            damRemovalQuery.timeExtent = timeExtent;
+            damRemovalQueryTask.execute(damRemovalQuery, lang.hitch(this, this.showDamRemovalResults));
+
+
+            var otherPassageQueryTask = new QueryTask(this.config.mileageCalcURL + "/4");
+            var otherPassageQuery = new Query();
+            otherPassageQuery.returnGeometry = false;
+            otherPassageQuery.outFields = ["LENGTH_MI"];
+            otherPassageQuery.timeExtent = timeExtent;
+            otherPassageQueryTask.execute(otherPassageQuery, lang.hitch(this, this.showOtherPassageResults));
+        },
+		
+        showDamRemovalResults: function(results){
+            console.log(results);
+            var sumLength = 0;
+            for (i=0; i < results.features.length; i++){
+                sumLength += results.features[i].attributes["LENGTH_MI"];
+            }
+            console.log("Total Dam Removal Length = " + sumLength);
+            $("#" + this.id + "damRemovalResultVal").html("Cumulative dam removal miles: <strong>" + this.roundWithCommas(sumLength, 0) + "</strong> Miles");
+        },
+
+        showOtherPassageResults: function(results){
+            console.log(results);
+            var sumLength = 0;
+            for (i=0; i < results.features.length; i++){
+                sumLength += results.features[i].attributes["LENGTH_MI"];
+            }
+            console.log("Total Other Passage Length = " + sumLength);
+            $("#" + this.id + "otherPassageResultVal").html("Cumulative other passage miles: <strong>" + this.roundWithCommas(sumLength, 0) + "</strong> Miles");
+        }
+        
+       
     });
 });
