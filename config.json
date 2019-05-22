@@ -1,7 +1,7 @@
 {
-    "url": "https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer",
-	"removeSelectionURL" : "https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/7",
-	"gpURL":"https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP/GPServer/Prioritize",
+    "url": "https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer",
+	"removeSelectionURL" : "https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/7",
+	"gpURL":"https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_PrioritizeGP/GPServer/Prioritize",
 	"includeCustomAnalysis" : true,
 	"includeBarrierSeverity" : true,
 	"includeSurveyPageLink" : true,
@@ -17,11 +17,11 @@
 
     },
 	"additionalLayers":{	
-		"Rivers" : ["rivers", "https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "8", "Zoom in to the scale of a city or town to view the rivers in the region.", "off"],
-		"Subbasins (HUC 8)" :["huc8s", "https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "9", "View the USGS 8-digit Hydrologic Units", "off"],
-		"Northeast States" : ["states", "https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "10", "View the political boundaries of the Northeastern states.", "off"],
-		"Conservation Land" :["consLand", "https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "11", "View conservation lands", "off"],
-		"Critical Linkages" :["coldWater", "https://cirrus-web-adapter-241060755.us-west-1.elb.amazonaws.com/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "12", "View the UMass Critical Linkages Cold Water (16C) restoration potential data. This data assesses the restration potential of crossings on streams that are predicted to remain viable habitat for cold water species given climate change. See https://sce.ecosheds.org for more info ", "off"]
+		"Rivers" : ["rivers", "https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "8", "Zoom in to the scale of a city or town to view the rivers in the region.", "off"],
+		"Subbasins (HUC 8)" :["huc8s", "https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "9", "View the USGS 8-digit Hydrologic Units", "off"],
+		"Northeast States" : ["states", "https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "10", "View the political boundaries of the Northeastern states.", "off"],
+		"Conservation Land" :["consLand", "https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "11", "View conservation lands", "off"],
+		"Critical Linkages" :["coldWater", "https://cirrus.tnc.org/arcgis/rest/services/FN_Northeast/NAACC_Prioritized8/MapServer/", "12", "View the UMass Critical Linkages Cold Water (16C) restoration potential data. This data assesses the restration potential of crossings on streams that are predicted to remain viable habitat for cold water species given climate change. See https://sce.ecosheds.org for more info ", "off"]
 	},
 	"zoomTo" : {
 		"ME" : [[-8196803.886980368,5111536.218461686,-7189058.106068872,6132734.91635137],{"dams":614, "crossings0" :8893,"crossings1" :8893, "crossings2" : 6195, "crossings3" : 1253, "crossings4" : 140, "crossings5" : 61, "crossings6" : 0, "avgNetwork0" :4007, "avgNetwork1" :4007, "avgNetwork2" : 5272, "avgNetwork3" : 17385, "avgNetwork4" : 39733, "avgNetwork5" : 43765, "avgNetwork6" : 47396}],
