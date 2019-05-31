@@ -240,7 +240,8 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
             else{$("#" + this.id +"stateStatsExpander").hide();}
             
             //$("#" + this.id +"additionalLayersExpander").hide();
-            $('#' + this.id + 'clickInstructions').hide();  
+            $("#" + this.id +"consensusResultFiltersExpander").show();
+            $("#" + this.id + "clickInstructions").show();
             $("#" + this.id + "consensusRadarNoUse").hide();
             
             $(".scalebar_bottom-left").append('<div id="latLongText" class="bp_grayText" style="z-index: 35; bottom: 5px; left: 10px; width:400px "></div>');
@@ -2433,12 +2434,12 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
             console.log(filterTimeExtent);
 
             var mileageLayerDefinitions = [];
-            mileageLayerDefinitions[0] = "DamRemovalPassYear <= " +endValString  + " AND DamRemovalPassYear > " + startValString;
-            mileageLayerDefinitions[3] = "DamRemovalPassYear <= " +endValString + " AND DamRemovalPassYear > " + startValString;
-            mileageLayerDefinitions[1] = "OtherPassYear <= " + endValString  + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString;
-            mileageLayerDefinitions[4] = "OtherPassYear <= " + endValString + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString;
+            mileageLayerDefinitions[0] = "(DamRemovalPassYear <= " +endValString  + " AND DamRemovalPassYear > " + startValString + ") OR DamRemovalPassYear = 999";
+            mileageLayerDefinitions[3] = "(DamRemovalPassYear <= " +endValString + " AND DamRemovalPassYear > " + startValString + ") OR DamRemovalPassYear = 999";
+            mileageLayerDefinitions[1] = "(OtherPassYear <= " + endValString  + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString + ") OR OtherPassYear = 999";
+            mileageLayerDefinitions[4] = "(OtherPassYear <= " + endValString + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString + ") OR OtherPassYear = 999";
             this.mileageLayer.setLayerDefinitions(mileageLayerDefinitions);
-
+               console.log(mileageLayerDefinitions)
             lang.hitch(this, this.sumMiles(filterTimeExtent));
         },
                 
