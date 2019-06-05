@@ -2,7 +2,7 @@
 
 // Pull in your favorite version of jquery 
 require({ 
-    packages: [{ name: "jquery", location: "https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/", main: "jquery.min" }] 
+    packages: [{ name: "jquery", location: "http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/", main: "jquery.min" }] 
 });
 // Bring in dojo and javascript api classes as well as varObject.json, js files, and content.html
 define([
@@ -829,11 +829,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     $("#" + this.id +"stateStatsExpander").show();
                     
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'Select Severity', 
-                       eventLabel: v + ' selected'
-                    });
+					if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'Select Severity', 
+						   eventLabel: v + ' selected'
+						});
+					}
                     
                     
                     lang.hitch(this, this.selectBarrSeverity(v));
@@ -849,11 +851,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 if (v.length === 0){v = "none";}
                 
                 //analytics event tracking
-                ga('send', 'event', {
-                   eventCategory:this.config.analyticsEventTrackingCategory,        
-                   eventAction: 'Zoom to state', 
-                   eventLabel: v + ' selected for zoom'
-                });   
+				if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+					ga('send', 'event', {
+					   eventCategory:this.config.analyticsEventTrackingCategory,        
+					   eventAction: 'Zoom to state', 
+					   eventLabel: v + ' selected for zoom'
+					});   
+				}
             	lang.hitch(this, this.zoomToStates(v, "yes"));
             }));
             
@@ -865,11 +869,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     if (v.length === 0){v = "none";}
 
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'Consensus scenario selection', 
-                       eventLabel: v + ' consensus selected'
-                    });   
+					if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'Consensus scenario selection', 
+						   eventLabel: v + ' consensus selected'
+						});   
+					}
                     lang.hitch(this, this.scenarioSelection(v, "yes"));
                 }));
             }
@@ -1403,11 +1409,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 alert("Metric weights must sum to 100");
             }
             else{
-                ga('send', 'event', {
-                    eventCategory:this.config.analyticsEventTrackingCategory,        
-                    eventAction: 'submit click', 
-                    eventLabel: "Custom analysis on " + this.passability
-                 });   
+				if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+					ga('send', 'event', {
+						eventCategory:this.config.analyticsEventTrackingCategory,        
+						eventAction: 'submit click', 
+						eventLabel: "Custom analysis on " + this.passability
+					 });   
+				}
                  
                 //clear old map graphics and results table
                 this.map.graphics.clear();
@@ -1713,11 +1721,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     lang.hitch(this, this.radarChart());
                     
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'changing radar metrics', 
-                       eventLabel: 'changing radar metrics'
-                    });
+					if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'changing radar metrics', 
+						   eventLabel: 'changing radar metrics'
+						});
+					}
                 }
             }));
         },
