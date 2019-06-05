@@ -829,13 +829,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     $("#" + this.id +"stateStatsExpander").show();
                     
                     //analytics event tracking
-					if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+					if(region.hasOwnProperty('googleAnalyticsPropertyId')) {
 						ga('send', 'event', {
 						   eventCategory:this.config.analyticsEventTrackingCategory,        
 						   eventAction: 'Select Severity', 
 						   eventLabel: v + ' selected'
 						});
-					});
+					};
                     
                     
                     lang.hitch(this, this.selectBarrSeverity(v));
@@ -851,12 +851,12 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 if (v.length === 0){v = "none";}
                 
                 //analytics event tracking
-				if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+				if(region.hasOwnProperty('googleAnalyticsPropertyId')) {
 					ga('send', 'event', {
 					   eventCategory:this.config.analyticsEventTrackingCategory,        
 					   eventAction: 'Zoom to state', 
 					   eventLabel: v + ' selected for zoom'
-					});   
+					};   
 				});
             	lang.hitch(this, this.zoomToStates(v, "yes"));
             }));
@@ -869,12 +869,12 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     if (v.length === 0){v = "none";}
 
                     //analytics event tracking
-					if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+					if(region.hasOwnProperty('googleAnalyticsPropertyId')) {
 						ga('send', 'event', {
 						   eventCategory:this.config.analyticsEventTrackingCategory,        
 						   eventAction: 'Consensus scenario selection', 
 						   eventLabel: v + ' consensus selected'
-						});   
+						};   
 					});
                     lang.hitch(this, this.scenarioSelection(v, "yes"));
                 }));
@@ -1409,13 +1409,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 alert("Metric weights must sum to 100");
             }
             else{
-				if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+				if(region.hasOwnProperty('googleAnalyticsPropertyId')) {
 					ga('send', 'event', {
 						eventCategory:this.config.analyticsEventTrackingCategory,        
 						eventAction: 'submit click', 
 						eventLabel: "Custom analysis on " + this.passability
 					 });   
-				});
+				};
                  
                 //clear old map graphics and results table
                 this.map.graphics.clear();
@@ -1721,13 +1721,13 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     lang.hitch(this, this.radarChart());
                     
                     //analytics event tracking
-					if(region.hasOwnProperty('googleAnalyticsPropertyId') {
+					if(region.hasOwnProperty('googleAnalyticsPropertyId')) {
 						ga('send', 'event', {
 						   eventCategory:this.config.analyticsEventTrackingCategory,        
 						   eventAction: 'changing radar metrics', 
 						   eventLabel: 'changing radar metrics'
 						});
-					});
+					};
                 }
             }));
         },
