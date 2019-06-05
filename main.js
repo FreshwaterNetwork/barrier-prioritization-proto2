@@ -856,7 +856,7 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
 					   eventCategory:this.config.analyticsEventTrackingCategory,        
 					   eventAction: 'Zoom to state', 
 					   eventLabel: v + ' selected for zoom'
-					};   
+					});   
 				};
             	lang.hitch(this, this.zoomToStates(v, "yes"));
             }));
