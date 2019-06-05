@@ -874,8 +874,8 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
 						   eventCategory:this.config.analyticsEventTrackingCategory,        
 						   eventAction: 'Consensus scenario selection', 
 						   eventLabel: v + ' consensus selected'
-						};   
-					});
+						});   
+					};
                     lang.hitch(this, this.scenarioSelection(v, "yes"));
                 }));
             }
