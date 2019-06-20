@@ -829,11 +829,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     $("#" + this.id +"stateStatsExpander").show();
                     
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'Select Severity', 
-                       eventLabel: v + ' selected'
-                    });
+					try{
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'Select Severity', 
+						   eventLabel: v + ' selected'
+						});
+					}
+					catch(err) {
+						console.error("ga not available", err);
+					}
                     
                     
                     lang.hitch(this, this.selectBarrSeverity(v));
@@ -849,11 +854,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 if (v.length === 0){v = "none";}
                 
                 //analytics event tracking
-                ga('send', 'event', {
-                   eventCategory:this.config.analyticsEventTrackingCategory,        
-                   eventAction: 'Zoom to state', 
-                   eventLabel: v + ' selected for zoom'
-                });   
+				try{
+					ga('send', 'event', {
+					   eventCategory:this.config.analyticsEventTrackingCategory,        
+					   eventAction: 'Zoom to state', 
+					   eventLabel: v + ' selected for zoom'
+					});   
+				}
+				catch(err) {
+						console.error("ga not available", err);
+				}
             	lang.hitch(this, this.zoomToStates(v, "yes"));
             }));
             
@@ -865,11 +875,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     if (v.length === 0){v = "none";}
 
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'Consensus scenario selection', 
-                       eventLabel: v + ' consensus selected'
-                    });   
+					try{
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'Consensus scenario selection', 
+						   eventLabel: v + ' consensus selected'
+						});   
+					}
+					catch(err) {
+						console.error("ga not available", err);
+					}
                     lang.hitch(this, this.scenarioSelection(v, "yes"));
                 }));
             }
@@ -1403,11 +1418,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 alert("Metric weights must sum to 100");
             }
             else{
-                ga('send', 'event', {
-                    eventCategory:this.config.analyticsEventTrackingCategory,        
-                    eventAction: 'submit click', 
-                    eventLabel: "Custom analysis on " + this.passability
-                 });   
+				try{
+					ga('send', 'event', {
+						eventCategory:this.config.analyticsEventTrackingCategory,        
+						eventAction: 'submit click', 
+						eventLabel: "Custom analysis on " + this.passability
+					 });   
+				}
+				catch(err) {
+						console.error("ga not available", err);
+				}
                  
                 //clear old map graphics and results table
                 this.map.graphics.clear();
@@ -1713,11 +1733,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     lang.hitch(this, this.radarChart());
                     
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'changing radar metrics', 
-                       eventLabel: 'changing radar metrics'
-                    });
+					try{
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'changing radar metrics', 
+						   eventLabel: 'changing radar metrics'
+						});
+					}
+					catch(err) {
+						console.error("ga not available", err);
+					}
                 }
             }));
         },
