@@ -240,7 +240,8 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
             else{$("#" + this.id +"stateStatsExpander").hide();}
             
             //$("#" + this.id +"additionalLayersExpander").hide();
-            $('#' + this.id + 'clickInstructions').hide();  
+            $("#" + this.id +"consensusResultFiltersExpander").show();
+            $("#" + this.id + "clickInstructions").show();
             $("#" + this.id + "consensusRadarNoUse").hide();
             
             $(".scalebar_bottom-left").append('<div id="latLongText" class="bp_grayText" style="z-index: 35; bottom: 5px; left: 10px; width:400px "></div>');
@@ -828,11 +829,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     $("#" + this.id +"stateStatsExpander").show();
                     
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'Select Severity', 
-                       eventLabel: v + ' selected'
-                    });
+					try{
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'Select Severity', 
+						   eventLabel: v + ' selected'
+						});
+					}
+					catch(err) {
+						console.error("ga not available", err);
+					}
                     
                     
                     lang.hitch(this, this.selectBarrSeverity(v));
@@ -848,11 +854,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 if (v.length === 0){v = "none";}
                 
                 //analytics event tracking
-                ga('send', 'event', {
-                   eventCategory:this.config.analyticsEventTrackingCategory,        
-                   eventAction: 'Zoom to state', 
-                   eventLabel: v + ' selected for zoom'
-                });   
+				try{
+					ga('send', 'event', {
+					   eventCategory:this.config.analyticsEventTrackingCategory,        
+					   eventAction: 'Zoom to state', 
+					   eventLabel: v + ' selected for zoom'
+					});   
+				}
+				catch(err) {
+						console.error("ga not available", err);
+				}
             	lang.hitch(this, this.zoomToStates(v, "yes"));
             }));
             
@@ -864,11 +875,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     if (v.length === 0){v = "none";}
 
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'Consensus scenario selection', 
-                       eventLabel: v + ' consensus selected'
-                    });   
+					try{
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'Consensus scenario selection', 
+						   eventLabel: v + ' consensus selected'
+						});   
+					}
+					catch(err) {
+						console.error("ga not available", err);
+					}
                     lang.hitch(this, this.scenarioSelection(v, "yes"));
                 }));
             }
@@ -1402,11 +1418,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                 alert("Metric weights must sum to 100");
             }
             else{
-                ga('send', 'event', {
-                    eventCategory:this.config.analyticsEventTrackingCategory,        
-                    eventAction: 'submit click', 
-                    eventLabel: "Custom analysis on " + this.passability
-                 });   
+				try{
+					ga('send', 'event', {
+						eventCategory:this.config.analyticsEventTrackingCategory,        
+						eventAction: 'submit click', 
+						eventLabel: "Custom analysis on " + this.passability
+					 });   
+				}
+				catch(err) {
+						console.error("ga not available", err);
+				}
                  
                 //clear old map graphics and results table
                 this.map.graphics.clear();
@@ -1712,11 +1733,16 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
                     lang.hitch(this, this.radarChart());
                     
                     //analytics event tracking
-                    ga('send', 'event', {
-                       eventCategory:this.config.analyticsEventTrackingCategory,        
-                       eventAction: 'changing radar metrics', 
-                       eventLabel: 'changing radar metrics'
-                    });
+					try{
+						ga('send', 'event', {
+						   eventCategory:this.config.analyticsEventTrackingCategory,        
+						   eventAction: 'changing radar metrics', 
+						   eventLabel: 'changing radar metrics'
+						});
+					}
+					catch(err) {
+						console.error("ga not available", err);
+					}
                 }
             }));
         },
@@ -2433,12 +2459,12 @@ function (     declare, lang, Color, arrayUtils, on, PluginBase, ContentPane, do
             console.log(filterTimeExtent);
 
             var mileageLayerDefinitions = [];
-            mileageLayerDefinitions[0] = "DamRemovalPassYear <= " +endValString  + " AND DamRemovalPassYear > " + startValString;
-            mileageLayerDefinitions[3] = "DamRemovalPassYear <= " +endValString + " AND DamRemovalPassYear > " + startValString;
-            mileageLayerDefinitions[1] = "OtherPassYear <= " + endValString  + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString;
-            mileageLayerDefinitions[4] = "OtherPassYear <= " + endValString + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString;
+            mileageLayerDefinitions[0] = "(DamRemovalPassYear <= " +endValString  + " AND DamRemovalPassYear > " + startValString + ") OR DamRemovalPassYear = 999";
+            mileageLayerDefinitions[3] = "(DamRemovalPassYear <= " +endValString + " AND DamRemovalPassYear > " + startValString + ") OR DamRemovalPassYear = 999";
+            mileageLayerDefinitions[1] = "(OtherPassYear <= " + endValString  + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString + ") OR OtherPassYear = 999";
+            mileageLayerDefinitions[4] = "(OtherPassYear <= " + endValString + " AND OtherPassEndYear > " + endValString + " AND OtherPassYear > " + startValString + ") OR OtherPassYear = 999";
             this.mileageLayer.setLayerDefinitions(mileageLayerDefinitions);
-
+               console.log(mileageLayerDefinitions)
             lang.hitch(this, this.sumMiles(filterTimeExtent));
         },
                 
